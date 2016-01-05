@@ -1,0 +1,337 @@
+!> @file
+!! This file contains a module with the core computations for Dikes Overtopping
+!<
+!***********************************************************************************************************
+!
+!  Programmers: Bastiaan Kuijper, HKV consultants / Edwin Spee, Deltares
+!
+!  Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+!  $Id$
+!
+!***********************************************************************************************************
+module waveRunup
+!***********************************************************************************************************
+
+   use factorModuleRTOovertopping
+   use typeDefinitionsRTOovertopping
+   use formulaModuleRTOovertopping
+   use geometryModuleRTOovertopping
+
+   implicit none
+
+   private
+   
+   public :: iterationWaveRunup
+
+   contains
+
+!> iterationWaveRunup:
+!! iteration for the wave runup
+!!   @ingroup LibOvertopping
+!***********************************************************************************************************
+   subroutine iterationWaveRunup (geometry, h, Hm0, Tm_10, gammaBeta_z, modelFactors, z2, succes, errorMessage)
+!***********************************************************************************************************
+!
+   implicit none
+!
+!  Input/output parameters
+!
+   type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
+   real(wp),                  intent(in)     :: h              !< local water level (m+NAP)
+   real(wp),                  intent(in)     :: Hm0            !< significant wave height (m)
+   real(wp),                  intent(in)     :: Tm_10          !< spectral wave period (s)
+   real(wp),                  intent(inout)  :: gammaBeta_z    !< influence factor angle wave attack 2% run-up
+   type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
+   real(wp),                  intent(out)    :: z2             !< 2% wave run-up (m)
+   logical,                   intent(out)    :: succes         !< flag for succes
+   character(len=*),          intent(out)    :: errorMessage   !< error message
+!
+!  Local parameters
+!
+   type (tpGeometry) :: geometryFlatBerms        !< structure with geometry data with horizontal berms
+   real(kind=wp)     :: s0                       !< wave steepness
+   integer           :: i                        !< counter iteration steps
+   real(kind=wp)     :: z2_start  (z2_iter_max2) !< starting value 2% wave run-up for each iteration step
+   real(kind=wp)     :: z2_end    (z2_iter_max2) !< ending value 2% wave run-up   for each iteration step
+   integer           :: Niterations              !< number of iterations before convergence
+   logical           :: convergence              !< flag for convergence iteration procedure
+   integer           :: k                        !< index with lowest difference between z2_start and z2_end
+   real(kind=wp)     :: z2k                      !< z2 corresponding to index k
+   real(kind=wp)     :: offset                   !< index near z2k
+   
+! ==========================================================================================================
+
+   ! calculate wave steepness
+   call calculateWaveSteepness (Hm0, Tm_10, s0, succes, errorMessage)
+   
+   ! if applicable adjust non-horizontal berms
+   if (succes) then
+      call adjustNonHorizontalBerms (geometry, geometryFlatBerms, succes, errorMessage)
+   endif
+
+   ! initialize number of iterations and flag for convergence
+   Niterations = 0
+   convergence = .false.
+
+   ! -------------------------
+   ! start iteration procedure
+   ! -------------------------
+
+   ! iteration procedure for calculating 2% wave run-up
+   do i=1, z2_iter_max1
+
+      ! edit number of iterations
+      Niterations = Niterations + 1
+      
+      z2_start(i) = determineStartingValue(i, modelFactors%relaxationFactor, z2_start, z2_end, Hm0)
+      
+      z2_end(i) = innerCalculation(geometry, h, Hm0, gammaBeta_z, modelFactors, z2_start(i), s0, geometryFlatBerms, succes, errorMessage)
+
+      ! calculate convergence criterium
+      convergence = (abs(z2_start(i) - z2_end(i)) < z2_margin)
+
+      ! exit loop when an error occurs or convergence is reached
+      if ((.not. succes) .or. (convergence)) then
+          exit
+      endif
+
+   enddo
+   
+   if (succes .and. .not. convergence) then
+      !
+      ! iteration process, even with relaxation does not converge
+      ! fall back on:
+      ! - find case k with lowest difference between z2_start and z2_end
+      ! - search with small steps around this z2 value to the smallest difference
+      !
+      k = findSmallestResidu(z2_start, z2_end, z2_iter_max1)
+      z2k = z2_start(k)
+      offset = dble((z2_iter_max1 + 1 + z2_iter_max2) / 2) + 0.25_wp
+      do i = z2_iter_max1 + 1, z2_iter_max2
+
+         ! edit number of iterations
+         Niterations = Niterations + 1
+      
+         z2_start(i) = z2k + 2.0_wp * z2_margin * (real(i,wp)-offset)
+      
+         z2_end(i) = innerCalculation(geometry, h, Hm0, gammaBeta_z, modelFactors, z2_start(i), s0, geometryFlatBerms, succes, errorMessage)
+
+         ! calculate convergence criterium
+         convergence = (abs(z2_start(i) - z2_end(i)) < z2_margin)
+
+         ! exit loop when an error occurs or convergence is reached
+         if ((.not. succes) .or. (convergence)) then
+            exit
+         endif
+      
+      enddo
+      if ((succes) .and. (.not. convergence)) then
+         call convergedWithResidu(z2_start, z2_end)
+         convergence = .true.
+      endif
+   endif 
+
+   call deallocateGeometry( geometryFlatBerms )
+
+   ! -----------------------
+   ! end iteration procedure
+   ! -----------------------
+
+   ! check if iteration procedure converged
+   if (succes) then
+      
+      if (convergence) then
+     
+         ! when convergence is reached 2% wave run-up equals value in last iteration step
+         z2 = z2_end(Niterations)
+   
+      else
+
+         ! determine error message when no convergence is reached
+         succes = .false.
+         errorMessage = 'no convergence in iteration procedure 2% wave run-up'
+
+      endif
+
+   endif
+
+   end subroutine iterationWaveRunup
+   
+   function innerCalculation(geometry, h, Hm0, gammaBeta_z, modelFactors, z2, s0, &
+                             geometryFlatBerms, succes, errorMessage) result(z2_end)
+   implicit none
+!
+!  Input/output parameters
+!
+   type (tpGeometry),         intent(in)     :: geometry           !< structure with geometry data
+   real(wp),                  intent(in)     :: h                  !< local water level (m+NAP)
+   real(wp),                  intent(in)     :: Hm0                !< significant wave height (m)
+   real(wp),                  intent(inout)  :: gammaBeta_z        !< influence factor angle wave attack 2% run-up
+   type (tpOvertoppingInput), intent(in)     :: modelFactors       !< structure with model factors
+   real(wp),                  intent(in)     :: z2                 !< 2% wave run-up (m)
+   real(kind=wp),             intent(in)     :: s0                 !< wave steepness
+   type (tpGeometry),         intent(in)     :: geometryFlatBerms  !< structure with geometry data with horizontal berms
+   logical,                   intent(out)    :: succes             !< flag for succes
+   character(len=*),          intent(out)    :: errorMessage       !< error message
+   real(kind=wp)                             :: z2_end             !< 2% wave run-up at end of inner calculation
+!
+!  Local parameters
+!
+   real(kind=wp)     :: tanAlpha   !< representative slope angle
+   real(kind=wp)     :: ksi0       !< breaker parameter
+   real(kind=wp)     :: ksi0Limit  !< limit value breaker parameter
+   real(kind=wp)     :: z2_smooth  !< 2% wave run-up (no roughness)
+   real(kind=wp)     :: gammaF     !< influence factor roughness
+   real(kind=wp)     :: z2_rough   !< 2% wave run-up (no berms)
+   real(kind=wp)     :: gammaB     !< influence factor berms
+
+   ! initialize influence factor berms and roughness and z2_end
+   gammaB     = 1.0d0
+   gammaF     = 1.0d0
+   z2_end     = 0.0d0
+
+   ! calculate representative slope angle
+   if (z2 > 0.0d0) then
+      call calculateTanAlpha (h, Hm0, z2, geometryFlatBerms, tanAlpha, succes, errorMessage)
+   else
+      succes = .true.  ! avoid multiple tests on z2 > 0 which should always be true
+      return
+   endif
+
+   ! calculate breaker parameter
+   if (succes) then
+      call calculateBreakerParameter (tanAlpha, s0, ksi0, succes, errorMessage)
+   endif
+
+   ! calculate limit value breaker parameter
+   if (succes) then
+      call calculateBreakerLimit (modelFactors, gammaB, ksi0Limit, succes, errorMessage)
+   endif
+
+   ! calculate z2% smooth (gammaB=1, gammaF=1)
+   if (succes) then
+      call calculateWaveRunup (Hm0, ksi0, ksi0Limit, gammaB, gammaF, &
+                                  gammaBeta_z, modelFactors, z2_smooth, succes, errorMessage)
+   endif
+
+   ! calculate influence factor roughness (gammaF)
+   if (succes) then
+      if (z2_smooth > 0.0d0) then
+         call calculateGammaF (h, ksi0, ksi0Limit, gammaB, z2_smooth, geometry, gammaF, succes, errorMessage)
+
+         ! calculate z2% rough (gammaB=1)
+         if (succes) then
+            call calculateWaveRunup (Hm0, ksi0, ksi0Limit, gammaB, gammaF, &
+                                  gammaBeta_z, modelFactors, z2_rough, succes, errorMessage)
+         endif
+      else
+         return
+      endif
+   endif
+
+   ! if cross section contains one or more berms
+   if (geometry%NbermSegments > 0 .and. z2_rough > 0.0d0) then
+      
+      ! calculate influence factor berms (gammaB)
+      if (succes) then
+         call calculateGammaB (h, Hm0, z2_rough, geometryFlatBerms, gammaB, succes, errorMessage)
+      endif
+
+      ! calculate limit value breaker parameter
+      if (succes) then
+         call calculateBreakerLimit (modelFactors, gammaB, ksi0Limit, succes, errorMessage)
+      endif
+
+      ! calculate influence factor roughness (gammaF)
+      if (succes) then
+         call calculateGammaF (h, ksi0, ksi0Limit, gammaB, z2_rough, geometry, gammaF, succes, errorMessage)
+      endif
+   
+      ! calculate z2%
+      if (succes) then
+         call calculateWaveRunup (Hm0, ksi0, ksi0Limit, gammaB, gammaF, &
+                                  gammaBeta_z, modelFactors, z2_end, succes, errorMessage)
+      endif
+
+   else
+
+      ! no berms present
+      z2_end = z2_rough
+
+   endif
+
+end function innerCalculation
+
+   function determineStartingValue(i, relaxationFactor, z2_start, z2_end, Hm0) result (startValue)
+   integer, intent(in)        :: i
+   real(kind=wp), intent(in)  :: relaxationFactor, z2_start(:), z2_end(:), Hm0
+   real(kind=wp)              :: startValue
+   
+   real(kind=wp) :: relaxation
+
+   ! determine starting value 2% wave run-up for this iteration step
+   if (i == 1) then
+      startValue = 1.5d0 * Hm0
+   else if (i <= 5) then
+      startValue = z2_end(i-1)
+   else
+      if (i <= 25) then 
+          relaxation = relaxationFactor
+      else
+          relaxation = min(0.5_wp, relaxationFactor)
+      endif
+      startValue = z2_end(i-1) * relaxation + ( 1.0_wp - relaxation) * z2_start(i-1)
+   endif
+   end function determineStartingValue
+
+   integer function findSmallestResidu(z2_start, z2_end, n)
+   real(kind=wp), intent(in)  :: z2_start(:), z2_end(:)
+   integer, intent(in), optional :: n
+   !
+   ! locals
+   !
+   real(kind=wp), allocatable :: residu(:)
+   integer :: j, k, maxi
+   real(kind=wp) :: min_res
+   
+   if (present(n)) then
+         maxi = n
+      else
+         maxi = size(z2_start)
+   endif
+   allocate(residu(maxi))
+   min_res = huge(min_res)
+   do j = 1, maxi
+       residu(j) = z2_end(j) - z2_start(j)
+       if (abs(residu(j)) < min_res) then
+           k = j
+           min_res = abs(residu(j))
+       endif
+   enddo
+   deallocate(residu)
+   findSmallestResidu = k
+
+   end function findSmallestResidu
+
+   subroutine convergedWithResidu(z2_start, z2_end)
+   use utilities
+   use ModuleLogging
+   real(kind=wp), intent(in)    :: z2_start(:)
+   real(kind=wp), intent(inout) :: z2_end(:)
+
+   integer :: iunit, k
+
+   k = findSmallestResidu(z2_start, z2_end)
+   z2_end(z2_iter_max2) = (z2_end(k) + z2_start(k)) * 0.5_wp
+   if (currentLogging%fileName /= ' ') then
+       call getFreeLuNumber(iunit)
+       open(iunit, file = currentLogging%fileName, position = 'append')
+       write(iunit,'(a,f8.4)') 'residu in 2% wave run-up:', abs(z2_start(k) - z2_end(k))
+       close(iunit)
+   endif
+
+   end subroutine convergedWithResidu
+
+!***********************************************************************************************************
+end module waveRunup
+!***********************************************************************************************************

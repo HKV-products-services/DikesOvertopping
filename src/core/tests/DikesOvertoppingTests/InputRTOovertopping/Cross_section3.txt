@@ -1,0 +1,7 @@
+# Geometry cross section for testing RTO overtopping module
+#       X        Y        R
+#       m      m+NAP      -
+# --------------------------
+      0.0     -2.0       1.0
+      6.0      4.0       1.0
+     22.0      6.0       1.0

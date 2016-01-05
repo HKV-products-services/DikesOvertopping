@@ -1,0 +1,8 @@
+# Input file for test serie RTO overtoppping module
+# The parameter with the value -999.99 is the VAR-parameter
+# ------------------------------------------------------------------------
+  -4.00    8.000   0.01       | varmin,varmax,varstap
+-999.99                       | water level
+   2.00                       | wave height
+   0.04                       | wave steepness
+  85.00                       | wave direction w.r.t. North
