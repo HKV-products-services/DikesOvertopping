@@ -10,7 +10,7 @@
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
-				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPreBuildEventTool" CommandLine="&quot;$(ProjectDir)..\..\..\extern\utils\svn_insert_version.cmd&quot; &quot;$(ProjectDir)&quot; &quot;dll_overtopping_version_number.rc.svn&quot; &quot;dll_overtopping_version_number.rc&quot;"/>
 				<Tool Name="VFPostBuildEventTool" CommandLine="if exist ..\..\..\..\lib\OvertoppingPco copy $(SolutionDir)\bin\$(ProjectName).??? ..\..\..\..\lib\OvertoppingPco\ " Description="copying to lib\OvertoppingPco"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|Win32" OutputDirectory="..\bin\$(ConfigurationName)" IntermediateDirectory="..\bin\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
@@ -20,13 +20,14 @@
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
-				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPreBuildEventTool" CommandLine="&quot;$(ProjectDir)..\..\..\extern\utils\svn_insert_version.cmd&quot; &quot;$(ProjectDir)&quot; &quot;dll_overtopping_version_number.rc.svn&quot; &quot;dll_overtopping_version_number.rc&quot;"/>
 				<Tool Name="VFPostBuildEventTool" CommandLine="if exist ..\..\..\..\lib\OvertoppingPco copy $(SolutionDir)\bin\$(ProjectName).??? ..\..\..\..\lib\OvertoppingPco\ " Description="copying to lib\OvertoppingPco"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
 	<Files>
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
-		<File RelativePath=".\dll_overtopping_version_number.rc"/></Filter>
+		<File RelativePath=".\dll_overtopping_version_number.rc"/>
+		<File RelativePath=".\dll_overtopping_version_number.rc.svn"/></Filter>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
 		<File RelativePath=".\dllOvertopping.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>

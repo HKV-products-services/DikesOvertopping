@@ -24,6 +24,7 @@ doc/Work/read_data.m -text
 doc/doxygen/DikesOvertoppingFortran.doxyfile -text
 doc/doxygen/DoxygenLayout.xml -text
 doc/doxygen/RunDoxygen.bat -text
+extern/Utils/svn_insert_version.cmd -text
 release/dllDikesOvertopping.dll -text
 release/feedbackDLL.dll -text
 src/core/teamcity.bat -text
