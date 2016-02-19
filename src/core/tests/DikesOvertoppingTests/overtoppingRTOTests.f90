@@ -35,6 +35,7 @@ subroutine allovertoppingRTOTests
     call testWithLevel(overtoppingDllTest, 'Test the external overtopping dll', 1)
     call testWithLevel(overtoppingZ2Test, 'Test h+z2 > dikeheigth', 1)
     call testWithLevel(overtoppingValidationTest, 'Test validation of incorrect profile and negative model factor', 1)
+    call testWithLevel(overtoppingValidationRoughnessTest, 'Test validation of invalid roughness', 1)
     call testWithLevel(influenceRoughnessTest, 'Test influence roughness', 1)
 
     !

@@ -153,6 +153,12 @@
    type (tpGeometry),   intent(out) :: geometry                         !< structure with geometry data
    logical,             intent(out) :: succes                           !< flag for succes
    character(len=*),    intent(out) :: errorMessage                     !< error message
+!
+!  local parameters
+!
+   integer                          :: i                                !< loop counter
+   integer                          :: ierr                             !< error code
+   character(len=*), parameter      :: message = 'Roughnessfactors must be in range 0.5 ... 1.0 ; found: '  !< basic error message
 
 ! ==========================================================================================================
 
@@ -183,6 +189,19 @@
    if (succes) then
       call determineSegmentTypes (geometry)
    endif
+   
+   if (succes) then
+       do i = 1, geometry%nCoordinates - 1
+           if (geometry%Roughnessfactors(i) < 0.5d0 .or. geometry%Roughnessfactors(i) > 1d0) then
+               succes = .false.
+               write(errorMessage, '(a,f5.2)', iostat=ierr) message, geometry%Roughnessfactors(i)
+               if (ierr /= 0) then
+                   errorMessage = message
+               endif
+               exit
+           endif
+       enddo
+   endif 
 
    ! determine the number of berm segments
    if (succes) then
