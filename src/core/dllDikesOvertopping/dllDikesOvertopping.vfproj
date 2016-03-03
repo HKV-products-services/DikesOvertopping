@@ -4,7 +4,7 @@
 		<Platform Name="Win32"/></Platforms>
 	<Configurations>
 		<Configuration Name="Debug|Win32" OutputDirectory="..\bin\$(ConfigurationName)" IntermediateDirectory="..\bin\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" WarnInterfaces="true" LocalVariableStorage="localStorageAutomatic" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
@@ -14,7 +14,7 @@
 				<Tool Name="VFPostBuildEventTool" CommandLine="if exist ..\..\..\..\lib\OvertoppingPco copy $(SolutionDir)\bin\$(ProjectName).??? ..\..\..\..\lib\OvertoppingPco\ " Description="copying to lib\OvertoppingPco"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|Win32" OutputDirectory="..\bin\$(ConfigurationName)" IntermediateDirectory="..\bin\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" OmitFramePointers="false" Traceback="true"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" OmitFramePointers="false" LocalVariableStorage="localStorageAutomatic" Traceback="true"/>
 				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" SubSystem="subSystemWindows" LinkDLL="true"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
