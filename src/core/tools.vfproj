@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{DD90C2FD-52E2-49D7-80F0-BC229F0300A0}">
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{42CC4E82-3D8A-46C8-8C2E-C0D949081D46}">
 	<Platforms>
 		<Platform Name="Win32"/></Platforms>
 	<Configurations>
@@ -27,10 +27,7 @@
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
-		<File RelativePath=".\external\general\angleUtilities.f90"/>
-		<File RelativePath=".\external\general\fileUtilities.f90"/>
-		<File RelativePath=".\external\general\interpolationTriangular.f90"/>
-		<File RelativePath=".\external\general\vectorUtilities.f90"/>
-		<File RelativePath=".\external\general\waveParametersUtilities.f90"/>
-		<File RelativePath=".\external\general\writeUtilities.f90"/></Filter></Files>
+		<File RelativePath=".\external\tools\equalReals.f90"/>
+		<File RelativePath=".\external\tools\precision.f90"/>
+		<File RelativePath=".\external\tools\utilities.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>
