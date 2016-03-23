@@ -6,6 +6,7 @@
 !!  - calculateQoF
 !!  - ValidateInputC
 !!  - ValidateInputF
+!!  - ValidateInputFnew
 !!  - versionNumber
 !
 ! Copyright (c) 2015, Deltares, HKV lijn in water, TNO
@@ -27,8 +28,9 @@ module dllOvertopping
     private
 
     !  FUNCTIONS/SUBROUTINES exported from dllOvertoppping.dll:
-    public :: calculateQo, calculateQoF, calcZValue, versionNumber, ValidateInputC, ValidateInputF
-    
+    public :: calculateQo, calculateQoF, calcZValue, versionNumber, ValidateInputC, ValidateInputF, ValidateInputFnew, &
+              setLanguage, getLanguage
+
 contains
 
 !>
@@ -124,17 +126,42 @@ subroutine ValidateInputC ( geometryInput, dikeHeight, modelFactors, success, er
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputC" :: ValidateInputC
     use geometryModuleRTOovertopping
     use typeDefinitionsRTOovertopping
-    type(OvertoppingGeometryType), intent(in) :: geometryInput  !< struct with geometry and roughness as c-pointers
-    real(kind=wp), intent(in)                 :: dikeHeight     !< dike height
-    type(tpOvertoppingInput), intent(inout)   :: modelFactors   !< struct with modelfactors
-    logical, intent(out)                      :: success        !< flag for success
-    character(len=*), intent(out)             :: errorText      !< error message (only set if not successful)
+    use errorMessages
+    type(OvertoppingGeometryType), intent(in) :: geometryInput                 !< struct with geometry and roughness as c-pointers
+    real(kind=wp), intent(in)                 :: dikeHeight                    !< dike height
+    type(tpOvertoppingInput), intent(inout)   :: modelFactors                  !< struct with modelfactors
+    logical, intent(out)                      :: success                       !< flag for success
+    character(len=*), intent(out)             :: errorText                     !< error message (only set if not successful)
 
-    type(OvertoppingGeometryTypeF)            :: geometry       !< fortran struct with geometry and roughness
+    type(OvertoppingGeometryTypeF)            :: geometry                      !< fortran struct with geometry and roughness
+    type(TErrorMessages)                      :: errorStruct
+    integer                                   :: i
+    integer                                   :: nMessages
+    character(len=8)                          :: msgtype
     
     geometry = geometry_c_f(geometryInput)
 
-    call ValidateInputF ( geometry, dikeHeight, modelFactors, success, errorText)
+    call ValidateInputFnew ( geometry, dikeHeight, modelFactors, errorStruct)
+
+    nMessages = errorStruct%nErrors + errorStruct%nWarnings
+    success = nMessages == 0
+    if (success) then
+        errorText = ' '
+    else
+        do i = 1, nMessages
+            if (errorStruct%messages(i)%severity == severityError) then
+                msgtype = 'ERROR:'
+            else
+                msgtype = 'WARNING:'
+            endif
+
+            if (i == 1) then
+                errorText = trim(msgtype) // errorStruct%messages(i)%message
+            else
+                errorText = trim(errorText) // ";" // trim(msgtype) // errorStruct%messages(i)%message
+            endif
+        enddo
+    endif
 
 end subroutine ValidateInputC
 
@@ -148,6 +175,7 @@ subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, success, errorT
     use typeDefinitionsRTOovertopping
     use zFunctionsWTIOvertopping
     use mainModuleRTOovertopping, only : checkModelFactors
+    use OvertoppingMessages
     type(OvertoppingGeometryTypeF), intent(in) :: geometryF           !< struct with geometry and roughness
     real(kind=wp), intent(in)                  :: dikeHeight          !< dike height
     type(tpOvertoppingInput), intent(inout)    :: modelFactors        !< struct with modelFactors
@@ -161,10 +189,76 @@ subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, success, errorT
     real(kind=wp), pointer                     :: xCoordsAdjusted(:)  !< vector with x-coordinates of the adjusted profile
     real(kind=wp), pointer                     :: zCoordsAdjusted(:)  !< vector with y-coordinates of the adjusted profile
     type (tpGeometry)                          :: geometryAdjusted    !< structure for the adjusted profile
+    integer                                    :: ierr                !< number of validation messages
 !
     nullify(xCoordsAdjusted)
     nullify(zCoordsAdjusted)
+
+    if (modelFactors%typeRunup == 0) then
+        success = .false.
+        errorText = GetOvertoppingMessage(validation_only_for_type_runup1)
+    else
+        call initializeGeometry (geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
+                             geometryF%roughness, geometry, success, errorText)
+    endif
+
+    if (success) then
+
+        call profileInStructure(geometry%nCoordinates, geometry%xcoordinates, geometry%ycoordinates, dikeHeight, &
+                            nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, success, errorText)
+    endif
+
+    if (success) then
+        call initializeGeometry (geometry%psi, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, &
+                                 geometry%roughnessFactors, geometryAdjusted, success, errorText)
+        call deallocateGeometry( geometryAdjusted )
+    endif
+
+    if (success) then
+       call checkModelFactors (modelFactors, 1, errorText, ierr)
+       success = (ierr == 0)
+    endif
+
+    call deallocateGeometry( geometry )
     
+    if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
+    if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
+end subroutine ValidateInputF
+
+!>
+!! Subroutine that validates the geometry
+!!
+!! @ingroup dllDikesOvertopping
+subroutine ValidateInputFnew ( geometryF, dikeHeight, modelFactors, errorStruct)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputFnew" :: ValidateInputFnew
+    use geometryModuleRTOovertopping
+    use typeDefinitionsRTOovertopping
+    use zFunctionsWTIOvertopping
+    use mainModuleRTOovertopping, only : checkModelFactors
+    use errorMessages
+    type(OvertoppingGeometryTypeF), intent(in) :: geometryF           !< struct with geometry and roughness
+    real(kind=wp), intent(in)                  :: dikeHeight          !< dike height
+    type(tpOvertoppingInput), intent(inout)    :: modelFactors        !< struct with modelFactors
+    type(TErrorMessages), intent(inout)        :: errorStruct         !< error message (only set if not successful)
+!
+!   locals
+!
+    type (tpGeometry)                          :: geometry            !< structure with geometry data
+    integer                                    :: nrCoordsAdjusted    !< number of coordinates of the adjusted profile
+    real(kind=wp), pointer                     :: xCoordsAdjusted(:)  !< vector with x-coordinates of the adjusted profile
+    real(kind=wp), pointer                     :: zCoordsAdjusted(:)  !< vector with y-coordinates of the adjusted profile
+    type (tpGeometry)                          :: geometryAdjusted    !< structure for the adjusted profile
+    character(len=StrLenMessages)              :: errorText           !< local error or validation message
+    integer, parameter                         :: maxErr = 32         !< max. number of validation messages
+    character(len=StrLenMessages)              :: errorTexts(maxErr)  !< local error or validation messages
+    logical                                    :: success             !< local error flag
+    integer                                    :: ierr                !< actual number of validation messages
+    type (tMessage)                            :: msgStruct           !< struct for one local error or validation message
+    integer                                    :: i                   !< loop counter
+!
+    nullify(xCoordsAdjusted)
+    nullify(zCoordsAdjusted)
+
     if (modelFactors%typeRunup == 0) then
         success = .false.
         errorText = 'validation only implemented for typeRunup=1'
@@ -185,15 +279,51 @@ subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, success, errorT
         call deallocateGeometry( geometryAdjusted )
     endif
 
-    if (success) then
-       call checkModelFactors (modelFactors, success, errorText)
+    if ( .not. success) then
+       msgStruct%errorCode = 1
+       msgStruct%severity  = severityError
+       msgStruct%message   = errorText
+       call addMessage(errorStruct, msgStruct)
     endif
 
+    call checkModelFactors (modelFactors, maxErr, errorTexts, ierr)
+    do i = 1, ierr
+       msgStruct%errorCode = 2
+       msgStruct%severity  = severityError
+       msgStruct%message   = errorTexts(i)
+       call addMessage(errorStruct, msgStruct)
+    enddo 
+
     call deallocateGeometry( geometry )
-    
+
     if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
     if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
-end subroutine ValidateInputF
+end subroutine ValidateInputFnew
+
+!>
+!! Subroutine that sets the language for error and validation messages
+!!
+!! @ingroup dllDikesOvertopping
+subroutine SetLanguage(lang)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"SetLanguage" :: SetLanguage
+use OvertoppingMessages, only : SetLanguageCore => SetLanguage
+character(len=*), intent(in) :: lang
+
+call SetLanguageCore(lang)
+
+end subroutine SetLanguage
+
+!>
+!! Subroutine that gets the language for error and validation messages
+!!
+!! @ingroup dllDikesOvertopping
+subroutine GetLanguage(lang)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"GetLanguage" :: GetLanguage
+use OvertoppingMessages, only : GetLanguageCore => GetLanguage
+character(len=*), intent(out) :: lang
+
+call GetLanguageCore(lang)
+end subroutine GetLanguage
 
 !>
 !! Subroutine that delivers the version number

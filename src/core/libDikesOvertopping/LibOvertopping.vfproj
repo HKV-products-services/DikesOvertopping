@@ -33,6 +33,7 @@
 		<File RelativePath=".\mainModuleRTOovertopping.f90"/>
 		<File RelativePath=".\ModuleLogging.f90"/>
 		<File RelativePath=".\overtoppingInterface.f90"/>
+		<File RelativePath=".\OvertoppingMessages.f90"/>
 		<File RelativePath=".\typeDefinitionsRTOovertopping.f90"/>
 		<File RelativePath=".\waveRunup.f90"/>
 		<File RelativePath=".\zFunctionsWTIOvertopping.f90"/></Filter></Files>

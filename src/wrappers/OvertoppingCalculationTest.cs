@@ -1,5 +1,4 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace TestWrapper
 {
@@ -86,11 +85,39 @@ namespace TestWrapper
             var ycoords = new double[] {-5, 0, 5, 4, 0};
             var roughness = new [] {0.5, 0.5, 0.5, 0.5};
 
-            string msg;
+            string[] msg;
             var result = OvertoppingFortranAccess.Validate(xcoords, ycoords, roughness, dikeHeight, modelFactors, out msg);
 
             Assert.IsFalse(result, "validation");
-            Assert.AreEqual(msg, "error in calculation of adjusted x-coordinates", "validation message");
+            Assert.AreEqual(msg[0], "error in calculation of adjusted x-coordinates", "validation message");
+        }
+
+        [Test]
+        public static void TestOvertoppingValidationMultiple()
+        {
+            const double dikeHeight = 9.1;
+            var modelFactors = new OvertoppingInput
+            {
+                FactorDeterminationQnFn = 2.3,
+                FactorDeterminationQbFb = 4.3,
+                Mz2 = 1.0,
+                Fshallow = -0.92,
+                ComputedOvertopping = 1,
+                CriticalOvertopping = 1,
+                TypeRunup = 1,
+                Relaxationfactor = 1.0,
+                ReductionFactorForeshore = 0.5
+            };
+
+            var xcoords = new double[] { 0, 10, 20, 30, 40 };
+            var ycoords = new double[] { -5, 0, 5, 4, 0 };
+            var roughness = new[] { 0.5, 0.5, 0.5, 0.5 };
+
+            string[] msg;
+            var result = OvertoppingFortranAccess.Validate(xcoords, ycoords, roughness, dikeHeight, modelFactors, out msg);
+
+            Assert.IsFalse(result, "validation");
+            Assert.AreEqual(msg[0], "error in calculation of adjusted x-coordinates", "validation message");
         }
     }
 }

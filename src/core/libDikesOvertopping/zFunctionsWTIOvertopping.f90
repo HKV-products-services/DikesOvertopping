@@ -16,6 +16,7 @@ module zFunctionsWTIOvertopping
     use mainModuleRTOovertopping,       only : calculateOvertopping, convertOvertoppingInput
     use geometryModuleRTOovertopping,   only : initializeGeometry, deallocateGeometry
     use vectorUtilities,                only : interpolateLine
+    use OvertoppingMessages
 
     implicit none
 
@@ -185,7 +186,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
         
         if (xCoordsAdjusted(nrCoordsAdjusted) < xCoordsAdjusted(nrCoordsAdjusted-1)) then
             succes = .false.
-            errorMessage = 'error in calculation of adjusted x-coordinates'
+            errorMessage = GetOvertoppingMessage(adjusted_xcoordinates)
         endif
     endif
 

@@ -95,8 +95,10 @@ namespace TestWrapper
         }
 
         public static bool Validate(double[] xCoords, double[] zCoords, double[] roughness,
-                                             double dikeHeight, OvertoppingInput input, out string errorMsg)
+                                             double dikeHeight, OvertoppingInput input, out string[] errorMsg)
         {
+            const int maxValidationMessages = 32;
+
             var geometry = new OvertoppingGeometryStruct
             {
                 Normal = 0,
@@ -113,11 +115,16 @@ namespace TestWrapper
             var errorMessage = new StringBuilder(ErrorMessageLength);
             ValidateInputC(ref geometry, ref dikeHeight, ref input, ref success, errorMessage, errorMessage.Capacity);
 
+
+            var longErrorMessage = new StringBuilder(ErrorMessageLength*maxValidationMessages);
+            ValidateInputCnew(ref geometry, ref dikeHeight, ref input, ref success, longErrorMessage, longErrorMessage.Capacity);
+
             Marshal.FreeHGlobal(geometry.XCoords);
             Marshal.FreeHGlobal(geometry.YCoords);
             Marshal.FreeHGlobal(geometry.Roughness);
 
-            errorMsg = success ? string.Empty : ConvertString(errorMessage);
+            errorMsg = new []{""};
+            errorMsg[0] = success ? string.Empty : ConvertString(errorMessage);
 
             return success;
         }
@@ -155,6 +162,10 @@ namespace TestWrapper
 
         [DllImport("dllDikesOvertopping.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void ValidateInputC(ref OvertoppingGeometryStruct geometry,
+            ref double dikeHeight, ref OvertoppingInput input, ref bool succes, StringBuilder message, int stringLength);
+
+        [DllImport("dllDikesOvertopping.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void ValidateInputCnew(ref OvertoppingGeometryStruct geometry,
             ref double dikeHeight, ref OvertoppingInput input, ref bool succes, StringBuilder message, int stringLength);
     }
 }

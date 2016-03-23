@@ -3,7 +3,7 @@
 !! RTO stands for Risk, Assessment and Design instruments (in dutch: Risico, Toets en Ontwerpinstrumentarium)
 !<
 !
-! Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+! Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 ! $Id$
 !
 !>
@@ -37,6 +37,7 @@ subroutine allovertoppingRTOTests
     call testWithLevel(overtoppingValidationTest, 'Test validation of incorrect profile and negative model factor', 1)
     call testWithLevel(overtoppingValidationRoughnessTest, 'Test validation of invalid roughness', 1)
     call testWithLevel(influenceRoughnessTest, 'Test influence roughness', 1)
+    call testWithLevel(overtoppingMultipleValidationTest, 'Test validation of incorrect profile and negative model factor in one call', 0)
 
     !
     ! All test series with varying the load for different cross sections

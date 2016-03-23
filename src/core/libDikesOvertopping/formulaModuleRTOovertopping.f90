@@ -4,8 +4,9 @@
 !***********************************************************************************************************
 !
 !  Programmer: Bastiaan Kuijper, HKV consultants
+!              Edwin Spee, Deltares
 !
-!  Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+!  Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 !  $Id$
 !
 !***********************************************************************************************************
@@ -13,6 +14,7 @@
 !***********************************************************************************************************
 !
    use typeDefinitionsRTOovertopping
+   use OvertoppingMessages
 
    implicit none
 
@@ -20,7 +22,6 @@
    
    public ::  calculateWaveRunup, calculateWaveLength, calculateWaveSteepness
    public ::  calculateBreakerParameter, calculateAngleWaveAttack, calculateBreakerLimit, adjustInfluenceFactors
-   public ::  realRootsCubicFunction, rootsGeneralCubic, rootsDepressedCubic, cubicRoots
    public ::  calculateWaveOvertoppingDischarge
    public ::  isEqualReal, isEqualZero
 
@@ -64,7 +65,7 @@
          z2 = Hm0 * gammaF * gammaBeta * (modelFactors%fRunup2 - modelFactors%fRunup3/sqrt(ksi0))
          z2 = max(z2, 0.0d0)
       else
-         errorMessage = 'error calculating 2% wave run-up: breaker parameter equals zero'
+         errorMessage = GetOvertoppingMessage(breaker_param_is_zero)
          succes = .false.
          z2 = 0d0
       endif
@@ -114,7 +115,6 @@
    ! check input parameters calculation wave overtopping discharge
    if (succes) succes = (Hm0            > 0.0d0)
    if (succes) succes = (tanAlpha       > 0.0d0)
-   if (succes) succes = (sqrt(tanAlpha) > 0.0d0)
    if (succes) succes = (gammaB         > 0.0d0)
    if (succes) succes = (gammaF         > 0.0d0)
    if (succes) succes = (gammaBeta      > 0.0d0)
@@ -168,7 +168,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = 'error calculating wave overtopping discharge'
+      errorMessage = GetOvertoppingMessage(calc_wave_overtopping_discharge)
    endif
 
    end subroutine calculateWaveOvertoppingDischarge
@@ -230,7 +230,7 @@
          s0 = Hm0/L0
       else
          succes = .false.
-         errorMessage = 'error calculating wave steepness: wave period equals zero'
+         errorMessage = GetOvertoppingMessage(calc_wave_steepness_period_is_zero)
       endif
    endif
 
@@ -272,7 +272,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = 'error calculating breaker parameter: wave steepness equals zero'
+      errorMessage = GetOvertoppingMessage(calc_breaker_param_steepness_is_zero)
    endif
 
    end subroutine calculateBreakerParameter
@@ -365,11 +365,6 @@
          ksi0Limit = maxval(ksi0)
       endif
 
-   endif
-
-   ! determine possible error message
-   if (.not. succes) then
-      errorMessage = 'error calculating limit value breaker parameter'
    endif
 
    end subroutine calculateBreakerLimit
@@ -467,7 +462,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = 'Error in adjustment of influence factors'
+      errorMessage = GetOvertoppingMessage(calc_influence_factors)
    endif
 
    end subroutine adjustInfluenceFactors
@@ -526,11 +521,6 @@
 
    endif
 
-   ! determine possible error message
-   if (.not. succes) then
-      errorMessage = 'error calculating real roots cubic function'
-   endif
-
    end subroutine realRootsCubicFunction
 
 !> rootsGeneralCubic:
@@ -581,7 +571,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = 'error calculating roots general cubic function'
+      errorMessage = GetOvertoppingMessage(calc_roots_cubic_function)
    endif
 
    end subroutine rootsGeneralCubic

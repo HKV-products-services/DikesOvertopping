@@ -5,7 +5,7 @@
 !
 !  Programmer: Bastiaan Kuijper, HKV consultants
 !
-!  Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+!  Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 !  $Id$
 !
 !***********************************************************************************************************
@@ -14,15 +14,16 @@
 
    use typeDefinitionsRTOovertopping
    use formulaModuleRTOovertopping
+   use OvertoppingMessages
 
    implicit none
 
    private
 
    public :: initializeGeometry, checkCrossSection, allocateVectorsGeometry, calculateSegmentSlopes
-   public :: determineSegmentTypes, copyGeometry, isEqualGeometry, mergeSequentialBerms, adjustNonHorizontalBerms
+   public :: determineSegmentTypes, copyGeometry, mergeSequentialBerms, adjustNonHorizontalBerms
    public :: removeBerms, removeDikeSegments, splitCrossSection, calculateHorzLengths
-   public :: calculateHorzDistance, writeCrossSection, deallocateGeometry
+   public :: calculateHorzDistance, deallocateGeometry
 !
    contains
 
@@ -158,7 +159,6 @@
 !
    integer                          :: i                                !< loop counter
    integer                          :: ierr                             !< error code
-   character(len=*), parameter      :: message = 'Roughnessfactors must be in range 0.5 ... 1.0 ; found: '  !< basic error message
 
 ! ==========================================================================================================
 
@@ -173,15 +173,15 @@
    geometry%nCoordinates = nCoordinates
 
    ! allocate vectors in structure with geometry data
-   call allocateVectorsGeometry (nCoordinates, geometry)
+   call allocateVectorsGeometry (nCoordinates, geometry, succes, errorMessage)
 
+   if (succes) then
    ! copy (x,y)-coordinates and roughness factors to structure with geometry data
-   geometry%xCoordinates     = xCoordinates
-   geometry%yCoordinates     = yCoordinates
-   geometry%roughnessFactors = roughnessFactors
+      geometry%xCoordinates     = xCoordinates
+      geometry%yCoordinates     = yCoordinates
+      geometry%roughnessFactors = roughnessFactors
 
    ! calculate the differences and segment slopes
-   if (succes) then
       call calculateSegmentSlopes (geometry, succes, errorMessage)
    endif
 
@@ -194,9 +194,9 @@
        do i = 1, geometry%nCoordinates - 1
            if (geometry%Roughnessfactors(i) < 0.5d0 .or. geometry%Roughnessfactors(i) > 1d0) then
                succes = .false.
-               write(errorMessage, '(a,f5.2)', iostat=ierr) message, geometry%Roughnessfactors(i)
+               write(errorMessage, GetOvertoppingFormat(roughnessfactors_out_of_range), iostat=ierr) geometry%Roughnessfactors(i)
                if (ierr /= 0) then
-                   errorMessage = message
+                   errorMessage = GetOvertoppingFormat(roughnessfactors_out_of_range)
                endif
                exit
            endif
@@ -214,7 +214,7 @@
 !! allocate the geometry vectors
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine allocateVectorsGeometry (nCoordinates, geometry)
+   subroutine allocateVectorsGeometry (nCoordinates, geometry, succes, errorMessage)
 !***********************************************************************************************************
 !
    implicit none
@@ -223,16 +223,29 @@
 !
    integer,             intent(in)     :: nCoordinates   !< number of coordinates
    type (tpGeometry),   intent(inout)  :: geometry       !< structure with geometry data
+   logical,             intent(out)    :: succes         !< succes flag
+   character(len=*),    intent(inout)  :: errorMessage   !< error message (only set in case of error)
+!
+!  local parameters
+!
+   integer                             :: ierr           !< error code allocate
+   integer                             :: size           !< total size of arrays to be allocated
 
 ! ==========================================================================================================
 
-   allocate (geometry%xCoordinates     (nCoordinates  ))
-   allocate (geometry%yCoordinates     (nCoordinates  ))
-   allocate (geometry%roughnessFactors (nCoordinates-1))
-   allocate (geometry%xCoordDiff       (nCoordinates-1))
-   allocate (geometry%yCoordDiff       (nCoordinates-1))
-   allocate (geometry%segmentSlopes    (nCoordinates-1))
-   allocate (geometry%segmentTypes     (nCoordinates-1))
+                  allocate (geometry%xCoordinates     (nCoordinates  ), stat=ierr)
+   if (ierr == 0) allocate (geometry%yCoordinates     (nCoordinates  ), stat=ierr)
+   if (ierr == 0) allocate (geometry%roughnessFactors (nCoordinates-1), stat=ierr)
+   if (ierr == 0) allocate (geometry%xCoordDiff       (nCoordinates-1), stat=ierr)
+   if (ierr == 0) allocate (geometry%yCoordDiff       (nCoordinates-1), stat=ierr)
+   if (ierr == 0) allocate (geometry%segmentSlopes    (nCoordinates-1), stat=ierr)
+   if (ierr == 0) allocate (geometry%segmentTypes     (nCoordinates-1), stat=ierr)
+
+   succes = (ierr == 0)
+   if (ierr /= 0) then
+       size  = 2 * nCoordinates + 5 * (nCoordinates-1)
+       write(errorMessage, GetOvertoppingFormat(allocateError)) size
+   endif 
 
    end subroutine allocateVectorsGeometry
 
@@ -293,7 +306,7 @@ end subroutine deallocateGeometry
       geometry%segmentSlopes = geometry%yCoordDiff / geometry%xCoordDiff
    else
       succes = .false.
-      errorMessage = 'error in calculating slopes (dx <= 0)'
+      errorMessage = GetOvertoppingMessage(slope_negative)
    endif
 
    end subroutine calculateSegmentSlopes
@@ -345,7 +358,7 @@ end subroutine deallocateGeometry
 !! copy a geometry structure
 !!   @ingroup LibOvertopping
 !**********************************************************************************************************
-   subroutine copyGeometry (geometry, geometryCopy)
+   subroutine copyGeometry (geometry, geometryCopy, succes, errorMessage)
 !***********************************************************************************************************
 !
    implicit none
@@ -354,6 +367,8 @@ end subroutine deallocateGeometry
 !
    type (tpGeometry),   intent(in)     :: geometry       !< structure with geometry data
    type (tpGeometry),   intent(inout)  :: geometryCopy   !< structure with geometry data copy
+   logical,             intent(out)    :: succes         !< succes flag
+   character(len=*),    intent(inout)  :: errorMessage   !< error message, only set in case of error
 !
 !  Local parameters
 !
@@ -362,125 +377,33 @@ end subroutine deallocateGeometry
 ! ==========================================================================================================
 
    ! allocate vectors in structure with geometry data copy
-   call allocateVectorsGeometry (geometry%nCoordinates, geometryCopy)
+   call allocateVectorsGeometry (geometry%nCoordinates, geometryCopy, succes, errorMessage)
 
+   if (succes) then
    ! copy dike normal and number of coordinates to structure with geometry data copy
-   geometryCopy%psi          = geometry%psi
-   geometryCopy%nCoordinates = geometry%nCoordinates
+      geometryCopy%psi          = geometry%psi
+      geometryCopy%nCoordinates = geometry%nCoordinates
 
-   ! copy (x,y)-coordinates to structure with geometry data copy
-   do i=1, geometry%nCoordinates
-      geometryCopy%xCoordinates(i) = geometry%xCoordinates(i)
-      geometryCopy%yCoordinates(i) = geometry%yCoordinates(i)
-   enddo
+      ! copy (x,y)-coordinates to structure with geometry data copy
+      do i=1, geometry%nCoordinates
+         geometryCopy%xCoordinates(i) = geometry%xCoordinates(i)
+         geometryCopy%yCoordinates(i) = geometry%yCoordinates(i)
+      enddo
 
-   ! copy roughness factors and segment data to structure with geometry data copy
-   do i=1, geometry%nCoordinates-1
-      geometryCopy%roughnessFactors(i) = geometry%roughnessFactors(i)
-      geometryCopy%xCoordDiff(i)       = geometry%xCoordDiff(i)
-      geometryCopy%yCoordDiff(i)       = geometry%yCoordDiff(i)
-      geometryCopy%segmentSlopes(i)    = geometry%segmentSlopes(i)
-      geometryCopy%segmentTypes(i)     = geometry%segmentTypes(i)
-   enddo
+      ! copy roughness factors and segment data to structure with geometry data copy
+      do i=1, geometry%nCoordinates-1
+         geometryCopy%roughnessFactors(i) = geometry%roughnessFactors(i)
+         geometryCopy%xCoordDiff(i)       = geometry%xCoordDiff(i)
+         geometryCopy%yCoordDiff(i)       = geometry%yCoordDiff(i)
+         geometryCopy%segmentSlopes(i)    = geometry%segmentSlopes(i)
+         geometryCopy%segmentTypes(i)     = geometry%segmentTypes(i)
+      enddo
 
-   ! copy the number of berm segments to structure with geometry data copy
-   geometryCopy%NbermSegments = geometry%NbermSegments
+      ! copy the number of berm segments to structure with geometry data copy
+      geometryCopy%NbermSegments = geometry%NbermSegments
+   endif
 
    end subroutine copyGeometry
-
-!> isEqualGeometry:
-!! are two geometries equal
-!!   @ingroup LibOvertopping
-!***********************************************************************************************************
-   subroutine isEqualGeometry (geometry1, geometry2, succes, errorMessage)
-!***********************************************************************************************************
-!
-   implicit none
-!
-!  Input/output parameters
-!
-   type (tpGeometry),   intent(in)  :: geometry1      !< structure with geometry data 1
-   type (tpGeometry),   intent(in)  :: geometry2      !< structure with geometry data 2
-   logical,             intent(out) :: succes         !< flag for succes
-   character(len=*),    intent(out) :: errorMessage   !< error message
-
-!
-!  Local parameters
-!
-   integer  :: i  !< counter dike segments
-
-! ==========================================================================================================
-
-   ! initialize flag for succes and error message
-   succes = .true.
-   errorMessage = ' '
-
-   ! check if the dike normal is equal
-   succes = isEqualReal (geometry1%psi, geometry2%psi)
-   if (.not. succes) then
-      errorMessage = 'no equal geometry: different dike normal'
-   endif
-
-   ! check if the number of coordinates is equal
-   if (geometry1%nCoordinates /= geometry2%nCoordinates) then
-      succes = .false.
-      errorMessage = 'no equal geometry: different number of coordinates'
-   endif
-
-   if (succes) then
-
-      ! check the size of the allocted vectos in geometry 1
-      if (size(geometry1%xCoordinates)     /= geometry1%nCoordinates  ) succes = .false.
-      if (size(geometry1%yCoordinates)     /= geometry1%nCoordinates  ) succes = .false.
-      if (size(geometry1%roughnessFactors) /= geometry1%nCoordinates-1) succes = .false.
-      if (size(geometry1%xCoordDiff)       /= geometry1%nCoordinates-1) succes = .false.
-      if (size(geometry1%yCoordDiff)       /= geometry1%nCoordinates-1) succes = .false.
-      if (size(geometry1%segmentSlopes)    /= geometry1%nCoordinates-1) succes = .false.
-      if (size(geometry1%segmentTypes)     /= geometry1%nCoordinates-1) succes = .false.
-   
-      ! check the size of the allocted vectos in geometry 2
-      if (size(geometry2%xCoordinates)     /= geometry2%nCoordinates  ) succes = .false.
-      if (size(geometry2%yCoordinates)     /= geometry2%nCoordinates  ) succes = .false.
-      if (size(geometry2%roughnessFactors) /= geometry2%nCoordinates-1) succes = .false.
-      if (size(geometry2%xCoordDiff)       /= geometry2%nCoordinates-1) succes = .false.
-      if (size(geometry2%yCoordDiff)       /= geometry2%nCoordinates-1) succes = .false.
-      if (size(geometry2%segmentSlopes)    /= geometry2%nCoordinates-1) succes = .false.
-      if (size(geometry2%segmentTypes)     /= geometry2%nCoordinates-1) succes = .false.
-
-      ! determine possible error message
-      if (.not. succes) then
-         errorMessage = 'no equal geometry: wrong size allocated vectors'
-      endif
-
-   endif
-
-   if (succes) then
-
-      ! check if the (x,y)-coordinates are equal
-      do i=1, geometry1%nCoordinates
-         succes = (succes .and. (isEqualReal (geometry1%xCoordinates(i), geometry2%xCoordinates(i))))
-         succes = (succes .and. (isEqualReal (geometry1%yCoordinates(i), geometry2%yCoordinates(i))))
-      enddo
-
-      ! check if the differences, slopes and segment types are equal
-      do i=1, geometry1%nCoordinates-1
-         succes = (succes .and. (isEqualReal (geometry1%roughnessFactors(i), &
-                                              geometry2%roughnessFactors(i))))
-         succes = (succes .and. (isEqualReal (geometry1%xCoordDiff(i), geometry2%xCoordDiff(i))))
-         succes = (succes .and. (isEqualReal (geometry1%yCoordDiff(i), geometry2%yCoordDiff(i))))
-         succes = (succes .and. (isEqualReal (geometry1%segmentSlopes(i), geometry2%segmentSlopes(i))))
-         succes = (succes .and. (geometry1%segmentTypes(i) == geometry2%segmentTypes(i)))
-      enddo
-
-   endif
-
-   ! check if the number of berm segments is equal
-   if (geometry1%NbermSegments /= geometry2%NbermSegments) then
-      succes = .false.
-      errorMessage = 'no equal geometry: different number of berms'
-   endif
-
-   end subroutine isEqualGeometry
 
 !> mergeSequentialBerms:
 !! merge sequential berms
@@ -546,7 +469,7 @@ end subroutine deallocateGeometry
    if (.not. sequentialBerms) then
 
       ! no sequential berms present
-      call copyGeometry (geometry, geometryMergedBerms)
+      call copyGeometry (geometry, geometryMergedBerms, succes, errorMessage)
 
    else
 
@@ -556,25 +479,27 @@ end subroutine deallocateGeometry
       geometryMergedBerms%NbermSegments = geometry%NbermSegments - 1
 
       ! allocate vectors in structure with new geometry data
-      call allocateVectorsGeometry (geometryMergedBerms%nCoordinates, geometryMergedBerms)
+      call allocateVectorsGeometry (geometryMergedBerms%nCoordinates, geometryMergedBerms, succes, errorMessage)
 
-      ! remove x-coordinate between sequential berms
-      geometryMergedBerms%xCoordinates(1:index)  = geometry%xCoordinates(1:index)
-      geometryMergedBerms%xCoordinates(index+1:) = geometry%xCoordinates(index+2:)
+      if (succes) then
+         ! remove x-coordinate between sequential berms
+         geometryMergedBerms%xCoordinates(1:index)  = geometry%xCoordinates(1:index)
+         geometryMergedBerms%xCoordinates(index+1:) = geometry%xCoordinates(index+2:)
 
-      ! remove y-coordinate between sequential berms
-      geometryMergedBerms%yCoordinates(1:index)  = geometry%yCoordinates(1:index)
-      geometryMergedBerms%yCoordinates(index+1:) = geometry%yCoordinates(index+2:)
+         ! remove y-coordinate between sequential berms
+         geometryMergedBerms%yCoordinates(1:index)  = geometry%yCoordinates(1:index)
+         geometryMergedBerms%yCoordinates(index+1:) = geometry%yCoordinates(index+2:)
 
-      ! calculate the influence factor for the compound berm
-      geometryMergedBerms%roughnessFactors(1:index-1) = geometry%roughnessFactors(1:index-1)
-      if ((B1+B2) > 0.0d0) then
-         geometryMergedBerms%roughnessFactors(index)  = (B1*rFactor1 + B2*rFactor2) / (B1+B2)
-      else
-         succes = .false.
-         errorMessage = 'error in merging sequential berms (B=0)'
+         ! calculate the influence factor for the compound berm
+         geometryMergedBerms%roughnessFactors(1:index-1) = geometry%roughnessFactors(1:index-1)
+         if ((B1+B2) > 0.0d0) then
+            geometryMergedBerms%roughnessFactors(index)  = (B1*rFactor1 + B2*rFactor2) / (B1+B2)
+         else
+            succes = .false.
+            errorMessage = GetOvertoppingMessage(merging_seq_berm)
+         endif
+         geometryMergedBerms%roughnessFactors(index+1:)  = geometry%roughnessFactors(index+2:)
       endif
-      geometryMergedBerms%roughnessFactors(index+1:)  = geometry%roughnessFactors(index+2:)
       
       ! recalculate differences and slopes
       if (succes) then
@@ -619,59 +544,62 @@ end subroutine deallocateGeometry
    errorMessage = ' '
 
    ! initialize the structure with geometry data with horizontal berms
-   call copyGeometry (geometry, geometryFlatBerms)
+   call copyGeometry (geometry, geometryFlatBerms, succes, errorMessage)
 
-   ! loop over possible berm segments
-   do i=2, geometry%nCoordinates - 2
+   if (succes) then
+      ! loop over possible berm segments
+      do i=2, geometry%nCoordinates - 2
 
-      ! determine if the current dike segment is a berm segment
-      if (geometry%segmentTypes(i) == 2) then
+         ! determine if the current dike segment is a berm segment
+         if (geometry%segmentTypes(i) == 2) then
 
-         ! calculate average berm height
-         hBerm = (geometry%yCoordinates(i)+geometry%yCoordinates(i+1))/2
+            ! calculate average berm height
+            hBerm = (geometry%yCoordinates(i)+geometry%yCoordinates(i+1))/2
 
-         ! calculate horizontal distance from previous point to starting point horizontal berm
-         if (geometryFlatBerms%segmentSlopes(i-1) > 0.0d0) then
-            dx1 = (hBerm - geometryFlatBerms%yCoordinates(i-1)) / geometryFlatBerms%segmentSlopes(i-1)
-         else
-            succes = .false.
+            ! calculate horizontal distance from previous point to starting point horizontal berm
+            if (geometryFlatBerms%segmentSlopes(i-1) > 0.0d0) then
+               dx1 = (hBerm - geometryFlatBerms%yCoordinates(i-1)) / geometryFlatBerms%segmentSlopes(i-1)
+            else
+               succes = .false.
+            endif
+
+            ! calculate horizontal distance from end point horizontal berm to next point
+            if (geometryFlatBerms%segmentSlopes(i+1) > 0.0d0) then
+               dx2 = (geometryFlatBerms%yCoordinates(i+1) - hBerm) / geometryFlatBerms%segmentSlopes(i+1)
+            else
+               succes = .false.
+            endif
+
+            ! ---------------------------------------------------------------------------------------------
+            ! NOTE : for calculation of dx1 and dx2 the slopes of the previous and next dike segment should
+            !        have a gradient greather than zero. Therefore, sequential berms should be merged first
+            ! ---------------------------------------------------------------------------------------------
+
+            ! determine possible error message
+            if (.not. succes) then
+               errorMessage = GetOvertoppingMessage(adjust_non_horizontal_seq_berm)
+               exit ! exit loop
+            endif
+
+            ! determine new starting point horizontal berm
+            geometryFlatBerms%yCoordinates(i)   = hBerm
+            geometryFlatBerms%xCoordinates(i)   = geometryFlatBerms%xCoordinates(i-1) + dx1
+
+            ! determine new end point horizontal berm
+            geometryFlatBerms%yCoordinates(i+1) = hBerm
+            geometryFlatBerms%xCoordinates(i+1) = geometryFlatBerms%xCoordinates(i+1) - dx2
+
+            ! recalculate segment slopes
+            call calculateSegmentSlopes (geometryFlatBerms, succes, errorMessage)
+            if (.not. succes) then
+               exit ! exit loop
+            endif
+
          endif
 
-         ! calculate horizontal distance from end point horizontal berm to next point
-         if (geometryFlatBerms%segmentSlopes(i+1) > 0.0d0) then
-            dx2 = (geometryFlatBerms%yCoordinates(i+1) - hBerm) / geometryFlatBerms%segmentSlopes(i+1)
-         else
-            succes = .false.
-         endif
-
-         ! ---------------------------------------------------------------------------------------------
-         ! NOTE : for calculation of dx1 and dx2 the slopes of the previous and next dike segment should
-         !        have a gradient greather than zero. Therefore, sequential berms should be merged first
-         ! ---------------------------------------------------------------------------------------------
-
-         ! determine possible error message
-         if (.not. succes) then
-            errorMessage = 'error adjusting non-horizontal berms: sequential berms'
-            exit ! exit loop
-         endif
-
-         ! determine new starting point horizontal berm
-         geometryFlatBerms%yCoordinates(i)   = hBerm
-         geometryFlatBerms%xCoordinates(i)   = geometryFlatBerms%xCoordinates(i-1) + dx1
-         
-         ! determine new end point horizontal berm
-         geometryFlatBerms%yCoordinates(i+1) = hBerm
-         geometryFlatBerms%xCoordinates(i+1) = geometryFlatBerms%xCoordinates(i+1) - dx2
-
-         ! recalculate segment slopes
-         call calculateSegmentSlopes (geometryFlatBerms, succes, errorMessage)
-         if (.not. succes) then
-            exit ! exit loop
-         endif
-
-      endif
-
-   enddo
+      enddo
+   
+   endif
 
    end subroutine adjustNonHorizontalBerms
 
@@ -713,40 +641,42 @@ end subroutine deallocateGeometry
       geometryNoBerms%nCoordinates = geometry%nCoordinates - geometry%NbermSegments
 
       ! allocate vectors in structure with new geometry data
-      call allocateVectorsGeometry (geometryNoBerms%nCoordinates, geometryNoBerms)
+      call allocateVectorsGeometry (geometryNoBerms%nCoordinates, geometryNoBerms, succes, errorMessage)
 
-      ! initialize total berm width
-      Bsum = 0.0d0
+      if (succes) then
+         ! initialize total berm width
+         Bsum = 0.0d0
 
-      ! add first point to cross section without berms
-      N = 1
-      geometryNoBerms%xCoordinates(N) = geometry%xCoordinates(1)
-      geometryNoBerms%yCoordinates(N) = geometry%yCoordinates(1)
-      
-      ! loop over dike segments
-      do i=1, geometry%nCoordinates - 1
-      
-         ! determine if the current dike segment is a berm segment
-         if (geometry%segmentTypes(i) == 2) then
-            
-            ! check if the berm segment is a horizontal berm
-            if (geometry%segmentSlopes(i) > 0.0d0) then
-               succes = .false.
+         ! add first point to cross section without berms
+         N = 1
+         geometryNoBerms%xCoordinates(N) = geometry%xCoordinates(1)
+         geometryNoBerms%yCoordinates(N) = geometry%yCoordinates(1)
+
+         ! loop over dike segments
+         do i=1, geometry%nCoordinates - 1
+
+            ! determine if the current dike segment is a berm segment
+            if (geometry%segmentTypes(i) == 2) then
+
+               ! check if the berm segment is a horizontal berm
+               if (geometry%segmentSlopes(i) > 0.0d0) then
+                  succes = .false.
+               endif
+
+               ! add the width of the berm segment to the total sum
+               Bsum = Bsum + geometry%xCoordDiff(i)
+
+            else
+
+               ! if dike segment is not a berm, then add end point and roughness
+               N = N+1
+               geometryNoBerms%xCoordinates(N)       = geometry%xCoordinates(i+1) - Bsum
+               geometryNoBerms%yCoordinates(N)       = geometry%yCoordinates(i+1)
+               geometryNoBerms%roughnessFactors(N-1) = geometry%roughnessFactors(i)
+         
             endif
-
-            ! add the width of the berm segment to the total sum
-            Bsum = Bsum + geometry%xCoordDiff(i)
-
-         else
-
-            ! if dike segment is not a berm, then add end point and roughness
-            N = N+1
-            geometryNoBerms%xCoordinates(N)       = geometry%xCoordinates(i+1) - Bsum
-            geometryNoBerms%yCoordinates(N)       = geometry%yCoordinates(i+1)
-            geometryNoBerms%roughnessFactors(N-1) = geometry%roughnessFactors(i)
-
-         endif
-      enddo
+         enddo
+      endif
 
       ! calculate the differences and segment slopes
       if (succes) then
@@ -766,7 +696,7 @@ end subroutine deallocateGeometry
    else
 
       ! no berms present
-      call copyGeometry (geometry, geometryNoBerms)
+      call copyGeometry (geometry, geometryNoBerms, succes, errorMessage)
 
    endif
 
@@ -798,7 +728,7 @@ end subroutine deallocateGeometry
    ! check index starting point new cross section
    if ((index < 1) .or. (index > geometry%nCoordinates-1)) then
       succes = .false.
-      errorMessage = 'error removing dike segments: incorrect index'
+      errorMessage = GetOvertoppingMessage(remove_dike_segments_index)
    endif
 
    if (succes) then
@@ -810,15 +740,15 @@ end subroutine deallocateGeometry
       geometryAdjusted%nCoordinates = geometry%nCoordinates - index + 1
 
       ! allocate vectors in structure with geometry data
-      call allocateVectorsGeometry (geometryAdjusted%nCoordinates, geometryAdjusted)
+      call allocateVectorsGeometry (geometryAdjusted%nCoordinates, geometryAdjusted, succes, errorMessage)
 
-      ! select the remaining dike segments for the new cross section
-      geometryAdjusted%xCoordinates     = geometry%xCoordinates    (index:)
-      geometryAdjusted%yCoordinates     = geometry%yCoordinates    (index:)
-      geometryAdjusted%roughnessFactors = geometry%roughnessFactors(index:)
-
-      ! calculate the differences and segment slopes
       if (succes) then
+         ! select the remaining dike segments for the new cross section
+         geometryAdjusted%xCoordinates     = geometry%xCoordinates    (index:)
+         geometryAdjusted%yCoordinates     = geometry%yCoordinates    (index:)
+         geometryAdjusted%roughnessFactors = geometry%roughnessFactors(index:)
+
+         ! calculate the differences and segment slopes
          call calculateSegmentSlopes (geometryAdjusted, succes, errorMessage)
       endif
 
@@ -869,8 +799,8 @@ end subroutine deallocateGeometry
    errorMessage = ' '
       
    ! initialize the structures with geometry data for split cross sections
-   call copyGeometry (geometry, geometrySectionB)
-   call copyGeometry (geometry, geometrySectionF)
+   call copyGeometry (geometry, geometrySectionB, succes, errorMessage)
+   if (succes) call copyGeometry (geometry, geometrySectionF, succes, errorMessage)
 
    ! initialize number of wide berms
    NwideBerms = 0
@@ -879,52 +809,55 @@ end subroutine deallocateGeometry
    ! determine the (x,y)-coordinates for the split cross sections
    ! ------------------------------------------------------------
 
-   ! loop over possible berm segments
-   do i=2, geometry%nCoordinates - 2
+   if (succes) then
+      ! loop over possible berm segments
+      do i=2, geometry%nCoordinates - 2
 
-      ! determine if the current dike segment is a berm segment
-      if (geometry%segmentTypes(i) == 2) then
+         ! determine if the current dike segment is a berm segment
+         if (geometry%segmentTypes(i) == 2) then
 
-         ! determine the width of the berm segment
-         B = geometry%xCoordDiff(i)
+            ! determine the width of the berm segment
+            B = geometry%xCoordDiff(i)
 
-         ! determine if the berm segment is a wide berm
-         if ((B < L0) .and. (B > 0.25d0*L0)) then
+            ! determine if the berm segment is a wide berm
+            if ((B < L0) .and. (B > 0.25d0*L0)) then
 
-            ! count the number of wide berms
-            NwideBerms = NwideBerms+1
+               ! count the number of wide berms
+               NwideBerms = NwideBerms+1
 
-            ! adapt berm width to B=L0/4 for cross section with ordinary berms
-            
-            ! shift start point berm along the segment to reduce width to B=L0/4
-            horzShift = (B-0.25d0*L0)
-            vertShift = (B-0.25d0*L0) * geometry%segmentSlopes(i)
-            geometrySectionB%xCoordinates(i)     = geometrySectionB%xCoordinates(i)     + horzShift
-            geometrySectionB%yCoordinates(i)     = geometrySectionB%yCoordinates(i)     + vertShift
-            
-            ! shift preceding points horizontally to keep original segment slopes
-            if (geometry%segmentSlopes(i-1) > 0.0d0) then
-               horzShift = (B-0.25d0*L0) * (1 - geometry%segmentSlopes(i)/geometry%segmentSlopes(i-1))
-            else
-               horzShift = 0.0d0 
-               succes = .false. ! previous dike segment has a gradient <= zero
-               errorMessage = 'Error in split cross section: sequential berms'
+               ! adapt berm width to B=L0/4 for cross section with ordinary berms
+
+               ! shift start point berm along the segment to reduce width to B=L0/4
+               horzShift = (B-0.25d0*L0)
+               vertShift = (B-0.25d0*L0) * geometry%segmentSlopes(i)
+               geometrySectionB%xCoordinates(i)     = geometrySectionB%xCoordinates(i)     + horzShift
+               geometrySectionB%yCoordinates(i)     = geometrySectionB%yCoordinates(i)     + vertShift
+
+               ! shift preceding points horizontally to keep original segment slopes
+               if (geometry%segmentSlopes(i-1) > 0.0d0) then
+                  horzShift = (B-0.25d0*L0) * (1 - geometry%segmentSlopes(i)/geometry%segmentSlopes(i-1))
+               else
+                  horzShift = 0.0d0 
+                  succes = .false. ! previous dike segment has a gradient <= zero
+                  errorMessage = GetOvertoppingMessage(split_cross_section_seq_berm)
+               endif
+               if (horzShift < 0.0d0) then
+                  succes = .false. ! previous dike segment has a more gentle slope
+                  errorMessage = GetOvertoppingMessage(split_cross_section_seq_berm)
+               endif
+               geometrySectionB%xCoordinates(1:i-1) = geometrySectionB%xCoordinates(1:i-1) + horzShift
+
+               ! adapt berm width to B=L0 for cross section with foreshores
+               horzShift = B-L0
+               geometrySectionF%xCoordinates(1:i)   = geometrySectionF%xCoordinates(1:i)   + horzShift
+
             endif
-            if (horzShift < 0.0d0) then
-               succes = .false. ! previous dike segment has a more gentle slope
-               errorMessage = 'Error in split cross section: sequential berms'
-            endif
-            geometrySectionB%xCoordinates(1:i-1) = geometrySectionB%xCoordinates(1:i-1) + horzShift
-
-            ! adapt berm width to B=L0 for cross section with foreshores
-            horzShift = B-L0
-            geometrySectionF%xCoordinates(1:i)   = geometrySectionF%xCoordinates(1:i)   + horzShift
 
          endif
 
-      endif
-
-   enddo
+      enddo
+   
+   endif
 
    ! ---------------------------------------------------------------
    ! recalculate differences and slopes for the split cross sections
@@ -935,7 +868,7 @@ end subroutine deallocateGeometry
    if (succes) call calculateSegmentSlopes (geometrySectionF, succes, errorMessage)
 
    ! type of segments and number of berm segments is NOT recalculated
-      
+
    end subroutine splitCrossSection
 
 !> calculateHorzLengths:
@@ -1029,7 +962,7 @@ end subroutine deallocateGeometry
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = 'error in calculation horizontal lengths'
+      errorMessage = GetOvertoppingMessage(calc_horizontal_lengths)
    endif   
 
    end subroutine calculateHorzLengths
@@ -1072,95 +1005,10 @@ end subroutine deallocateGeometry
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = 'error in calculation horizontal distance'
+      errorMessage = GetOvertoppingMessage(calc_horizontal_distance)
    endif   
 
    end subroutine calculateHorzDistance
-
-!> writeCrossSection:
-!! write a cross section
-!!   @ingroup LibOvertopping
-!***********************************************************************************************************
-   subroutine writeCrossSection (geometry, geometryName)
-!***********************************************************************************************************
-!
-   implicit none
-!
-!  Input/output parameters
-!
-   type (tpGeometry),   intent(in)  :: geometry       !< structure with geometry data
-   character(len=*),    intent(in)  :: geometryName   !< description of geometry data
-!
-!  Local parameters
-!
-   integer              :: i              !< counter dike segments
-   character(len=10)    :: segmentSlope   !< representation segment slope
-   character(len=10)    :: segmentType    !< representation segment type
-   logical              :: succes         !< flag for succes
-   character(len=250)   :: errorMessage   !< error message
-
-! ==========================================================================================================
-
-   ! write tabel header
-   write (*,'(A)') ' ------------------------------------------------------------------------------'
-   write (*,'(2X,A,A,F7.2,A)') trim(geometryName), ' (psi = ', geometry%psi, ')'
-   write (*,'(A)') ' ------------------------------------------------------------------------------'
-   write (*,'(A)') '  Nr      X        Y    roughness   dX       dY      tanA    gradient    type'
-   write (*,'(A)') ' ------------------------------------------------------------------------------'
-
-   ! write data first point cross section
-   i = 1
-   write (*,'(I4,F9.3,F9.3)') i, geometry%xCoordinates(i), geometry%yCoordinates(i)
-
-   ! write data remaining points cross section (including segment data)
-   do i=2, geometry%nCoordinates
-      
-      ! determine representation segment slope
-      if (geometry%segmentSlopes(i-1) > 0.0d0) then
-         write (segmentSlope, '(A,F6.2)') '1:', 1/geometry%segmentSlopes(i-1)
-      else
-         segmentSlope = '-'
-      endif
-
-      ! determine representation segment type
-      if (geometry%segmentTypes(i-1) == 1) then
-         segmentType = 'slope'
-      elseif (geometry%segmentTypes(i-1) == 2) then
-         segmentType = 'berm'
-      else
-         segmentType = 'other'
-      endif
-
-      ! write (x,y)-coordinates, roughness factors and horizontal/vertical distances
-      write (*,'(I4,F9.3,F9.3,F9.3,F9.3,F9.3)', advance="no")  i, &
-         geometry%xCoordinates(i), geometry%yCoordinates(i), geometry%roughnessFactors(i-1), &
-         geometry%xCoordDiff(i-1), geometry%yCoordDiff(i-1)
-
-      ! write gradient dike segment
-      if (geometry%segmentSlopes(i-1) > 0.0d0) then
-         write (*,'(F9.3)', advance="no")  geometry%segmentSlopes(i-1)
-      else
-         write (*,'(A9)', advance="no")  '-'
-      endif
-
-      ! write representation segment slope and segment type
-      write (*,'(A10,A8)')  trim(segmentSlope), trim(segmentType)
-   enddo
-
-   ! check cross section geometry data
-   call checkCrossSection (geometry%psi, geometry%nCoordinates,            &
-                           geometry%xCoordinates, geometry%yCoordinates,   &
-                           geometry%roughnessFactors, succes, errorMessage)
-   ! write tabel end
-   write (*,'(X,A)') repeat('-', 78)
-   if (succes) then
-       write (*,'(2X,A)')   'Cross section OK'
-   else
-       write (*,'(2X,A,A)') 'Cross section not OK: ', trim(errorMessage)
-   endif
-   write (*,'(A/)') repeat('-', 78)
-
-   end subroutine writeCrossSection
 
 !***********************************************************************************************************
    end module geometryModuleRTOovertopping

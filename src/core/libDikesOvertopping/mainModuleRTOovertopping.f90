@@ -18,6 +18,7 @@
    use geometryModuleRTOovertopping
    use waveRunup
    use feedback
+   use OvertoppingMessages
 
    implicit none
 
@@ -603,6 +604,10 @@
    type (tpOvertoppingInput), intent(in)  :: modelFactors   !< structure with model factors
    logical,                   intent(out) :: succes         !< flag for succes
    character(len=*),          intent(out) :: errorMessage   !< error message
+!
+!  local parameters
+!
+   integer                                :: ierr           !< number of validation messages
 
 ! ==========================================================================================================
 
@@ -636,7 +641,8 @@
    endif
 
    if (succes) then
-      call checkModelFactors (modelFactors, succes, errorMessage)
+      call checkModelFactors (modelFactors, 1, errorMessage, ierr)
+      succes = (ierr == 0)
    endif
 
    end subroutine checkInputdata
@@ -645,16 +651,17 @@
 !! check the input data
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine checkModelFactors (modelFactors, succes, errorMessage)
+   subroutine checkModelFactors (modelFactors, dimErrMessage, errorMessages, ierr)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   type (tpOvertoppingInput), intent(in)  :: modelFactors   !< structure with model factors
-   logical,                   intent(out) :: succes         !< flag for succes
-   character(len=*),          intent(out) :: errorMessage   !< error message
+   type (tpOvertoppingInput), intent(in)  :: modelFactors                   !< structure with model factors
+   integer,                   intent(in)  :: dimErrMessage                  !< max. number of error messages
+   integer,                   intent(out) :: ierr                           !< number of errors found
+   character(len=*),          intent(out) :: errorMessages(dimErrMessage)   !< error message
 !
 !  Local parameters
 !
@@ -664,6 +671,7 @@
    real(wp)          :: par_min  !< minimal value model factor
    real(wp)          :: par_max  !< maximal value model factor
 
+   ierr = 0
    ! loop over model factors
    do i=1, 8
       ! determine description model factor
@@ -721,14 +729,13 @@
              par_max = foreshore_max
       end select
       ! check value model factor
-      if (succes) then
+      if (ierr < dimErrMessage) then
          if ((par < par_min) .or. (par > par_max)) then
-            succes = .false.
+            ierr = ierr + 1
             if (par_max == huge(par_max)) then
-               write (errorMessage,'(3A,F6.3)') 'model factor ', trim(par_txt), ' smaller than ', par_min
+               write (errorMessages(ierr), GetOvertoppingFormat(model_factor_smaller_than)) trim(par_txt), par_min
             else
-               write (errorMessage,'(3A,F6.3,A,F6.3)') &
-                  'model factor ', trim(par_txt), ' not between ', par_min,  ' and ', par_max
+               write (errorMessages(ierr), GetOvertoppingFormat(model_factor_not_between)) trim(par_txt), par_min, par_max
             endif
          endif
       endif

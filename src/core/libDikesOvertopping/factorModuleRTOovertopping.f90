@@ -5,7 +5,7 @@
 !
 !  Programmer: Bastiaan Kuijper, HKV consultants
 !
-!  Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+!  Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 !  $Id$
 !
 !***********************************************************************************************************
@@ -15,6 +15,7 @@
    use typeDefinitionsRTOovertopping
    use geometryModuleRTOovertopping
    use precision, only : wp
+   use OvertoppingMessages
 
    implicit none
 
@@ -75,7 +76,7 @@
       if (geometry%NbermSegments > 0) then
          call removeBerms (geometry, geometryNoBerms, succes, errorMessage)
       else
-         call copyGeometry (geometry, geometryNoBerms)
+         call copyGeometry (geometry, geometryNoBerms, succes, errorMessage)
       endif
 
    endif
@@ -96,7 +97,7 @@
             tanAlpha = (yUpper - yLower) / dx
          else
             succes = .false.
-            errorMessage = 'Error in calculation representative slope angle'
+            errorMessage = GetOvertoppingMessage(calc_representative_slope_angle)
          endif
       endif
 
@@ -265,7 +266,7 @@
    ! determine possible error message
    if (.not. succes) then
        if ( errorMessage /= ' ') then
-           errorMessage = 'Error in calculation influence roughness'
+           errorMessage = GetOvertoppingMessage(calc_influence_roughness)
        endif
    endif
 
@@ -454,7 +455,9 @@
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = 'Error in calculation influence berms'
+      if ( errorMessage /= ' ' ) then
+         errorMessage = GetOvertoppingMessage(calc_influence_berms)
+      endif
    endif
 
    end subroutine calculateGammaB

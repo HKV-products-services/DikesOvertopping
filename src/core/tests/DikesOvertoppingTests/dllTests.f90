@@ -1,7 +1,7 @@
 !> @file
 !! Contains the module dllTests of the DikesOvertopping dll
 !
-! Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+! Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 ! $Id$
 !
 !> 
@@ -15,13 +15,14 @@ use typeDefinitionsRTOovertopping
 use ModuleLogging
 use waveParametersUtilities, only : computeWavePeriod
 use ftnunit
+use errorMessages
 
 implicit none
 
 private
 
 public :: overtoppingDllTest, overtoppingValidationTest, overtoppingZ2Test, influenceRoughnessTest, &
-          overtoppingValidationRoughnessTest
+          overtoppingValidationRoughnessTest, overtoppingMultipleValidationTest
 
 contains
 !> Test the functions in DikesOvertopping.dll.
@@ -299,7 +300,7 @@ subroutine overtoppingValidationTest
     use kernel32
 
     integer                        :: p
-    external                       :: ValidateInputF
+    external                       :: ValidateInputF, SetLanguage
     logical                        :: succes
     integer, parameter             :: npoints = 5
     character(len=128)             :: errorMessage
@@ -309,9 +310,11 @@ subroutine overtoppingValidationTest
     real(kind=wp)                  :: criticalOvertoppingRate
 
     pointer            (qc, ValidateInputF)
+    pointer            (qsl, SetLanguage)
 
     p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
     qc = getprocaddress (p, "ValidateInputF"C)
+    qsl = getprocaddress (p, "SetLanguage"C)
     !
     ! initializations
     !
@@ -332,7 +335,7 @@ subroutine overtoppingValidationTest
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     geometryF%xcoords = [ 0, 10, 20, 30, 40 ]
-    geometryF%ycoords = [-5, 0, 5, 4, 0]
+    geometryF%ycoords = [-5, 0, -1, 4, 0]
     geometryF%roughness = [ 0.5, 0.5, 0.5, 0.5 ]
     
     geometryF%normal = 60.0_wp ! degrees
@@ -342,16 +345,17 @@ subroutine overtoppingValidationTest
     !
     call ValidateInputF( geometryF, dikeHeight, modelFactors, succes, errorMessage )
     
-    call assert_equal(trim(errorMessage), 'error in calculation of adjusted x-coordinates', 'error handling')
+    call assert_equal(trim(errorMessage), 'Fout in bepaling van gecorrigeerde x-coordinaten', 'error handling')
 
     !
     ! do validation of input ( modelfactor m_z2 < 0 ) :
     !
     geometryF%ycoords = [-5, 0, 5, 6, 7]
     modelFactors%m_z2     = -1.00_wp
+    call SetLanguage('UK')
     call ValidateInputF( geometryF, dikeHeight, modelFactors, succes, errorMessage )
     
-    call assert_equal(trim(errorMessage), 'model factor 2% wave runup smaller than  0.000', 'error handling')
+    call assert_equal(trim(errorMessage), 'Model factor 2% wave runup smaller than  0.000', 'error handling')
     
     !
     ! do validation of input ( modelfactor foreshore < 0.3 ) :
@@ -359,7 +363,7 @@ subroutine overtoppingValidationTest
     modelFactors%m_z2                      = 1.00_wp
     modelFactors%reductionFactorForeshore  = 0.25_wp
     call ValidateInputF( geometryF, dikeHeight, modelFactors, succes, errorMessage )
-    call assert_equal(trim(errorMessage), 'model factor reductionFactorForeshore not between  0.300 and  1.000', 'error handling')
+    call assert_equal(trim(errorMessage), 'Model factor reductionFactorForeshore not between  0.300 and  1.000', 'error handling')
 
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
@@ -370,7 +374,7 @@ subroutine overtoppingValidationRoughnessTest
     use kernel32
 
     integer                        :: p
-    external                       :: ValidateInputF
+    external                       :: ValidateInputF, SetLanguage
     logical                        :: succes
     integer, parameter             :: npoints = 5
     character(len=128)             :: errorMessage
@@ -380,9 +384,11 @@ subroutine overtoppingValidationRoughnessTest
     real(kind=wp)                  :: criticalOvertoppingRate
 
     pointer            (qc, ValidateInputF)
+    pointer            (qsl, SetLanguage)
 
     p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
     qc = getprocaddress (p, "ValidateInputF"C)
+    qsl = getprocaddress (p, "SetLanguage"C)
     !
     ! initializations
     !
@@ -411,17 +417,83 @@ subroutine overtoppingValidationRoughnessTest
     !
     ! do validation of input ( geometry not correct ) :
     !
+    call SetLanguage('NL')
     call ValidateInputF( geometryF, dikeHeight, modelFactors, succes, errorMessage )
     
-    call assert_equal(trim(errorMessage), 'Roughnessfactors must be in range 0.5 ... 1.0 ; found:  0.00', 'error handling')
+    call assert_equal(trim(errorMessage), 'Ruwheidsfactoren moeten liggen tussen 0.5 ... 1.0 ; gevonden:  0.00', 'error handling')
 
     geometryF%roughness = [ 0.49, 0.5, 0.5, 0.5 ]
     call ValidateInputF( geometryF, dikeHeight, modelFactors, succes, errorMessage )
     
-    call assert_equal(trim(errorMessage), 'Roughnessfactors must be in range 0.5 ... 1.0 ; found:  0.49', 'error handling')
+    call assert_equal(trim(errorMessage), 'Ruwheidsfactoren moeten liggen tussen 0.5 ... 1.0 ; gevonden:  0.49', 'error handling')
     !
     ! do validation of input ( modelfactor m_z2 < 0 ) :
     !
 end subroutine overtoppingValidationRoughnessTest
+
+!! @ingroup FailureMechanismsTests
+subroutine overtoppingMultipleValidationTest
+    use user32
+    use kernel32
+
+    integer                        :: p
+    external                       :: ValidateInputFnew, SetLanguage
+    integer, parameter             :: npoints = 5
+    type(TErrorMessages)           :: errorStruct
+    type(OvertoppingGeometryTypeF) :: geometryF
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    real(kind=wp)                  :: criticalOvertoppingRate
+
+    pointer            (qc, ValidateInputFnew)
+    pointer            (qsl, SetLanguage)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qc = getprocaddress (p, "ValidateInputFnew"C)
+    qsl = getprocaddress (p, "SetLanguage"C)
+    !
+    ! initializations
+    !
+    dikeHeight  = 9.1_wp
+    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
+    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
+    modelFactors%m_z2     = 1.00_wp
+    modelFactors%frunup1  = 1.75_wp
+    modelFactors%frunup2  = 4.30_wp
+    modelFactors%frunup3  = 1.60_wp
+    modelFactors%typeRunup = 1
+    modelFactors%fshallow  = 0.92
+    modelFactors%ComputedOvertopping = 1.0_wp
+    modelFactors%CriticalOvertopping = 1.0_wp
+    modelFactors%relaxationFactor    = 1.0d0
+    criticalOvertoppingRate          = 1.0d-3
+    criticalOvertoppingRate        = 1.0d-3
+
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    geometryF%xcoords = [ 0, 10, 20, 30, 40 ]
+    geometryF%ycoords = [-5, 0, 5, 4, 0]
+    geometryF%roughness = [ 0.5, 0.5, 0.5, 0.5 ]
+    
+    geometryF%normal = 60.0_wp ! degrees
+    geometryF%npoints = npoints
+    modelFactors%m_z2     = -1.00_wp
+    modelFactors%reductionFactorForeshore  = 0.25_wp
+    !
+    ! do validation of input :
+    !
+    call initErrorMessages(errorStruct)
+    call SetLanguage('UK')
+    call ValidateInputFnew( geometryF, dikeHeight, modelFactors, errorStruct )
+
+    call assert_equal(3, errorStruct%nErrors, 'expected 3 validation errors')
+    call assert_equal(trim(errorStruct%messages(1)%message), 'Error in calculation of adjusted x-coordinates', 'error handling')
+    
+    call assert_equal(trim(errorStruct%messages(2)%message), 'Model factor 2% wave runup smaller than  0.000', 'error handling')
+    
+    call assert_equal(trim(errorStruct%messages(3)%message), 'Model factor reductionFactorForeshore not between  0.300 and  1.000', 'error handling')
+
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
+end subroutine overtoppingMultipleValidationTest
 
 end module dllTests

@@ -9,7 +9,7 @@ module overtoppingInterface
 !
 !>
 !! Module for the interface of dllOvertopping
-!! @ingroup dllOvertopping
+!! @ingroup LibOvertopping
 !<
     use precision, only : wp
     use, intrinsic :: iso_c_binding
