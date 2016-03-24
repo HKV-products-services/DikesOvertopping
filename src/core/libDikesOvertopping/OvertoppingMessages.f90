@@ -59,6 +59,8 @@ enum, bind(c)
     enumerator :: typeRunup_not_in_range
     enumerator :: zero_or_negative_varModelFactorCriticalOvertopping
     enumerator :: zero_or_negative_critical_overtopping
+    enumerator :: diffx_too_small
+    enumerator :: diffy_too_small
 ! parameters :
     enumerator :: par_fB
     enumerator :: par_fN
@@ -257,6 +259,10 @@ select case(language)
                 GetOvertoppingFormat = '("Negative or zero variance of critical overtopping uncertainty model; variable number: ",I0)'
             case (zero_or_negative_critical_overtopping)
                 GetOvertoppingFormat = '("Negative or zero critical overtopping: ",G)'
+            case (diffx_too_small)
+                GetOvertoppingFormat = '("X-coordinates must differ at least ",F4.2,".",F8.3," and ",F8.3," are too close to each other.")'
+            case (diffy_too_small)
+                GetOvertoppingFormat = '("Y-coordinates must be non-decreasing.",F7.2," and ",F7.2," are not.")'
             case default
                 write(GetOvertoppingFormat,*) '(Internal error, ID = ', ID, ')'
         end select
@@ -278,6 +284,10 @@ select case(language)
                 GetOvertoppingFormat = '("Negatieve of nul variantie van kritieke overtopping model onzekerheid; variabel nummer: ",I0)'
             case (zero_or_negative_critical_overtopping)
                 GetOvertoppingFormat = '("Negatieve of null kritieke overtopping debiet: ",G)'
+            case (diffx_too_small)
+                GetOvertoppingFormat = '("X-coordinaten moeten ten minste ",F4.2," van elkaar verschillen.",F8.3," en ",F8.3," ligt te dicht bij elkaar.")'
+            case (diffy_too_small)
+                GetOvertoppingFormat = '("Y-coordinaten mogen niet afnemen.",F7.2," en ",F7.2," doen dat wel.")'
             case default
                 write(GetOvertoppingFormat,*) '(Interne fout, ID = ', ID, ')'
         end select

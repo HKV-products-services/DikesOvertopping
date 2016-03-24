@@ -22,7 +22,7 @@ implicit none
 private
 
 public :: overtoppingDllTest, overtoppingValidationTest, overtoppingZ2Test, influenceRoughnessTest, &
-          overtoppingValidationRoughnessTest, overtoppingMultipleValidationTest
+          overtoppingValidationRoughnessTest, overtoppingMultipleValidationTest, overtoppingValidationTestZPoints
 
 contains
 !> Test the functions in DikesOvertopping.dll.
@@ -485,15 +485,95 @@ subroutine overtoppingMultipleValidationTest
     call SetLanguage('UK')
     call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
 
-    call assert_equal(3, errorStruct%nErrors, 'expected 3 validation errors')
-    call assert_equal(trim(errorStruct%messages(1)%message), 'Error in calculation of adjusted x-coordinates', 'error handling')
+    call assert_equal(4, errorStruct%nErrors, 'expected 3 validation errors')
+    call assert_equal(trim(errorStruct%messages(1)%message), 'Y-coordinates must be non-decreasing.   5.00 and    4.00 are not.', 'error handling')
     
-    call assert_equal(trim(errorStruct%messages(2)%message), 'Model factor 2% wave runup smaller than  0.000', 'error handling')
+    call assert_equal(trim(errorStruct%messages(2)%message), 'Y-coordinates must be non-decreasing.   4.00 and    0.00 are not.', 'error handling')
+
+    call assert_equal(trim(errorStruct%messages(3)%message), 'Model factor 2% wave runup smaller than  0.000', 'error handling')
     
-    call assert_equal(trim(errorStruct%messages(3)%message), 'Model factor reduction factor foreshore not between  0.300 and  1.000', 'error handling')
+    call assert_equal(trim(errorStruct%messages(4)%message), 'Model factor reduction factor foreshore not between  0.300 and  1.000', 'error handling')
 
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine overtoppingMultipleValidationTest
+
+!! @ingroup FailureMechanismsTests
+subroutine overtoppingValidationTestZPoints
+    use user32
+    use kernel32
+
+    integer                        :: p
+    external                       :: ValidateInputF, SetLanguage
+    integer, parameter             :: npoints = 3
+    type(TErrorMessages)           :: errorStruct
+    type(OvertoppingGeometryTypeF) :: geometryF
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    real(kind=wp)                  :: criticalOvertoppingRate
+
+    pointer            (qc, ValidateInputF)
+    pointer            (qsl, SetLanguage)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qc = getprocaddress (p, "ValidateInputF"C)
+    qsl = getprocaddress (p, "SetLanguage"C)
+    !
+    ! initializations
+    !
+    dikeHeight  = 0 ! 9.1_wp
+    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
+    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
+    modelFactors%m_z2     = 1.00_wp
+    modelFactors%frunup1  = 1.75_wp
+    modelFactors%frunup2  = 4.30_wp
+    modelFactors%frunup3  = 1.60_wp
+    modelFactors%typeRunup = 1
+    modelFactors%fshallow  = 0.92
+    modelFactors%ComputedOvertopping = 1.0_wp
+    modelFactors%CriticalOvertopping = 1.0_wp
+    modelFactors%relaxationFactor    = 1.0d0
+    criticalOvertoppingRate          = 1.0d-3
+    criticalOvertoppingRate        = 1.0d-3
+
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    geometryF%xcoords = [ 0, 40, 80 ]
+    geometryF%ycoords = [-10, 0, -10]
+    geometryF%roughness = [ 1.0, 1.0, 1.0 ]
+    
+    geometryF%normal = 60.0_wp ! degrees
+    geometryF%npoints = npoints
+    !
+    ! do validation of input :
+    !
+    call initErrorMessages(errorStruct)
+    call SetLanguage('NL')
+    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call SetLanguage('UK')
+    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+
+    call assert_equal(2, errorStruct%nErrors, 'expected 2 validation errors')
+    call assert_equal(errorStruct%messages(1)%message, 'Y-coordinaten mogen niet afnemen.   0.00 en  -10.00 doen dat wel.', 'error handling')
+    call assert_equal(errorStruct%messages(2)%message, 'Y-coordinates must be non-decreasing.   0.00 and  -10.00 are not.', 'error handling')
+    
+    geometryF%xcoords = [ 0d0, 40d0, 40.019d0 ]
+    geometryF%ycoords = [-10d0, 0d0, 10d0]
+    call SetLanguage('NL')
+    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call SetLanguage('UK')
+    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call assert_equal(4, errorStruct%nErrors, 'expected 4 (total) validation errors')
+    call assert_equal(errorStruct%messages(3)%message, 'X-coordinaten moeten ten minste 0.02 van elkaar verschillen.  40.000 en   40.019 ligt te dicht bij elkaar.', 'error handling')
+    call assert_equal(errorStruct%messages(4)%message, 'X-coordinates must differ at least 0.02.  40.000 and   40.019 are too close to each other.', 'error handling')
+
+    geometryF%xcoords = [ 0d0, 40d0, 40.0201d0 ]
+    geometryF%ycoords = [ 0d0, 9.9d0, 10d0]
+    call SetLanguage('NL')
+    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call assert_equal(4, errorStruct%nErrors, 'expected 4 (total) validation errors')
+
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
+end subroutine overtoppingValidationTestZPoints
 
 end module dllTests

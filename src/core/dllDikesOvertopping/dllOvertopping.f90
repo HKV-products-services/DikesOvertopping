@@ -59,7 +59,7 @@ subroutine calculateQo ( load, geometryInput, dikeHeight, modelFactors, overtopp
     type(tLogging)                            :: logging        !< logging struct
 
     geometry = geometry_c_f(geometryInput)
-    
+
     logging%verbosity = verbosity
     logging%filename = logFile
 
@@ -141,9 +141,9 @@ subroutine ValidateInputC ( geometryInput, dikeHeight, modelFactors, success, er
     integer                                   :: nMessages
     character(len=8)                          :: msgtype
     character, parameter                      :: separationChar = char(9)      !< use horizontal tab for separation
-    
+
     geometry = geometry_c_f(geometryInput)
-    
+
     call initErrorMessages(errorStruct)
 
     call ValidateInputF ( geometry, dikeHeight, modelFactors, errorStruct)
@@ -226,7 +226,7 @@ subroutine ValidateInputFold ( geometryF, dikeHeight, modelFactors, success, err
     endif
 
     call deallocateGeometry( geometry )
-    
+
     if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
     if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
 end subroutine ValidateInputFold
@@ -262,13 +262,22 @@ subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, errorStruct)
     type (tMessage)                            :: msgStruct           !< struct for one local error or validation message
     integer                                    :: i                   !< loop counter
 !
+    success = .true.
+    errorText = ' '
+
     nullify(xCoordsAdjusted)
     nullify(zCoordsAdjusted)
 
     if (modelFactors%typeRunup == 0) then
         success = .false.
         errorText = 'validation only implemented for typeRunup=1'
-    else
+    endif
+
+    if (success) then
+        call basicGeometryTest(geometryF, success, errorStruct)
+    endif
+
+    if (success) then
         call initializeGeometry (geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
                              geometryF%roughness, geometry, success, errorText)
     endif
@@ -283,13 +292,16 @@ subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, errorStruct)
         call initializeGeometry (geometry%psi, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, &
                                  geometry%roughnessFactors, geometryAdjusted, success, errorText)
         call deallocateGeometry( geometryAdjusted )
+        call deallocateGeometry( geometry )
     endif
 
     if ( .not. success) then
-       msgStruct%errorCode = 1
-       msgStruct%severity  = severityError
-       msgStruct%message   = errorText
-       call addMessage(errorStruct, msgStruct)
+        if (errorText /= ' ') then
+            msgStruct%errorCode = 1
+            msgStruct%severity  = severityError
+            msgStruct%message   = errorText
+            call addMessage(errorStruct, msgStruct)
+        endif
     endif
 
     call checkModelFactors (modelFactors, maxErr, errorTexts, ierr)
@@ -298,9 +310,7 @@ subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, errorStruct)
        msgStruct%severity  = severityError
        msgStruct%message   = errorTexts(i)
        call addMessage(errorStruct, msgStruct)
-    enddo 
-
-    call deallocateGeometry( geometry )
+    enddo
 
     if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
     if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
@@ -341,7 +351,7 @@ subroutine versionNumber(version)
     !
     ! locals
     !
-    character(len=*), parameter :: cversion = "16.1.3.0"
+    character(len=*), parameter :: cversion = "16.1.4.0"
     !
     !==============================================================================
     !
@@ -370,10 +380,10 @@ function geometry_c_f(geometryInput) result(geometry)
 
     call c_f_pointer(geometryInput%xCoords, geometry%xcoords, n)
     call c_f_pointer(geometryInput%ycoords, geometry%ycoords, n)
-    
+
     n(1) = geometryInput%nPoints - 1
     call c_f_pointer(geometryInput%roughness, geometry%roughness, n)
-    
+
     geometry%npoints = geometryInput%nPoints
     geometry%normal = geometryInput%normal
 

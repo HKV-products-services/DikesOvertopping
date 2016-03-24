@@ -23,7 +23,7 @@
    public :: initializeGeometry, checkCrossSection, allocateVectorsGeometry, calculateSegmentSlopes
    public :: determineSegmentTypes, copyGeometry, mergeSequentialBerms, adjustNonHorizontalBerms
    public :: removeBerms, removeDikeSegments, splitCrossSection, calculateHorzLengths
-   public :: calculateHorzDistance, deallocateGeometry
+   public :: calculateHorzDistance, deallocateGeometry, basicGeometryTest
 !
    contains
 
@@ -1020,6 +1020,68 @@ end subroutine deallocateGeometry
 
    end subroutine calculateHorzDistance
 
+!> basicGeometryTest:
+!! test the input geometry (the adjusted geometry is checked elsewhere)
+!!   @ingroup LibOvertopping
+!***********************************************************************************************************
+   subroutine basicGeometryTest(geometryF, success, errorStruct)
+!***********************************************************************************************************
+    use overtoppingInterface
+    use errorMessages
+    type(OvertoppingGeometryTypeF), intent(in) :: geometryF           !< struct with geometry and roughness
+    type(TErrorMessages), intent(inout)        :: errorStruct         !< error message (only set if not successful)
+    logical, intent(out)                       :: success             !< success flag 
+!
+!  Local parameters
+!
+   integer                                     :: i                   !< loop counter
+   real(kind=wp)                               :: diffx               !< difference in two consecutive x coordinates
+   real(kind=wp)                               :: diffy               !< difference in two consecutive y coordinates
+   real(kind=wp), parameter                    :: min_dx = 0.02d0     !< minimum difference (see FO, section 4.4)
+   real(kind=wp), parameter                    :: tol = 1d-6          !< tolerance for comparing reals
+   type(tMessage)                              :: message             !< local error message
+   real(kind=wp)                               :: xi                  !< current x coordinate
+   real(kind=wp)                               :: xnext               !< next x coordinate
+   real(kind=wp)                               :: yi                  !< current y coordinate
+   real(kind=wp)                               :: ynext               !< next y coordinate
+   real(kind=wp)                               :: roughnessFactor     !< current roughness factor
+   character(len=128)                          :: formatstr           !< format string
+! ==========================================================================================================
+   success = .true.
+   do i = 1, geometryF%nPoints - 1
+       xi              = geometryF%xCoords(i)
+       yi              = geometryF%yCoords(i)
+       xnext           = geometryF%xCoords(i+1)
+       ynext           = geometryF%yCoords(i+1)
+       roughnessFactor = geometryF%roughness(i)
+       diffx           = xnext - xi
+       diffy           = ynext - yi
+       if (diffx < min_dx - tol) then
+           success = .false.
+           message%errorcode = diffx_too_small
+           message%severity = severityError
+           formatstr = GetOvertoppingFormat(diffx_too_small)
+           write(message%message, formatstr) min_dx, xi, xnext
+           call addMessage(errorStruct, message)
+       endif
+       if (diffy < 0d0) then
+           success = .false.
+           message%errorcode = diffy_too_small
+           message%severity = severityError
+           formatstr = GetOvertoppingFormat(diffy_too_small)
+           write(message%message, formatstr) yi, ynext
+           call addMessage(errorStruct, message)
+       endif
+       if (roughnessFactor < rFactor_min .or. roughnessFactor > rFactor_max) then
+           success = .false.
+           message%errorcode = roughnessfactors_out_of_range
+           message%severity = severityError
+           formatstr = GetOvertoppingFormat(roughnessfactors_out_of_range)
+           write (message%message, formatstr) rFactor_min, rFactor_max, roughnessFactor
+           call addMessage(errorStruct, message)
+       endif
+   enddo
+   end subroutine basicGeometryTest
 !***********************************************************************************************************
    end module geometryModuleRTOovertopping
 !***********************************************************************************************************
