@@ -98,6 +98,7 @@ namespace TestWrapper
                                              double dikeHeight, OvertoppingInput input, out string[] errorMsg)
         {
             const int maxValidationMessages = 32;
+            const int size = ErrorMessageLength * maxValidationMessages;
 
             var geometry = new OvertoppingGeometryStruct
             {
@@ -112,19 +113,23 @@ namespace TestWrapper
             Marshal.Copy(roughness, 0, geometry.Roughness, roughness.Length);
 
             var success = false;
-            var errorMessage = new StringBuilder(ErrorMessageLength);
-            ValidateInputC(ref geometry, ref dikeHeight, ref input, ref success, errorMessage, errorMessage.Capacity);
 
-
-            var longErrorMessage = new StringBuilder(ErrorMessageLength*maxValidationMessages);
-            ValidateInputCnew(ref geometry, ref dikeHeight, ref input, ref success, longErrorMessage, longErrorMessage.Capacity);
+            var longErrorMessage = new StringBuilder(size);
+            ValidateInputC(ref geometry, ref dikeHeight, ref input, ref success, longErrorMessage, size);
 
             Marshal.FreeHGlobal(geometry.XCoords);
             Marshal.FreeHGlobal(geometry.YCoords);
             Marshal.FreeHGlobal(geometry.Roughness);
 
-            errorMsg = new []{""};
-            errorMsg[0] = success ? string.Empty : ConvertString(errorMessage);
+            if (success)
+            {
+                errorMsg = new[] { "" };
+                errorMsg[0] = string.Empty;
+            }
+            else
+            {
+                errorMsg = ConvertString(longErrorMessage).Split(';');
+            }
 
             return success;
         }
@@ -162,10 +167,6 @@ namespace TestWrapper
 
         [DllImport("dllDikesOvertopping.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void ValidateInputC(ref OvertoppingGeometryStruct geometry,
-            ref double dikeHeight, ref OvertoppingInput input, ref bool succes, StringBuilder message, int stringLength);
-
-        [DllImport("dllDikesOvertopping.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ValidateInputCnew(ref OvertoppingGeometryStruct geometry,
             ref double dikeHeight, ref OvertoppingInput input, ref bool succes, StringBuilder message, int stringLength);
     }
 }

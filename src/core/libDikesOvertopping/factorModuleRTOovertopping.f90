@@ -179,6 +179,7 @@
    real(wp)              :: sum_horzLengths !< sum of all horzLengths
    real(wp), parameter   :: one = 1.0_wp    !< constant in comparision with breaker parameters
    real(wp), parameter   :: ten = 10.0_wp   !< constant in comparision with breaker parameters
+   integer               :: ierr            !< error code of allocate
 
 ! ==========================================================================================================
 
@@ -198,10 +199,15 @@
 
    if (succes) then
 
-      ! allocate roughness factos and horizontal lengths
-      allocate (rFactors   (geometry%nCoordinates-1))
-      allocate (horzLengths(geometry%nCoordinates-1))
+      ! allocate roughness factors and horizontal lengths and check results
+      allocate (rFactors(geometry%nCoordinates-1), horzLengths(geometry%nCoordinates-1), stat=ierr)
+      if (ierr /= 0) then
+          write(errorMessage, GetOvertoppingFormat(allocateError)) 2*(geometry%nCoordinates-1)
+          succes = .false.
+      endif
+   endif
 
+   if (succes) then
       ! determine y-coordinates lower and upper bound segments with influence
       yLower = max(h-0.25d0*z2, geometry%yCoordinates(1))
       yUpper = min(h+0.50d0*z2, geometry%yCoordinates(geometry%nCoordinates))

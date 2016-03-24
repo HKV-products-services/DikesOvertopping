@@ -20,6 +20,7 @@ module loadRTOTests
     use mainModuleRTOovertopping
     use geometryModuleRTOovertopping
     use readCrossSectionForTests
+    use overtoppingMessages
 
     implicit none
     private
@@ -63,6 +64,7 @@ subroutine allLoadRTOTests( nCrossSections, nBasicTestSeries )
     modelFactors%fShallow = 0.92
     modelFactors%typeRunup = 1
     modelFactors%relaxationFactor = 1.0d0
+    call setLanguage('UK')
     !
     ! execute all test series for all cross sections
     do i = 1, nCrossSections

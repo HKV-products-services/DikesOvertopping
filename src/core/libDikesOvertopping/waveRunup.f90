@@ -5,7 +5,7 @@
 !
 !  Programmers: Bastiaan Kuijper, HKV consultants / Edwin Spee, Deltares
 !
-!  Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+!  Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 !  $Id$
 !
 !***********************************************************************************************************
@@ -16,6 +16,7 @@ module waveRunup
    use typeDefinitionsRTOovertopping
    use formulaModuleRTOovertopping
    use geometryModuleRTOovertopping
+   use OvertoppingMessages
 
    implicit none
 
@@ -149,8 +150,7 @@ module waveRunup
 
          ! determine error message when no convergence is reached
          succes = .false.
-         errorMessage = 'no convergence in iteration procedure 2% wave run-up'
-
+         errorMessage = GetOvertoppingMessage(no_convergence_2percent_wave_runup)
       endif
 
    endif

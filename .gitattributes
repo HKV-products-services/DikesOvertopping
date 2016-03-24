@@ -30,6 +30,10 @@ release/feedbackDLL.dll -text
 src/core/teamcity.bat -text
 src/core/tests/unitTests/runtests.bat -text
 src/wrappers/OvertoppingCalculationTest.cs -text
+src/wrappers/TestRunner/App.config -text
+src/wrappers/TestRunner/Program.cs -text
+src/wrappers/TestRunner/Properties/AssemblyInfo.cs -text
+src/wrappers/TestRunner/TestRunner.csproj -text
 src/wrappers/TestWrapper.csproj -text
 src/wrappers/lib/Deltares.Standard.dll -text
 src/wrappers/lib/Deltares.Standard.pdb -text

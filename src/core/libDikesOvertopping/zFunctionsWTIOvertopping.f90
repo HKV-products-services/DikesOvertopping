@@ -2,7 +2,7 @@
 !! This file contains the limit state functions for wave overtopping within WTI
 !<
 !
-! Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+! Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 ! $Id$
 !
 !>
@@ -124,11 +124,12 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
     real(kind=wp)     :: auxiliaryHeight        !< auxiliary height for the profile
     real(kind=wp)     :: slope                  !< slope of the profile
     integer           :: i                      !< do-loop counter
+    integer           :: ierr                   !< error code of allocate
 
     succes = .true.
     if (nrCoordinates < 2) then
         succes = .false.
-        errorMessage = 'number of coordinates cross section less than 2'
+        errorMessage = GetOvertoppingMessage(dimension_cross_section_less_than_2)
         return
     endif
 
@@ -140,19 +141,23 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
     ! First the situation where the new dike height is close to the dike toe
     if (dikeHeight <= auxiliaryHeightToe) then
         nrCoordsAdjusted = 2
-        allocate( xCoordsAdjusted(nrCoordsAdjusted) )
-        allocate( zCoordsAdjusted(nrCoordsAdjusted) )
-        zCoordsAdjusted(2) = dikeHeight
-        xCoordsAdjusted(2) = interpolateLine(coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, dikeHeight)
-        xCoordsAdjusted(1) = xCoordsAdjusted(2) - xDiff_min
-        zCoordsAdjusted(1) = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, xCoordsAdjusted(1))
+        allocate( xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=ierr )
+        if (ierr /= 0) then
+            write(errorMessage, GetOvertoppingFormat(allocateError)) 2*nrCoordsAdjusted
+            succes = .false.
+        else
+            zCoordsAdjusted(2) = dikeHeight
+            xCoordsAdjusted(2) = interpolateLine(coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, dikeHeight)
+            xCoordsAdjusted(1) = xCoordsAdjusted(2) - xDiff_min
+            zCoordsAdjusted(1) = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, xCoordsAdjusted(1))
+        endif
     else
         nrCoordsAdjusted = nrCoordinates
         do i = 2, nrCoordinates - 1
             slope = ( coordinates(i+1)%zCoordinate - coordinates(i)%zCoordinate ) / ( coordinates(i+1)%xCoordinate - coordinates(i)%xCoordinate )
             if (slope < slope_min .and. i < nrCoordinates - 1) then
                 !
-                ! the next segment of the cross sectin is a berm segment
+                ! the next segment of the cross section is a berm segment
                 auxiliaryHeightBerm = interpolateLine(coordinates(i+1)%xCoordinate, coordinates(i+2)%xCoordinate, coordinates(i+1)%zCoordinate, coordinates(i+2)%zCoordinate, coordinates(i+1)%xCoordinate + xDiff_min)
                 if (dikeHeight < auxiliaryHeightBerm) then 
                     nrCoordsAdjusted = i
@@ -169,24 +174,32 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
                 endif
             endif
         enddo
-        allocate( xCoordsAdjusted(nrCoordsAdjusted) )
-        allocate( zCoordsAdjusted(nrCoordsAdjusted) )
-
-        ! all segments of the profile except the last
-        do i = 1, nrCoordsAdjusted - 1
-            xCoordsAdjusted(i) = coordinates(i)%xCoordinate
-            zCoordsAdjusted(i) = coordinates(i)%zCoordinate
-        enddo
-
-        ! last segment of the profile
-        zCoordsAdjusted(nrCoordsAdjusted) = dikeHeight
-        xCoordsAdjusted(nrCoordsAdjusted) = interpolateLine(coordinates(nrCoordsAdjusted-1)%zCoordinate, coordinates(nrCoordsAdjusted)%zCoordinate, &
-
-        coordinates(nrCoordsAdjusted-1)%xCoordinate, coordinates(nrCoordsAdjusted)%xCoordinate, dikeHeight)
         
-        if (xCoordsAdjusted(nrCoordsAdjusted) < xCoordsAdjusted(nrCoordsAdjusted-1)) then
+        !
+        ! allocate xCoordsAdjusted and zCoordsAdjusted and check result
+        !
+        allocate( xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=ierr )
+        if (ierr /= 0) then
+            write(errorMessage, GetOvertoppingFormat(allocateError)) 2*nrCoordsAdjusted
             succes = .false.
-            errorMessage = GetOvertoppingMessage(adjusted_xcoordinates)
+        else
+
+            ! all segments of the profile except the last
+            do i = 1, nrCoordsAdjusted - 1
+                xCoordsAdjusted(i) = coordinates(i)%xCoordinate
+                zCoordsAdjusted(i) = coordinates(i)%zCoordinate
+            enddo
+
+            ! last segment of the profile
+            zCoordsAdjusted(nrCoordsAdjusted) = dikeHeight
+            xCoordsAdjusted(nrCoordsAdjusted) = interpolateLine(coordinates(nrCoordsAdjusted-1)%zCoordinate, coordinates(nrCoordsAdjusted)%zCoordinate, &
+
+            coordinates(nrCoordsAdjusted-1)%xCoordinate, coordinates(nrCoordsAdjusted)%xCoordinate, dikeHeight)
+
+            if (xCoordsAdjusted(nrCoordsAdjusted) < xCoordsAdjusted(nrCoordsAdjusted-1)) then
+                succes = .false.
+                errorMessage = GetOvertoppingMessage(adjusted_xcoordinates)
+            endif
         endif
     endif
 
@@ -217,10 +230,10 @@ function zFuncLogRatios(qo, qc, mqo, mqc, success, errorMessage) result (z)
     else
         success = .false.
         if ( mqc <= 0.0d0 ) then
-            write(errorMessage, '(a,g)') &
-                "Negative or zero variance of critical overtopping uncertainty model; variable number: ", varModelFactorCriticalOvertopping
+            write(errorMessage, GetOvertoppingFormat(zero_or_negative_varModelFactorCriticalOvertopping)) &
+               varModelFactorCriticalOvertopping
         else ! qc <=0.0d0
-            write(errorMessage, '(a,g)') "Negative or zero critical overtopping: ", qc
+            write(errorMessage, GetOvertoppingFormat(zero_or_negative_critical_overtopping)) qc
         endif
     endif
 end function ZFuncLogRatios

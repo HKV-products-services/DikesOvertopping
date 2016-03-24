@@ -12,11 +12,11 @@ module OvertoppingMessages
 !<
 implicit none
 
-integer, parameter :: maxmsg = 128
+integer, parameter :: maxmsg = 128, maxpar=32
 
 character(len=2) :: language = 'NL'   !< default : Dutch
 
-private :: maxmsg, language
+private :: maxmsg, maxpar, language
 ! IDs:
 enum, bind(c)
 ! messages:
@@ -38,11 +38,33 @@ enum, bind(c)
     enumerator :: calc_wave_steepness_period_is_zero
     enumerator :: calc_breaker_param_steepness_is_zero
     enumerator :: calc_roots_cubic_function
+    enumerator :: psi_not_in_range
+    enumerator :: dimension_cross_section_less_than_2
+    enumerator :: ycoordinates_must_be_nondecreasing
+    enumerator :: dike_segment_mismatches
+    enumerator :: max2berm_segments
+    enumerator :: first_and_last_must_be_slope
+    enumerator :: wl_above_crest_not_allowed
+    enumerator :: interpolation_error_split_cross_sections
+    enumerator :: wl_above_crest
+    enumerator :: wave_height_or_periode_less_zero
+    enumerator :: wave_direction_not_in_range
+    enumerator :: no_convergence_2percent_wave_runup
 ! formats :
     enumerator :: model_factor_smaller_than
     enumerator :: model_factor_not_between
     enumerator :: roughnessfactors_out_of_range
     enumerator :: allocateError
+    enumerator :: xcoordinates_must_increase
+    enumerator :: typeRunup_not_in_range
+    enumerator :: zero_or_negative_varModelFactorCriticalOvertopping
+    enumerator :: zero_or_negative_critical_overtopping
+! parameters :
+    enumerator :: par_fB
+    enumerator :: par_fN
+    enumerator :: par_fS
+    enumerator :: par_2percent_wave_runup
+    enumerator :: reductionFactorForeshore
 end enum
 
 contains
@@ -117,6 +139,30 @@ select case(language)
                 GetOvertoppingMessage = 'Error calculating breaker parameter: wave steepness equals zero'
             case (calc_roots_cubic_function)
                 GetOvertoppingMessage = 'Error calculating roots general cubic function'
+            case (psi_not_in_range)
+                GetOvertoppingMessage = 'Dike normal (psi) not between 0 and 360 degree'
+            case (dimension_cross_section_less_than_2)
+                GetOvertoppingMessage = 'Number of coordinates cross section less than 2'
+            case (ycoordinates_must_be_nondecreasing)
+                GetOvertoppingMessage = 'y-coordinates must be non-decreasing'
+            case (dike_segment_mismatches)
+                GetOvertoppingMessage = 'Dike segment mismatches berm segment or slope segment'
+            case (max2berm_segments)
+                GetOvertoppingMessage = 'A maximum of two berm segments is allowed'
+            case (first_and_last_must_be_slope)
+                GetOvertoppingMessage = 'First and last dike segment must be a slope segment'
+            case (wl_above_crest_not_allowed)
+                GetOvertoppingMessage = 'In the overtopping freeboard routine is a local water level below crest not allowed.'
+            case (interpolation_error_split_cross_sections)
+                GetOvertoppingMessage = 'Error in interpolation between results for split cross sections'
+            case (wl_above_crest)
+                GetOvertoppingMessage = 'local water level above the crest level'
+            case (wave_height_or_periode_less_zero)
+                GetOvertoppingMessage = 'Wave height and/or wave period less than zero'
+            case (wave_direction_not_in_range)
+                GetOvertoppingMessage = 'Wave direction not between 0 and 360 degree'
+            case (no_convergence_2percent_wave_runup)
+                GetOvertoppingMessage = 'No convergence in iteration procedure 2% wave run-up'
             case default
                 write(GetOvertoppingMessage,*) 'Internal error, ID = ', ID
         end select
@@ -158,6 +204,30 @@ select case(language)
                 GetOvertoppingMessage = 'Fout in berekening brekerparameter: golf steilte is nul'
             case (calc_roots_cubic_function)
                 GetOvertoppingMessage = 'Fout in berekening van wortel 3e graads functie'
+            case (psi_not_in_range)
+                GetOvertoppingMessage = 'Dijk normaal (psi) ligt niet tussen 0 en 360 graden'
+            case (dimension_cross_section_less_than_2)
+                GetOvertoppingMessage = 'Aantal coordinaten dijk doorsnede is kleiner dan 2'
+            case (ycoordinates_must_be_nondecreasing)
+                GetOvertoppingMessage = 'y-coordinaten mogen niet afnemen'
+            case (dike_segment_mismatches)
+                GetOvertoppingMessage = 'Dijk segment is van ander type dan berm segment of helling segment'
+            case (max2berm_segments)
+                GetOvertoppingMessage = 'Maximum van twee berm segmenten overschreden'
+            case (first_and_last_must_be_slope)
+                GetOvertoppingMessage = 'Eerste en laatste dijk segment moeten een helling segment zijn'
+            case (wl_above_crest_not_allowed)
+                GetOvertoppingMessage = 'In the overtopping module is een lokale waterstand boven de kruin niet toegestaan.'
+            case (interpolation_error_split_cross_sections)
+                GetOvertoppingMessage = 'Fout in interpolatie tussen resultaten for split cross sections'
+            case (wl_above_crest)
+                GetOvertoppingMessage = 'Lokale waterstand boven de kruin'
+            case (wave_height_or_periode_less_zero)
+                GetOvertoppingMessage = 'Golf hoogte en/of golf periode kleiner dan nul'
+            case (wave_direction_not_in_range)
+                GetOvertoppingMessage = 'Golf hoek niet tussen 0 and 360 graden'
+            case (no_convergence_2percent_wave_runup)
+                GetOvertoppingMessage = 'Geen convergentie in iteratief proces voor bepaling 2% golf oploop'
             case default
                 write(GetOvertoppingMessage,*) 'Interne fout, ID = ', ID
         end select
@@ -176,9 +246,17 @@ select case(language)
             case (model_factor_not_between)
                 GetOvertoppingFormat = '("Model factor ",a," not between ",F6.3," and ",F6.3)'
             case (roughnessfactors_out_of_range)
-                GetOvertoppingFormat = '("Roughnessfactors must be in range 0.5 ... 1.0 ; found: ",F5.2)'
+                GetOvertoppingFormat = '("Roughnessfactors must be in range ",F3.1," ... ",F3.1,"; found: ",F5.2)'
             case (allocateError)
                 GetOvertoppingFormat = '("Memory allocation error for array(s) with total size: ",I0)'
+            case (xcoordinates_must_increase)
+                GetOvertoppingFormat = '("x-coordinates must increase with dx >= ",F4.1," m")'
+            case (typeRunup_not_in_range)
+                GetOvertoppingFormat = '("TypeRunup must be 0 or 1, found: ",I0)'
+            case (zero_or_negative_varModelFactorCriticalOvertopping)
+                GetOvertoppingFormat = '("Negative or zero variance of critical overtopping uncertainty model; variable number: ",I0)'
+            case (zero_or_negative_critical_overtopping)
+                GetOvertoppingFormat = '("Negative or zero critical overtopping: ",G)'
             case default
                 write(GetOvertoppingFormat,*) '(Internal error, ID = ', ID, ')'
         end select
@@ -189,9 +267,17 @@ select case(language)
             case (model_factor_not_between)
                 GetOvertoppingFormat = '("Model factor ",a," niet tussen ",F6.3," en ",F6.3)'
             case (roughnessfactors_out_of_range)
-                GetOvertoppingFormat = '("Ruwheidsfactoren moeten liggen tussen 0.5 ... 1.0 ; gevonden: ",F5.2)'
+                GetOvertoppingFormat = '("Ruwheidsfactoren moeten liggen tussen ",F3.1," ... ",F3.1,"; gevonden: ",F5.2)'
             case (allocateError)
                 GetOvertoppingFormat = '("Geheugen allocatie fout voor array(s) met totale grootte: ",I0)'
+            case (xcoordinates_must_increase)
+                GetOvertoppingFormat = '("x-coordinaten moeten toenemen met dx >= ",F4.1," m")'
+            case (typeRunup_not_in_range)
+                GetOvertoppingFormat = '("TypeRunup moet 0 of 1 zijn; gevonden: ",I0)'
+            case (zero_or_negative_varModelFactorCriticalOvertopping)
+                GetOvertoppingFormat = '("Negatieve of nul variantie van kritieke overtopping model onzekerheid; variabel nummer: ",I0)'
+            case (zero_or_negative_critical_overtopping)
+                GetOvertoppingFormat = '("Negatieve of null kritieke overtopping debiet: ",G)'
             case default
                 write(GetOvertoppingFormat,*) '(Interne fout, ID = ', ID, ')'
         end select
@@ -199,4 +285,40 @@ select case(language)
 
 end function GetOvertoppingFormat
 
+character(len=maxpar) function GetOvertoppingParameter(ID)
+integer, intent(in) :: ID
+
+select case(language)
+    case('UK')
+        select case (ID)
+            case (par_fB)
+                GetOvertoppingParameter = 'fB (breaking waves)'
+            case (par_fN)
+                GetOvertoppingParameter = 'fN (non-breaking waves)'
+            case (par_fS)
+                GetOvertoppingParameter = 'fS (shallow waves)'
+            case (par_2percent_wave_runup)
+                GetOvertoppingParameter = '2% wave runup'
+            case (reductionFactorForeshore)
+                GetOvertoppingParameter = 'reduction factor foreshore'
+            case default
+                write(GetOvertoppingParameter,*) '(Internal error, ID = ', ID, ')'
+        end select
+    case default
+        select case (ID)
+            case (par_fB)
+                GetOvertoppingParameter = 'fB (brekende golven)'
+            case (par_fN)
+                GetOvertoppingParameter = 'fN (niet brekende golven)'
+            case (par_fS)
+                GetOvertoppingParameter = 'fS (ondiepe golven)'
+            case (par_2percent_wave_runup)
+                GetOvertoppingParameter = '2% golf oploop'
+            case (reductionFactorForeshore)
+                GetOvertoppingParameter = 'reductie factor vooroever'
+            case default
+                write(GetOvertoppingParameter,*) '(Interne fout, ID = ', ID, ')'
+        end select
+ end select
+end function GetOvertoppingParameter
 end module OvertoppingMessages

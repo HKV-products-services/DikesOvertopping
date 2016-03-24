@@ -89,7 +89,7 @@ namespace TestWrapper
             var result = OvertoppingFortranAccess.Validate(xcoords, ycoords, roughness, dikeHeight, modelFactors, out msg);
 
             Assert.IsFalse(result, "validation");
-            Assert.AreEqual(msg[0], "error in calculation of adjusted x-coordinates", "validation message");
+            Assert.AreEqual(msg[0], "ERROR:Fout in bepaling van gecorrigeerde x-coordinaten", "validation message");
         }
 
         [Test]
@@ -117,7 +117,8 @@ namespace TestWrapper
             var result = OvertoppingFortranAccess.Validate(xcoords, ycoords, roughness, dikeHeight, modelFactors, out msg);
 
             Assert.IsFalse(result, "validation");
-            Assert.AreEqual(msg[0], "error in calculation of adjusted x-coordinates", "validation message");
+            Assert.AreEqual(msg[0], "ERROR:Fout in bepaling van gecorrigeerde x-coordinaten", "validation message");
+            Assert.AreEqual(msg[1], "ERROR:Model factor fS (ondiepe golven) kleiner dan  0.000", "validation message");
         }
     }
 }

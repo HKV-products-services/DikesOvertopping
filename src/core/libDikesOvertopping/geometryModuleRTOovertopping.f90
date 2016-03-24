@@ -49,6 +49,7 @@
 !  Local parameters
 !
    type (tpGeometry) :: geometry !< structure with geometry data
+   real(kind=wp)     :: rFactor  !< offending roughness factor
 
 ! ==========================================================================================================
 
@@ -60,7 +61,7 @@
    if (succes) then
       if ((psi < 0.0d0) .or. (psi > 360.0d0)) then
          succes = .false.
-         errorMessage = 'dike normal (psi) not between 0 and 360 degree'
+         errorMessage = GetOvertoppingMessage(psi_not_in_range)
       endif
    endif
 
@@ -68,7 +69,7 @@
    if (succes) then
       if (nCoordinates < 2) then
          succes = .false.
-         errorMessage = 'number of coordinates cross section less than 2'
+         errorMessage = GetOvertoppingMessage(dimension_cross_section_less_than_2)
       endif
    endif
 
@@ -82,8 +83,7 @@
    if (succes) then
       if (minval(geometry%xCoordDiff) < xDiff_min - marginDiff) then
          succes = .false.
-         write (errorMessage,'(A,F4.1,A)') &
-                  'x-coordinates must increase with dx >= ', xDiff_min, ' m'
+         write (errorMessage, GetOvertoppingFormat(xcoordinates_must_increase)) xDiff_min
       endif
    endif
 
@@ -91,7 +91,7 @@
    if (succes) then
       if (minval(geometry%yCoordDiff) < 0.0d0) then
          succes = .false.
-         errorMessage = 'y-coordinates must be non-decreasing'
+         errorMessage = GetOvertoppingMessage(ycoordinates_must_be_nondecreasing)
       endif
    endif
 
@@ -99,7 +99,7 @@
    if (succes) then
       if (count(geometry%segmentTypes == 3) > 0d0) then
          succes = .false.
-         errorMessage = 'dike segment mismatches berm segment or slope segment'
+         errorMessage = GetOvertoppingMessage(dike_segment_mismatches)
       endif
    endif
 
@@ -107,7 +107,7 @@
    if (succes) then
       if (geometry%NbermSegments > 2) then
          succes = .false.
-         errorMessage = 'a maximum of two berm segments is allowed'
+         errorMessage = GetOvertoppingMessage(max2berm_segments)
       endif
    endif
 
@@ -116,17 +116,20 @@
       if ((geometry%segmentTypes(1) == 2) .or. &
           (geometry%segmentTypes(geometry%nCoordinates-1) == 2)) then
          succes = .false.
-         errorMessage = 'first and last dike segment must be a slope segment'
+         errorMessage = GetOvertoppingMessage(first_and_last_must_be_slope)
       endif
    endif
 
    ! check roughness factors
    if (succes) then
-      if ((minval(geometry%roughnessFactors) < rFactor_min) .or. &
-          (maxval(geometry%roughnessFactors) > rFactor_max)) then
+      if (any(geometry%roughnessFactors < rFactor_min)) then
          succes = .false.
-         write (errorMessage,'(A,F6.1,A,F6.1)') &
-            'roughness factors not between ', rFactor_min, ' and ', rFactor_max
+         rFactor = minval(geometry%roughnessFactors)
+         write (errorMessage,GetOvertoppingFormat(roughnessfactors_out_of_range)) rFactor_min, rFactor_max, rFactor
+      else if (any(geometry%roughnessFactors > rFactor_max)) then
+         succes = .false.
+         rFactor = maxval(geometry%roughnessFactors)
+         write (errorMessage,GetOvertoppingFormat(roughnessfactors_out_of_range)) rFactor_min, rFactor_max, rFactor
       endif
    endif
 
@@ -192,9 +195,10 @@
    
    if (succes) then
        do i = 1, geometry%nCoordinates - 1
-           if (geometry%Roughnessfactors(i) < 0.5d0 .or. geometry%Roughnessfactors(i) > 1d0) then
+           if (geometry%Roughnessfactors(i) < rFactor_min .or. geometry%Roughnessfactors(i) > rFactor_max) then
                succes = .false.
-               write(errorMessage, GetOvertoppingFormat(roughnessfactors_out_of_range), iostat=ierr) geometry%Roughnessfactors(i)
+               write(errorMessage, GetOvertoppingFormat(roughnessfactors_out_of_range), iostat=ierr) &
+                   rFactor_min, rFactor_max, geometry%Roughnessfactors(i)
                if (ierr /= 0) then
                    errorMessage = GetOvertoppingFormat(roughnessfactors_out_of_range)
                endif
@@ -988,25 +992,31 @@ end subroutine deallocateGeometry
 !  Local parameters
 !
    real(wp), allocatable :: horzLengths(:) !< horizontal lengths segments (m)
+   integer               :: ierr           !< error code allocate
 
 ! ==========================================================================================================
 
-   ! allocate horizontal lengths  
-   allocate(horzLengths(geometry%nCoordinates-1))
-
-   ! calculate horizontal lengths
-   call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, succes, errorMessage)
-
-   ! calculate horizontal distance
-   if (succes) dx = sum(horzLengths)
-
-   ! deallocate horizontal lengths
-   deallocate(horzLengths)
-
-   ! determine possible error message
+   ! allocate horizontal lengthsand check results
+   allocate(horzLengths(geometry%nCoordinates-1), stat=ierr)
+   succes = (ierr == 0)
    if (.not. succes) then
-      errorMessage = GetOvertoppingMessage(calc_horizontal_distance)
-   endif   
+       write(errorMessage, GetOvertoppingFormat(allocateError)) geometry%nCoordinates-1
+   else
+
+       ! calculate horizontal lengths
+       call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, succes, errorMessage)
+       
+       ! calculate horizontal distance
+       if (succes) dx = sum(horzLengths)
+       
+       ! deallocate horizontal lengths
+       deallocate(horzLengths)
+       
+       ! determine possible error message
+       if (.not. succes) then
+          errorMessage = GetOvertoppingMessage(calc_horizontal_distance)
+       endif
+    endif
 
    end subroutine calculateHorzDistance
 

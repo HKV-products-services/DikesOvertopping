@@ -498,7 +498,7 @@
    freeBoard = load%h - geometry%yCoordinates(geometry%nCoordinates)
    if (freeBoard <= 0.0d0) then 
       succes = .false.
-      errorMessage = 'In the overtopping freeboard routine is a local water level below crest not allowed.'
+      errorMessage = GetOvertoppingMessage(wl_above_crest_not_allowed)
    else
       overtoppingOverflow = 0.6d0 * sqrt( gravityConstant * (freeBoard ** 3) )
       overtopping%Qo = overtopping%Qo + overtoppingOverflow
@@ -583,7 +583,7 @@
       overtopping%z2 = overtoppingB%z2 + interpFactor * (overtoppingF%z2 - overtoppingB%z2)
       overtopping%Qo = overtoppingB%Qo + interpFactor * (overtoppingF%Qo - overtoppingB%Qo)
    else
-      errorMessage = 'Error in interpolation between results for split cross sections'
+      errorMessage = GetOvertoppingMessage(interpolation_error_split_cross_sections)
    endif
 
    end subroutine interpolateResultsSections
@@ -619,7 +619,7 @@
    if (succes) then
       if (load%h > geometry%yCoordinates(geometry%nCoordinates)) then 
          succes = .false.
-         errorMessage = 'local water level above the crest level'
+         errorMessage = GetOvertoppingMessage(wl_above_crest)
       endif
    endif
 
@@ -628,7 +628,7 @@
       if (load%Hm0   < 0.0d0) succes = .false.
       if (load%Tm_10 < 0.0d0) succes = .false.
       if (.not. succes) then
-         errorMessage = 'wave height and/or wave period less than zero'
+         errorMessage = GetOvertoppingMessage(wave_height_or_periode_less_zero)
       endif
    endif
    
@@ -636,7 +636,7 @@
    if (succes) then
       if ((load%phi < 0.0d0) .or. (load%phi > 360.0d0)) then
          succes = .false.
-         errorMessage = 'wave direction not between 0 and 360 degree'
+         errorMessage = GetOvertoppingMessage(wave_direction_not_in_range)
       endif
    endif
 
@@ -683,15 +683,15 @@
          case (3)
              par_txt = 'fRunup3'
          case (4)
-             par_txt = 'fB (breaking waves)'
+             par_txt = GetOvertoppingParameter(par_fB)
          case (5)
-             par_txt = 'fN (non-breaking waves)'
+             par_txt = GetOvertoppingParameter(par_fN)
          case (6)
-             par_txt = 'fS (shallow waves)'
+             par_txt = GetOvertoppingParameter(par_fS)
          case (7)
-             par_txt = '2% wave runup'
+             par_txt = GetOvertoppingParameter(par_2percent_wave_runup)
          case (8)
-             par_txt = 'reductionFactorForeshore'
+             par_txt = GetOvertoppingParameter(reductionFactorForeshore)
       end select
       ! determine value and minimum/maximum model factor
       select case (i)
@@ -766,7 +766,7 @@
         modelFactors%fRunup3    =  1.50_wp
     case default
         success = .false.
-        write(errorMessage, '(a,i0)') 'TypeRunup must be 0 or 1, found: ', modelFactors%TypeRunup
+        write(errorMessage, GetOvertoppingFormat(typeRunup_not_in_range)) modelFactors%TypeRunup
     end select
    end subroutine convertOvertoppingInput
 

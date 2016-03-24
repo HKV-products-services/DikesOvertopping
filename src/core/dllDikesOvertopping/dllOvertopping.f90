@@ -5,11 +5,13 @@
 !!  - calculateQo
 !!  - calculateQoF
 !!  - ValidateInputC
+!!  - ValidateInputFold
 !!  - ValidateInputF
-!!  - ValidateInputFnew
+!!  - SetLanguage
+!!  - GetLanguage
 !!  - versionNumber
 !
-! Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+! Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 ! $Id$
 !
 !
@@ -28,7 +30,7 @@ module dllOvertopping
     private
 
     !  FUNCTIONS/SUBROUTINES exported from dllOvertoppping.dll:
-    public :: calculateQo, calculateQoF, calcZValue, versionNumber, ValidateInputC, ValidateInputF, ValidateInputFnew, &
+    public :: calculateQo, calculateQoF, calcZValue, versionNumber, ValidateInputC, ValidateInputFold, ValidateInputF, &
               setLanguage, getLanguage
 
 contains
@@ -119,7 +121,7 @@ end subroutine calcZValue
 
 !>
 !! Subroutine that validates the geometry
-!! Wrapper for ValidateInputF: convert C-like input structures to Fortran input structures
+!! Wrapper for ValidateInputFold: convert C-like input structures to Fortran input structures
 !!
 !! @ingroup dllDikesOvertopping
 subroutine ValidateInputC ( geometryInput, dikeHeight, modelFactors, success, errorText)
@@ -140,8 +142,10 @@ subroutine ValidateInputC ( geometryInput, dikeHeight, modelFactors, success, er
     character(len=8)                          :: msgtype
     
     geometry = geometry_c_f(geometryInput)
+    
+    call initErrorMessages(errorStruct)
 
-    call ValidateInputFnew ( geometry, dikeHeight, modelFactors, errorStruct)
+    call ValidateInputF ( geometry, dikeHeight, modelFactors, errorStruct)
 
     nMessages = errorStruct%nErrors + errorStruct%nWarnings
     success = nMessages == 0
@@ -167,10 +171,11 @@ end subroutine ValidateInputC
 
 !>
 !! Subroutine that validates the geometry
+!! old interface; will be removed in the near future
 !!
 !! @ingroup dllDikesOvertopping
-subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, success, errorText)
-!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputF" :: ValidateInputF
+subroutine ValidateInputFold ( geometryF, dikeHeight, modelFactors, success, errorText)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputFold" :: ValidateInputFold
     use geometryModuleRTOovertopping
     use typeDefinitionsRTOovertopping
     use zFunctionsWTIOvertopping
@@ -223,14 +228,14 @@ subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, success, errorT
     
     if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
     if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
-end subroutine ValidateInputF
+end subroutine ValidateInputFold
 
 !>
 !! Subroutine that validates the geometry
 !!
 !! @ingroup dllDikesOvertopping
-subroutine ValidateInputFnew ( geometryF, dikeHeight, modelFactors, errorStruct)
-!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputFnew" :: ValidateInputFnew
+subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, errorStruct)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputF" :: ValidateInputF
     use geometryModuleRTOovertopping
     use typeDefinitionsRTOovertopping
     use zFunctionsWTIOvertopping
@@ -298,7 +303,7 @@ subroutine ValidateInputFnew ( geometryF, dikeHeight, modelFactors, errorStruct)
 
     if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
     if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
-end subroutine ValidateInputFnew
+end subroutine ValidateInputF
 
 !>
 !! Subroutine that sets the language for error and validation messages
@@ -335,7 +340,7 @@ subroutine versionNumber(version)
     !
     ! locals
     !
-    character(len=*), parameter :: cversion = "16.1.2.0"
+    character(len=*), parameter :: cversion = "16.1.3.0"
     !
     !==============================================================================
     !
