@@ -129,10 +129,10 @@ select case(language)
                 GetOvertoppingMessage = 'Error in calculation influence berms'
             case (calc_influence_factors)
                 GetOvertoppingMessage = 'Error in adjustment of influence factors'
-            case (breaker_param_is_zero)
-                GetOvertoppingMessage = 'Error calculating 2% wave run-up: breaker parameter equals zero'
             case (calc_wave_overtopping_discharge)
                 GetOvertoppingMessage = 'Error calculating wave overtopping discharge'
+            case (breaker_param_is_zero)
+                GetOvertoppingMessage = 'Error calculating 2% wave run-up: breaker parameter equals zero'
             case (calc_wave_steepness_period_is_zero)
                 GetOvertoppingMessage = 'Error calculating wave steepness: wave period equals zero'
             case (calc_breaker_param_steepness_is_zero)
@@ -184,8 +184,6 @@ select case(language)
                 GetOvertoppingMessage = 'Fout in berekening horizontale lengtes'
             case (calc_horizontal_distance)
                 GetOvertoppingMessage = 'Error in berekening horizontale afstanden'
-            case (calc_influence_factors)
-                GetOvertoppingMessage = 'Error in berekening van invloedsfactoren'
             case (remove_dike_segments_index)
                 GetOvertoppingMessage = 'Fout bij verwijderen dijk secties: foute index'
             case (calc_representative_slope_angle)
@@ -194,10 +192,12 @@ select case(language)
                 GetOvertoppingMessage = 'Fout in berekening invloed ruwheid'
             case (calc_influence_berms)
                 GetOvertoppingMessage = 'Fout in berekening invloed bermen'
-            case (breaker_param_is_zero)
-                GetOvertoppingMessage = 'Fout in berekening 2% golf oploop: brekerparameter is nul'
+            case (calc_influence_factors)
+                GetOvertoppingMessage = 'Error in berekening van invloedsfactoren'
             case (calc_wave_overtopping_discharge)
                 GetOvertoppingMessage = 'Fout in berekening golf overslag debiet'
+            case (breaker_param_is_zero)
+                GetOvertoppingMessage = 'Fout in berekening 2% golf oploop: brekerparameter is nul'
             case (calc_wave_steepness_period_is_zero)
                 GetOvertoppingMessage = 'Fout in berekening golf steilte: golf periode is nul'
             case (calc_breaker_param_steepness_is_zero)
