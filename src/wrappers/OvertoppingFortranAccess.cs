@@ -128,7 +128,7 @@ namespace TestWrapper
             }
             else
             {
-                errorMsg = ConvertString(longErrorMessage).Split(';');
+                errorMsg = ConvertString(longErrorMessage).Split('\t');
             }
 
             return success;

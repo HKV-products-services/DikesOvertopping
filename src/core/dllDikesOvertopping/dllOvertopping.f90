@@ -140,6 +140,7 @@ subroutine ValidateInputC ( geometryInput, dikeHeight, modelFactors, success, er
     integer                                   :: i
     integer                                   :: nMessages
     character(len=8)                          :: msgtype
+    character, parameter                      :: separationChar = char(9)      !< use horizontal tab for separation
     
     geometry = geometry_c_f(geometryInput)
     
@@ -162,7 +163,7 @@ subroutine ValidateInputC ( geometryInput, dikeHeight, modelFactors, success, er
             if (i == 1) then
                 errorText = trim(msgtype) // errorStruct%messages(i)%message
             else
-                errorText = trim(errorText) // ";" // trim(msgtype) // errorStruct%messages(i)%message
+                errorText = trim(errorText) // separationChar // trim(msgtype) // errorStruct%messages(i)%message
             endif
         enddo
     endif
