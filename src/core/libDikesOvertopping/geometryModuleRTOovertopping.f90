@@ -1037,7 +1037,6 @@ end subroutine deallocateGeometry
    integer                                     :: i                   !< loop counter
    real(kind=wp)                               :: diffx               !< difference in two consecutive x coordinates
    real(kind=wp)                               :: diffy               !< difference in two consecutive y coordinates
-   real(kind=wp), parameter                    :: min_dx = 0.02d0     !< minimum difference (see FO, section 4.4)
    real(kind=wp), parameter                    :: tol = 1d-6          !< tolerance for comparing reals
    type(tMessage)                              :: message             !< local error message
    real(kind=wp)                               :: xi                  !< current x coordinate
@@ -1056,12 +1055,12 @@ end subroutine deallocateGeometry
        roughnessFactor = geometryF%roughness(i)
        diffx           = xnext - xi
        diffy           = ynext - yi
-       if (diffx < min_dx - tol) then
+       if (diffx < xDiff_min - tol) then
            success = .false.
            message%errorcode = diffx_too_small
            message%severity = severityError
            formatstr = GetOvertoppingFormat(diffx_too_small)
-           write(message%message, formatstr) min_dx, xi, xnext
+           write(message%message, formatstr) xDiff_min, xi, xnext
            call addMessage(errorStruct, message)
        endif
        if (diffy < 0d0) then

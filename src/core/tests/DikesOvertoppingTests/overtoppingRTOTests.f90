@@ -37,7 +37,7 @@ subroutine allovertoppingRTOTests
     call testWithLevel(overtoppingValidationTest, 'Test validation of incorrect profile and negative model factor', 1)
     call testWithLevel(overtoppingValidationRoughnessTest, 'Test validation of invalid roughness', 1)
     call testWithLevel(influenceRoughnessTest, 'Test influence roughness', 1)
-    call testWithLevel(overtoppingMultipleValidationTest, 'Test validation of incorrect profile and negative model factor in one call', 0)
+    call testWithLevel(overtoppingMultipleValidationTest, 'Test validation of incorrect profile and negative model factor in one call', 1)
     call testWithLevel(overtoppingValidationTestZPoints, 'Test message of incorrect profile (z-value)', 1)
     !
     ! All test series with varying the load for different cross sections

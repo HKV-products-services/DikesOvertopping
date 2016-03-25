@@ -17,9 +17,12 @@ integer, parameter :: maxmsg = 128, maxpar=32
 character(len=2) :: language = 'NL'   !< default : Dutch
 
 private :: maxmsg, maxpar, language
-! IDs:
+
+!> IDs for the strings in this module:
 enum, bind(c)
 ! messages:
+    enumerator :: errorIndicator
+    enumerator :: warningIndicator
     enumerator :: validation_only_for_type_runup1
     enumerator :: adjusted_xcoordinates
     enumerator :: slope_negative
@@ -73,11 +76,12 @@ contains
 
 !>
 !! Subroutine that sets the language for error and validation messages
+!!    only strings 'NL' and 'UK' are recoqnized (lower and upper case)
 !!
 !! @ingroup LibOvertopping
 subroutine SetLanguage(lang)
-use utilities
-character(len=*), intent(in) :: lang
+use utilities, only : to_upper
+character(len=*), intent(in) :: lang   !< new language ID to be used
 
 character(len=len(lang)) :: langUpper
 
@@ -94,25 +98,33 @@ end subroutine SetLanguage
 !!
 !! @ingroup LibOvertopping
 subroutine GetLanguage(lang)
-character(len=*), intent(out) :: lang
+character(len=*), intent(out) :: lang   !< filled with current language ID
 
 lang = language
 end subroutine GetLanguage
 
+!>
+!! Subroutine that returns a message with the corresponding ID in the current language
+!!
+!! @ingroup LibOvertopping
 character(len=maxmsg) function GetOvertoppingMessage(ID)
-integer, intent(in) :: ID
+integer, intent(in) :: ID  !< identification number of string
 
 select case(language)
     case('UK')
         select case (ID)
+            case (errorIndicator)
+                GetOvertoppingMessage = 'ERROR'
+            case (warningIndicator)
+                GetOvertoppingMessage = 'WARNING'
             case (validation_only_for_type_runup1)
                 GetOvertoppingMessage = 'Validation only implemented for typeRunup=1'
             case (adjusted_xcoordinates)
                 GetOvertoppingMessage = 'Error in calculation of adjusted x-coordinates'
             case (slope_negative)
-                GetOvertoppingMessage = 'Error in calculating slopes (dx <= 0)'
+                GetOvertoppingMessage = 'Error in calculating slope (dx <= 0)'
             case (split_cross_section_seq_berm)
-                GetOvertoppingMessage = 'Error in split cross section: sequential berms'
+                GetOvertoppingMessage = 'Error in splitting cross section: sequential berms'
             case (adjust_non_horizontal_seq_berm)
                 GetOvertoppingMessage = 'Error adjusting non-horizontal berms: sequential berms'
             case (merging_seq_berm)
@@ -170,6 +182,10 @@ select case(language)
         end select
     case default
         select case (ID)
+            case (errorIndicator)
+                GetOvertoppingMessage = 'FOUT'
+            case (warningIndicator)
+                GetOvertoppingMessage = 'WAARSCHUWING'
             case (validation_only_for_type_runup1)
                 GetOvertoppingMessage = 'Validatie alleen geimplementeerd voor typeRunup=1'
             case (adjusted_xcoordinates)
@@ -237,8 +253,12 @@ select case(language)
 
 end function GetOvertoppingMessage
 
+!>
+!! Subroutine that returns a Fortran format string with the corresponding ID in the current language
+!!
+!! @ingroup LibOvertopping
 character(len=maxmsg) function GetOvertoppingFormat(ID)
-integer, intent(in) :: ID
+integer, intent(in) :: ID  !< identification number of string
 
 select case(language)
     case('UK')
@@ -295,8 +315,12 @@ select case(language)
 
 end function GetOvertoppingFormat
 
+!>
+!! Subroutine that returns the name of an input parameter with the corresponding ID in the current language
+!!
+!! @ingroup LibOvertopping
 character(len=maxpar) function GetOvertoppingParameter(ID)
-integer, intent(in) :: ID
+integer, intent(in) :: ID  !< identification number of string
 
 select case(language)
     case('UK')
@@ -331,4 +355,5 @@ select case(language)
         end select
  end select
 end function GetOvertoppingParameter
+
 end module OvertoppingMessages

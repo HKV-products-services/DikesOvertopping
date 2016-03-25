@@ -5,7 +5,6 @@
 !!  - calculateQo
 !!  - calculateQoF
 !!  - ValidateInputC
-!!  - ValidateInputFold
 !!  - ValidateInputF
 !!  - SetLanguage
 !!  - GetLanguage
@@ -30,7 +29,7 @@ module dllOvertopping
     private
 
     !  FUNCTIONS/SUBROUTINES exported from dllOvertoppping.dll:
-    public :: calculateQo, calculateQoF, calcZValue, versionNumber, ValidateInputC, ValidateInputFold, ValidateInputF, &
+    public :: calculateQo, calculateQoF, calcZValue, versionNumber, ValidateInputC, ValidateInputF, &
               setLanguage, getLanguage
 
 contains
@@ -129,6 +128,7 @@ subroutine ValidateInputC ( geometryInput, dikeHeight, modelFactors, success, er
     use geometryModuleRTOovertopping
     use typeDefinitionsRTOovertopping
     use errorMessages
+    use OvertoppingMessages
     type(OvertoppingGeometryType), intent(in) :: geometryInput                 !< struct with geometry and roughness as c-pointers
     real(kind=wp), intent(in)                 :: dikeHeight                    !< dike height
     type(tpOvertoppingInput), intent(inout)   :: modelFactors                  !< struct with modelfactors
@@ -155,81 +155,20 @@ subroutine ValidateInputC ( geometryInput, dikeHeight, modelFactors, success, er
     else
         do i = 1, nMessages
             if (errorStruct%messages(i)%severity == severityError) then
-                msgtype = 'ERROR:'
+                msgtype = GetOvertoppingMessage(errorIndicator)
             else
-                msgtype = 'WARNING:'
+                msgtype = GetOvertoppingMessage(warningIndicator)
             endif
 
             if (i == 1) then
-                errorText = trim(msgtype) // errorStruct%messages(i)%message
+                errorText = trim(msgtype) // ':' // errorStruct%messages(i)%message
             else
-                errorText = trim(errorText) // separationChar // trim(msgtype) // errorStruct%messages(i)%message
+                errorText = trim(errorText) // separationChar // trim(msgtype) // ':' // errorStruct%messages(i)%message
             endif
         enddo
     endif
 
 end subroutine ValidateInputC
-
-!>
-!! Subroutine that validates the geometry
-!! old interface; will be removed in the near future
-!!
-!! @ingroup dllDikesOvertopping
-subroutine ValidateInputFold ( geometryF, dikeHeight, modelFactors, success, errorText)
-!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputFold" :: ValidateInputFold
-    use geometryModuleRTOovertopping
-    use typeDefinitionsRTOovertopping
-    use zFunctionsWTIOvertopping
-    use mainModuleRTOovertopping, only : checkModelFactors
-    use OvertoppingMessages
-    type(OvertoppingGeometryTypeF), intent(in) :: geometryF           !< struct with geometry and roughness
-    real(kind=wp), intent(in)                  :: dikeHeight          !< dike height
-    type(tpOvertoppingInput), intent(inout)    :: modelFactors        !< struct with modelFactors
-    logical, intent(out)                       :: success             !< flag for success
-    character(len=*), intent(out)              :: errorText           !< error message (only set if not successful)
-!
-!   locals
-!
-    type (tpGeometry)                          :: geometry            !< structure with geometry data
-    integer                                    :: nrCoordsAdjusted    !< number of coordinates of the adjusted profile
-    real(kind=wp), pointer                     :: xCoordsAdjusted(:)  !< vector with x-coordinates of the adjusted profile
-    real(kind=wp), pointer                     :: zCoordsAdjusted(:)  !< vector with y-coordinates of the adjusted profile
-    type (tpGeometry)                          :: geometryAdjusted    !< structure for the adjusted profile
-    integer                                    :: ierr                !< number of validation messages
-!
-    nullify(xCoordsAdjusted)
-    nullify(zCoordsAdjusted)
-
-    if (modelFactors%typeRunup == 0) then
-        success = .false.
-        errorText = GetOvertoppingMessage(validation_only_for_type_runup1)
-    else
-        call initializeGeometry (geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
-                             geometryF%roughness, geometry, success, errorText)
-    endif
-
-    if (success) then
-
-        call profileInStructure(geometry%nCoordinates, geometry%xcoordinates, geometry%ycoordinates, dikeHeight, &
-                            nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, success, errorText)
-    endif
-
-    if (success) then
-        call initializeGeometry (geometry%psi, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, &
-                                 geometry%roughnessFactors, geometryAdjusted, success, errorText)
-        call deallocateGeometry( geometryAdjusted )
-    endif
-
-    if (success) then
-       call checkModelFactors (modelFactors, 1, errorText, ierr)
-       success = (ierr == 0)
-    endif
-
-    call deallocateGeometry( geometry )
-
-    if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
-    if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
-end subroutine ValidateInputFold
 
 !>
 !! Subroutine that validates the geometry
@@ -351,7 +290,7 @@ subroutine versionNumber(version)
     !
     ! locals
     !
-    character(len=*), parameter :: cversion = "16.1.4.0"
+    character(len=*), parameter :: cversion = "16.1.5.0"
     !
     !==============================================================================
     !
