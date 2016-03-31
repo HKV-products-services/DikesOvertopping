@@ -158,7 +158,7 @@ select case(language)
             case (dimension_cross_section_less_than_2)
                 GetOvertoppingMessage = 'Number of coordinates cross section less than 2'
             case (ycoordinates_must_be_nondecreasing)
-                GetOvertoppingMessage = 'y-coordinates must be non-decreasing'
+                GetOvertoppingMessage = 'Coordinates in the vertical direction must be non-decreasing'
             case (dike_segment_mismatches)
                 GetOvertoppingMessage = 'Dike segment mismatches berm segment or slope segment'
             case (max2berm_segments)
@@ -227,7 +227,7 @@ select case(language)
             case (dimension_cross_section_less_than_2)
                 GetOvertoppingMessage = 'Aantal coordinaten dijk doorsnede is kleiner dan 2'
             case (ycoordinates_must_be_nondecreasing)
-                GetOvertoppingMessage = 'y-coordinaten mogen niet afnemen'
+                GetOvertoppingMessage = 'Verticale coordinaten mogen niet afnemen'
             case (dike_segment_mismatches)
                 GetOvertoppingMessage = 'Dijk segment is van ander type dan berm segment of helling segment'
             case (max2berm_segments)
@@ -282,7 +282,7 @@ select case(language)
             case (diffx_too_small)
                 GetOvertoppingFormat = '("X-coordinates must differ at least ",F4.2,".",F8.3," and ",F8.3," are too close to each other.")'
             case (diffy_too_small)
-                GetOvertoppingFormat = '("Y-coordinates must be non-decreasing.",F7.2," and ",F7.2," are not.")'
+                GetOvertoppingFormat = '("Coordinates in vertical direction must be non-decreasing.",F7.2," and ",F7.2," are not.")'
             case default
                 write(GetOvertoppingFormat,*) '(Internal error, ID = ', ID, ')'
         end select
@@ -303,11 +303,11 @@ select case(language)
             case (zero_or_negative_varModelFactorCriticalOvertopping)
                 GetOvertoppingFormat = '("Negatieve of nul variantie van kritieke overtopping model onzekerheid; variabel nummer: ",I0)'
             case (zero_or_negative_critical_overtopping)
-                GetOvertoppingFormat = '("Negatieve of null kritieke overtopping debiet: ",G)'
+                GetOvertoppingFormat = '("Negatieve of nul kritiek overtopping debiet: ",G)'
             case (diffx_too_small)
                 GetOvertoppingFormat = '("X-coordinaten moeten ten minste ",F4.2," van elkaar verschillen.",F8.3," en ",F8.3," ligt te dicht bij elkaar.")'
             case (diffy_too_small)
-                GetOvertoppingFormat = '("Y-coordinaten mogen niet afnemen.",F7.2," en ",F7.2," doen dat wel.")'
+                GetOvertoppingFormat = '("Verticale coordinaten mogen niet afnemen.",F7.2," en ",F7.2," doen dat wel.")'
             case default
                 write(GetOvertoppingFormat,*) '(Interne fout, ID = ', ID, ')'
         end select

@@ -345,8 +345,8 @@ subroutine overtoppingValidationTest
     call initErrorMessages(errorStruct)
     call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
     
-    call assert_equal(errorStruct%messages(1)%message, 'Y-coordinaten mogen niet afnemen.   0.00 en   -1.00 doen dat wel.', 'error handling')
-    call assert_equal(errorStruct%messages(2)%message, 'Y-coordinaten mogen niet afnemen.   4.00 en    0.00 doen dat wel.', 'error handling')
+    call assert_equal(errorStruct%messages(1)%message, 'Verticale coordinaten mogen niet afnemen.   0.00 en   -1.00 doen dat wel.', 'error handling')
+    call assert_equal(errorStruct%messages(2)%message, 'Verticale coordinaten mogen niet afnemen.   4.00 en    0.00 doen dat wel.', 'error handling')
 
     !
     ! do validation of input ( modelfactor m_z2 < 0 ) :
@@ -485,10 +485,10 @@ subroutine overtoppingMultipleValidationTest
     call SetLanguage('UK')
     call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
 
-    call assert_equal(4, errorStruct%nErrors, 'expected 3 validation errors')
-    call assert_equal(trim(errorStruct%messages(1)%message), 'Y-coordinates must be non-decreasing.   5.00 and    4.00 are not.', 'error handling')
+    call assert_equal(4, errorStruct%nErrors, 'expected 4 validation errors')
+    call assert_equal(trim(errorStruct%messages(1)%message), 'Coordinates in vertical direction must be non-decreasing.   5.00 and    4.00 are not.', 'error handling')
     
-    call assert_equal(trim(errorStruct%messages(2)%message), 'Y-coordinates must be non-decreasing.   4.00 and    0.00 are not.', 'error handling')
+    call assert_equal(trim(errorStruct%messages(2)%message), 'Coordinates in vertical direction must be non-decreasing.   4.00 and    0.00 are not.', 'error handling')
 
     call assert_equal(trim(errorStruct%messages(3)%message), 'Model factor 2% wave runup smaller than  0.000', 'error handling')
     
@@ -553,8 +553,8 @@ subroutine overtoppingValidationTestZPoints
     call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
 
     call assert_equal(2, errorStruct%nErrors, 'expected 2 validation errors')
-    call assert_equal(errorStruct%messages(1)%message, 'Y-coordinaten mogen niet afnemen.   0.00 en  -10.00 doen dat wel.', 'error handling')
-    call assert_equal(errorStruct%messages(2)%message, 'Y-coordinates must be non-decreasing.   0.00 and  -10.00 are not.', 'error handling')
+    call assert_equal(errorStruct%messages(1)%message, 'Verticale coordinaten mogen niet afnemen.   0.00 en  -10.00 doen dat wel.', 'error handling')
+    call assert_equal(errorStruct%messages(2)%message, 'Coordinates in vertical direction must be non-decreasing.   0.00 and  -10.00 are not.', 'error handling')
     
     geometryF%xcoords = [ 0d0, 40d0, 40.019d0 ]
     geometryF%ycoords = [-10d0, 0d0, 10d0]
