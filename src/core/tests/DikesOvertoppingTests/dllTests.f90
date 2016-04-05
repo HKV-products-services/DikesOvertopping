@@ -56,13 +56,14 @@ subroutine overtoppingDllTest
     integer, parameter             :: npoints = 3
     real(kind=wp)                  :: waveSteepness
     type (tpOvertopping)           :: overtopping
-    character(len=128)             :: errorMessage
+    character(len=128)             :: errorMessage      !< error message
     type (tpLoad)                  :: load              !< structure with load data
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
     real(kind=wp)                  :: criticalOvertoppingRate
     type(tLogging)                 :: logging
+    integer                        :: ierr              !< error code
 
     pointer            (qz, calcZValue)
     pointer            (qv, versionNumber)
@@ -105,7 +106,8 @@ subroutine overtoppingDllTest
     load%phi      = 50.00_wp
     load%Hm0      =  1.00_wp
     waveSteepness =  0.04_wp
-    load%Tm_10    = computeWavePeriod( load%Hm0, waveSteepness )
+    load%Tm_10    = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
+    call assert_equal( ierr, 0, errorMessage )
     !
     ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheigth
     !
@@ -161,13 +163,14 @@ subroutine overtoppingZ2Test
     integer, parameter             :: npoints = 3
     real(kind=wp)                  :: waveSteepness
     type (tpOvertopping)           :: overtopping
-    character(len=128)             :: errorMessage
+    character(len=128)             :: errorMessage      !< error message
     type (tpLoad)                  :: load              !< structure with load data
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
     real(kind=wp)                  :: criticalOvertoppingRate
     type(tLogging)                 :: logging
+    integer                        :: ierr              !< error code
 
     pointer            (qc, calculateQoF)
 
@@ -204,7 +207,8 @@ subroutine overtoppingZ2Test
     load%phi      = 50.00_wp
     load%Hm0      =  1.00_wp
     waveSteepness =  0.04_wp
-    load%Tm_10    = computeWavePeriod( load%Hm0, waveSteepness )
+    load%Tm_10    = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
+    call assert_equal( ierr, 0, errorMessage )
     !
     ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheigth
     !

@@ -10,8 +10,6 @@ program unitTestsProgram
 
     use ftnunit
     use utilities
-    use feedback
-    use feedback_parameters
     use overtoppingRTOTests
 
     use, intrinsic :: ieee_exceptions
@@ -37,15 +35,15 @@ contains
 subroutine initTestProgram
     ! Set action for feedback when a fatal error occurs
     implicit none
-    call SetFatalerrorAction ( onfatalerrorUnittest )
+    !call SetFatalerrorAction ( onfatalerrorUnittest )
 end subroutine initTestProgram
 
 !> Routine to be called when single tests are started
 subroutine initTest
     implicit none
     ! reset feedback flags
-    call SetFatalErrorExpected ( .false.)
-    call ResetFatalErrorOccured()
+    !call SetFatalErrorExpected ( .false.)
+    !call ResetFatalErrorOccured()
 end subroutine initTest
 
 !> Routine to start the testing

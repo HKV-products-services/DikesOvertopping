@@ -14,7 +14,6 @@ module crossSectionsAdaptionTests
 
     use precision
     use utilities
-    use feedback
     use ftnunit
     use waveParametersUtilities
     use readCrossSectionForTests
@@ -30,7 +29,7 @@ module crossSectionsAdaptionTests
     character(len=90)         :: outputFile           ! file for the output of the testserie
     integer                   :: crossSectionId       ! id-number of the cross section 
     integer                   :: numberTestSerie      ! number of test serie
-    logical                   :: extraSlopeTest       ! number of test serie
+    logical                   :: extraSlopeTest       ! perform extra slope test
 
     private
     
@@ -52,7 +51,7 @@ subroutine allCrossSectionsRTOTests( nCrossSections, nBasicTestSeries )
 !   local parameters
 !
     character(len=120)    :: frozenFile             ! frozen copy of the output file of the testserie
-    character(len=90)     :: errorMessage           ! error message
+    character(len=128)    :: errorMessage           ! error message
     character(len=1)      :: crossSectionNumber     ! number of the cross section
     character(len=2)      :: testSerieNumber        ! number of the test serie
 
@@ -62,6 +61,7 @@ subroutine allCrossSectionsRTOTests( nCrossSections, nBasicTestSeries )
 
     real(wp)              :: waveSteepness          ! wave steepness
     real(wp), allocatable :: phi(:)                 ! wave directions
+    integer               :: ierr                   ! error code
 !
 !   source
 !
@@ -84,7 +84,8 @@ subroutine allCrossSectionsRTOTests( nCrossSections, nBasicTestSeries )
     waveSteepness = 0.04d0
     !
     ! compute the wave period
-    load%Tm_10 = computeWavePeriod( load%Hm0, waveSteepness )
+    load%Tm_10 = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
+    call assert_equal( ierr, 0, errorMessage )
 
     nWaveDirections = 2
     allocate (phi(nWaveDirections))
@@ -219,9 +220,7 @@ subroutine TestSeriesCrossSections
     ! Open the output file
     call getFreeLuNumber( ounit )
     open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
-    if (ios /= 0) then
-        call fatalError ('Unable to open the file: ' // trim(outputFile) )
-    endif
+    call assert_equal ( ios, 0 ,  'Unable to open the file: ' // trim(outputFile) )
 
     write (ounit,'(a)') '# Input and results test serie RTO overtopping dll'
     write (ounit,'(a)') '#  1       2       3'
@@ -250,9 +249,7 @@ subroutine TestSeriesCrossSections
                                 geometry%xCoordinates, geometry%yCoordinates,   &
                                 geometry%roughnessFactors, succes, errorMessage)
 
-        if (.not. succes) then
-            call fatalError (errorMessage)
-        endif
+        call assert_true (succes, errorMessage)
         !
         ! Compute the wave runup and the wave overtopping discharge with the RTO-overtopping module
         call calculateOvertopping (geometry, load, modelFactors, overtopping, succes, errorMessage)
@@ -571,7 +568,7 @@ subroutine numberExtraTestsSlopes( crossSectionId, nTestSeriesSlopes )
     elseif ((crossSectionId == 7) .or. (crossSectionId == 8)) then
         nTestSeriesSlopes = 0
     else
-        call fatalError ('Wrong cross section id-number')
+        call assert_true ( .false. , 'Wrong cross section id-number')
     endif
 
 end subroutine numberExtraTestsSlopes

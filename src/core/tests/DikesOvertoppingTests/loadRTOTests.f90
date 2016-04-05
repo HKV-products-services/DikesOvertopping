@@ -118,6 +118,7 @@ subroutine testSeriesLoadRTO
     character(len=250)   :: errorMessage         ! error message
 
     real(wp), parameter  :: margin = 1.0d-6      ! relative value for the margin
+    integer              :: ierr                 ! error code
 !
 !   source
 !
@@ -130,35 +131,31 @@ subroutine testSeriesLoadRTO
     ! Open the file with the test serie
     call getFreeLuNumber( tunit )
     open (unit=tunit, file=trim(testseriefile), status='old', iostat=ios)
-    if (ios /= 0) then
-        call fatalError ('Unable to open the file: ' // trim(testseriefile) )
-    endif
+    call assert_equal( ios, 0, 'Unable to open the file: ' // trim(testseriefile) )
     !
     ! Skip comment lines in test serie file 
     comment='#'
     do while (comment == '#')
         read (tunit,'(a)', iostat=ios) comment
-        if (ios /= 0) then
-            call fatalError ('Read error from the file: ' // trim(testseriefile) )
-        endif
+        call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
     enddo
     backspace(unit=tunit)
 
     ! read values for test serie in test serie file
     read(tunit,*,iostat=ios) varmin,varmax,varstep
-    if (ios /= 0) call fatalError ('Read error from the file: ' // trim(testseriefile) )
+    call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
     ! read water level (h)
     read(tunit,*,iostat=ios) load%h
-    if (ios /= 0) call fatalError ('Read error from the file: ' // trim(testseriefile) )
+    call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
     ! read wave height (Hm0)
     read(tunit,*,iostat=ios) load%Hm0
-    if (ios /= 0) call fatalError ('Read error from the file: ' // trim(testseriefile) )
+    call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
     ! read wave steepness
     read(tunit,*,iostat=ios) waveSteepness
-    if (ios /= 0) call fatalError ('Read error from the file: ' // trim(testseriefile) )
+    call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
     ! read wave direction w.r.t. North
     read(tunit,*,iostat=ios) load%phi
-    if (ios /= 0) call fatalError ('Read error from the file: ' // trim(testseriefile) )
+    call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
 
     close( tunit )
 
@@ -177,9 +174,7 @@ subroutine testSeriesLoadRTO
     ! open the output file
     call getFreeLuNumber( ounit )
     open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
-    if (ios /= 0) then
-        call fatalError ('Unable to open the file: ' // trim(outputFile) )
-    endif
+    call assert_equal( ios, 0, 'Unable to open the file: ' // trim(outputFile) )
     !
     ! write headers to output file
     write (ounit,'(a)') '# Input and results test serie RTO overtopping dll'
@@ -202,10 +197,12 @@ subroutine testSeriesLoadRTO
 
         !
         ! compute the wave period
-        load%Tm_10 = computeWavePeriod( load%Hm0, waveSteepness )
+        load%Tm_10 = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
+        call assert_equal( ierr, 0, errorMessage )
         !
         ! compute the angle of wave attack
-        beta = angleBetween2Directions( load%phi, geometry%psi )
+        beta = angleBetween2Directions( load%phi, geometry%psi, ierr, errorMessage )
+        call assert_equal( ierr, 0, errorMessage )
         !
         ! Compute the wave runup and the wave overtopping discharge with the RTO-overtopping module
         call calculateOvertopping (geometry, load, modelFactors, overtopping, succes, errorMessage)

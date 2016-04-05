@@ -14,7 +14,6 @@ module crossSectionRoughnessTests
 !***********************************************************************************************************
 !
     use ftnunit
-    use feedback
     use utilities
     use waveParametersUtilities
     use mainModuleRTOovertopping
@@ -51,7 +50,7 @@ subroutine allCrossSectionRoughnessTests( nCrossSections, nBasicTestSeries )
 !   local parameters
 !
     character(len=120)      :: frozenFile           ! frozen copy of the output file of the testserie
-    character(len=90)       :: errorMessage         ! error message
+    character(len=128)      :: errorMessage         ! error message
     character(len=1)        :: crossSectionNumber   ! number of the cross section
     character(len=2)        :: testSerieNumber      ! number of the test serie
 
@@ -62,6 +61,7 @@ subroutine allCrossSectionRoughnessTests( nCrossSections, nBasicTestSeries )
 
     real(wp), allocatable   :: phi(:)               ! wave directions
     real(wp)                :: waveSteepness        ! wave steepness
+    integer                 :: ierr                 ! error code
 !
 !   source
 !
@@ -83,7 +83,8 @@ subroutine allCrossSectionRoughnessTests( nCrossSections, nBasicTestSeries )
     waveSteepness = 0.04d0
     !
     ! compute the wave period
-    load%Tm_10 = computeWavePeriod( load%Hm0, waveSteepness )
+    load%Tm_10 = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
+    call assert_equal( ierr, 0, errorMessage )
 
     nWaveDirections = 2
     allocate (phi(nWaveDirections))
@@ -162,9 +163,7 @@ subroutine TestSeriesRoughness
     ! open the output file
     call getFreeLuNumber( ounit )
     open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
-    if (ios /= 0) then
-        call fatalError ('Unable to open the file: ' // trim(outputFile) )
-    endif
+    call assert_equal( ios, 0, 'Unable to open the file: ' // trim(outputFile) )
 
     write (ounit,'(a)') '# Input and results test serie RTO overtopping dll'
     write (ounit,'(a)') '#  1          2       3'
@@ -227,7 +226,7 @@ subroutine numberTestSeriesRoughness( crossSectionId, nRoughnesses )
     elseif ((crossSectionId == 7) .or. (crossSectionId == 8)) then
         nRoughnesses = 2
     else
-        call fatalError ('Wrong cross section id-number')
+        call assert_true (.false. , 'Wrong cross section id-number')
     endif
 
 end subroutine numberTestSeriesRoughness
@@ -258,7 +257,7 @@ subroutine roughnesses( crossSectionId, roughnessSlopesId, roughness )
             roughness(1) = 1
         else
             ! only one roughness test serie
-            call fatalError ('Wrong roughnesses id-number')
+            call assert_true ( .false. , 'Wrong roughnesses id-number')
         endif
     elseif ((crossSectionId == 2) .or. (crossSectionId == 3)) then
         if (roughnessSlopesId == 1) then
@@ -278,7 +277,7 @@ subroutine roughnesses( crossSectionId, roughnessSlopesId, roughness )
             allocate (roughness(nSegments) )
             roughness(1) = 2
         else
-            call fatalError ('Wrong roughnesses id-number')
+            call assert_true ( .false. , 'Wrong roughnesses id-number')
         endif
     elseif (crossSectionId == 4) then
         if (roughnessSlopesId == 1) then
@@ -293,7 +292,7 @@ subroutine roughnesses( crossSectionId, roughnessSlopesId, roughness )
             roughness(1) = 1
             roughness(2) = 3
         else
-            call fatalError ('Wrong roughnesses id-number')
+            call assert_true ( .false. , 'Wrong roughnesses id-number')
         endif
     elseif ((crossSectionId == 5) .or. (crossSectionId == 6)) then
         if (roughnessSlopesId == 1) then
@@ -319,7 +318,7 @@ subroutine roughnesses( crossSectionId, roughnessSlopesId, roughness )
             roughness(1) = 2
             roughness(2) = 4
         else
-            call fatalError ('Wrong roughnesses id-number')
+            call assert_true ( .false. , 'Wrong roughnesses id-number')
         endif
     elseif ((crossSectionId == 7) .or. (crossSectionId == 8)) then
         if (roughnessSlopesId == 1) then
@@ -336,10 +335,10 @@ subroutine roughnesses( crossSectionId, roughnessSlopesId, roughness )
             roughness(2) = 3
             roughness(3) = 5
         else
-            call fatalError ('Wrong roughnesses id-number')
+            call assert_true ( .false. , 'Wrong roughnesses id-number')
         endif
     else
-        call fatalError ('Wrong cross section id-number')
+        call assert_true ( .false. , 'Wrong cross section id-number')
     endif
 
 end subroutine roughnesses

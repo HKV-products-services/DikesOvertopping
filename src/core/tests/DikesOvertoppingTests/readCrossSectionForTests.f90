@@ -12,11 +12,11 @@
 !! @ingroup DikeOvertoppingTests
 module readCrossSectionForTests
 
-    use feedback
     use utilities
     use precision
     use geometryModuleRTOovertopping
     use typeDefinitionsRTOovertopping
+    use ftnunit
 
     implicit none
     
@@ -63,26 +63,20 @@ subroutine readCrossSection(crossSectionFile, geometry, succes, errorMessage)
     ios=0
     call getFreeLuNumber( punit )
     open (unit=punit, file=trim(crossSectionFile), status='old', iostat=ios)
-    if (ios /= 0) then
-       call fatalError ('Unable to open the file: ' // trim(crossSectionFile) )
-    endif
+    call assert_equal( ios, 0, 'Unable to open the file: ' // trim(crossSectionFile) )
     !
     ! Skip comment lines in cross section file
     comment='#'
     do while (comment == '#')
        read (punit,'(a)', iostat=ios) comment
-       if (ios /= 0) then
-          call fatalError ('Read error from the file: ' // trim(crossSectionFile) )
-       endif
+       call assert_equal( ios, 0, 'Read error from the file: ' // trim(crossSectionFile) )
     enddo
     backspace(unit=punit)
     !
     ! Read the cross section 
     do i = 1, nCoordinates
         read(punit,*,iostat=ios) xcoordinates(i), ycoordinates(i), roughnessfactors(i)
-        if (ios /= 0) then
-            call fatalError ('Read error from the file: ' // trim(crossSectionFile) )
-        endif
+        call assert_equal( ios, 0, 'Read error from the file: ' // trim(crossSectionFile) )
     enddo
     close( punit )
     !
@@ -121,9 +115,7 @@ subroutine readNumberOfRelevantLines (fileName, NumberOfRelevantLines)
 !
     call getFreeLuNumber( ifile )
     open( ifile, file=trim( filename ), status='old', iostat=ios )
-    if (ios /= 0) then
-        call fatalError( 'File ' // trim( filename ) // ' can not opened')
-    endif
+    call assert_equal( ios, 0, 'File ' // trim( filename ) // ' can not opened' )
     !
     ! Read the file 
     i = 0
@@ -164,7 +156,7 @@ subroutine numberTestSeriesSlopes (crossSectionId, nTestSeriesSlopes)
     elseif ((crossSectionId == 7) .or. (crossSectionId == 8)) then
         nTestSeriesSlopes = 1
     else
-        call fatalError ('Wrong cross section id-number')
+        call assert_true(.false. , 'Wrong cross section id-number')
     endif
 
 end subroutine numberTestSeriesSlopes

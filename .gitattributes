@@ -26,7 +26,6 @@ doc/doxygen/DoxygenLayout.xml -text
 doc/doxygen/RunDoxygen.bat -text
 extern/Utils/svn_insert_version.cmd -text
 release/dllDikesOvertopping.dll -text
-release/feedbackDLL.dll -text
 src/core/teamcity.bat -text
 src/core/tests/unitTests/runtests.bat -text
 src/wrappers/OvertoppingCalculationTest.cs -text
