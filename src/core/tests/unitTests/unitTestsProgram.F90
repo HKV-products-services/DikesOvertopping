@@ -1,8 +1,8 @@
 !> @file
-!! Main program for running the unit tests for probabilistic and many other functions
+!! Main program for running the unit tests for dikes overtopping
 !<
 !
-! Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+! Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 !
 ! $Id$
 !
@@ -35,15 +35,13 @@ contains
 subroutine initTestProgram
     ! Set action for feedback when a fatal error occurs
     implicit none
-    !call SetFatalerrorAction ( onfatalerrorUnittest )
+    continue ! intended empty subroutine
 end subroutine initTestProgram
 
 !> Routine to be called when single tests are started
 subroutine initTest
     implicit none
-    ! reset feedback flags
-    !call SetFatalErrorExpected ( .false.)
-    !call ResetFatalErrorOccured()
+    continue ! intended empty subroutine
 end subroutine initTest
 
 !> Routine to start the testing
@@ -72,10 +70,6 @@ end subroutine prepareTests
 !!
 subroutine showResult
     implicit none
-    !character(len=1) :: answer
-    !
-    !write(*,*)     'Press ENTER ...'
-    !read(*,'(a)' ) answer
 
     call system( 'ftnunit.html' )
 
