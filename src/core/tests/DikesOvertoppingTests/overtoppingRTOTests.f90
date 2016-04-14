@@ -15,6 +15,7 @@ module overtoppingRTOTests
     use crossSectionsAdaptionTests
     use crossSectionRoughnessTests
     use dllTests
+    use omkeerVariantTests
     use ftnunit
 
     implicit none
@@ -33,6 +34,10 @@ subroutine allovertoppingRTOTests
 
     ! Test using external dll
     call testWithLevel(overtoppingDllTest, 'Test the external overtopping dll', 1)
+
+    ! test for 'omkeerVariant'
+    call allOmkeerVariantTests
+
     call testWithLevel(overtoppingZ2Test, 'Test h+z2 > dikeheigth', 1)
     call testWithLevel(overtoppingValidationTest, 'Test validation of incorrect profile and negative model factor', 1)
     call testWithLevel(overtoppingValidationRoughnessTest, 'Test validation of invalid roughness', 1)

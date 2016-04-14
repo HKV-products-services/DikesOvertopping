@@ -6,6 +6,7 @@
 !!  - calculateQoF
 !!  - ValidateInputC
 !!  - ValidateInputF
+!!  - omkeerVariantF
 !!  - SetLanguage
 !!  - GetLanguage
 !!  - versionNumber
@@ -30,7 +31,7 @@ module dllOvertopping
 
     !  FUNCTIONS/SUBROUTINES exported from dllOvertoppping.dll:
     public :: calculateQo, calculateQoF, calcZValue, versionNumber, ValidateInputC, ValidateInputF, &
-              setLanguage, getLanguage
+              omkeerVariantF, setLanguage, getLanguage
 
 contains
 
@@ -254,6 +255,31 @@ subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, errorStruct)
     if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
     if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
 end subroutine ValidateInputF
+
+!>
+!! Subroutine with omkeerVariant
+!!
+!! @ingroup dllDikesOvertopping
+subroutine omkeerVariantF ( load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"omkeerVariantF" :: omkeerVariantF
+    use geometryModuleRTOovertopping
+    use typeDefinitionsRTOovertopping
+    use ModuleLogging
+    use omkeerVariantModule
+    type(OvertoppingGeometryTypeF), intent(in) :: geometryF      !< struct with geometry and roughness
+    type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
+    real(kind=wp), intent(in)                  :: givenDischarge !< discharge to iterate to
+    real(kind=wp), intent(out)                 :: dikeHeight     !< dike height
+    type(tpOvertoppingInput), intent(inout)    :: modelFactors   !< struct with modelFactors
+    type (tpOvertopping), intent(inout)        :: overtopping    !< structure with overtopping results
+    logical, intent(out)                       :: success        !< flag for success
+    character(len=*), intent(out)              :: errorText      !< error message (only set if not successful)
+    type(tLogging), intent(in)                 :: logging        !< logging struct
+!
+    type (tpGeometry)                          :: geometry       !< structure with geometry data
+!
+    call iterateToGiveDischarge ( load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+end subroutine omkeerVariantF
 
 !>
 !! Subroutine that sets the language for error and validation messages
