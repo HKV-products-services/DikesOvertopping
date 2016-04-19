@@ -278,7 +278,7 @@ subroutine omkeerVariantF ( load, geometryF, givenDischarge, dikeHeight, modelFa
 !
     type (tpGeometry)                          :: geometry       !< structure with geometry data
 !
-    call iterateToGiveDischarge ( load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+    call iterateToGivenDischarge ( load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
 end subroutine omkeerVariantF
 
 !>
