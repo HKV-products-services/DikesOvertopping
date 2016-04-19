@@ -271,7 +271,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-       if ( errorMessage /= ' ') then
+       if ( errorMessage == ' ') then
            errorMessage = GetOvertoppingMessage(calc_influence_roughness)
        endif
    endif
@@ -461,7 +461,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-      if ( errorMessage /= ' ' ) then
+      if ( errorMessage == ' ' ) then
          errorMessage = GetOvertoppingMessage(calc_influence_berms)
       endif
    endif

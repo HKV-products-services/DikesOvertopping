@@ -49,6 +49,7 @@ subroutine calculateQoRTO( dikeHeight, modelFactors, overtopping, load, geometry
     !
     nullify(xCoordsAdjusted)
     nullify(zCoordsAdjusted)
+    errorMessage = ' '
 
     call profileInStructure(geometry%nCoordinates, geometry%xcoordinates, geometry%ycoordinates, dikeHeight, &
                             nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage)
