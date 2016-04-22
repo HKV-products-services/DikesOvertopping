@@ -34,7 +34,7 @@ subroutine allovertoppingRTOTests
 
     ! Test using external dll
     call testWithLevel(overtoppingDllTest, 'Test the external overtopping dll', 1)
-    call testWithLevel(overtoppingDikeInProfileTest, 'Test a dikeheight at one of the profile points', 1, .true.)
+    call testWithLevel(overtoppingDikeInProfileTest, 'Test a dikeheight at one of the profile points', 1)
 
     ! test for 'omkeerVariant'
     call allOmkeerVariantTests

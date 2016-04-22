@@ -17,6 +17,7 @@ module zFunctionsWTIOvertopping
     use geometryModuleRTOovertopping,   only : initializeGeometry, deallocateGeometry
     use vectorUtilities,                only : interpolateLine
     use OvertoppingMessages
+    use equalReals
 
     implicit none
 
@@ -169,6 +170,9 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
                 if (dikeHeight < auxiliaryHeight) then
                     nrCoordsAdjusted = i - 1
                     exit
+                elseif ( equalRealsRelative(dikeHeight, coordinates(i)%zCoordinate, 1d-12) ) then
+                    nrCoordsAdjusted = i
+                    exit
                 elseif (dikeHeight < coordinates(i)%zCoordinate) then
                     nrCoordsAdjusted = i
                     exit
@@ -194,8 +198,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
             ! last segment of the profile
             zCoordsAdjusted(nrCoordsAdjusted) = dikeHeight
             xCoordsAdjusted(nrCoordsAdjusted) = interpolateLine(coordinates(nrCoordsAdjusted-1)%zCoordinate, coordinates(nrCoordsAdjusted)%zCoordinate, &
-
-            coordinates(nrCoordsAdjusted-1)%xCoordinate, coordinates(nrCoordsAdjusted)%xCoordinate, dikeHeight)
+                coordinates(nrCoordsAdjusted-1)%xCoordinate, coordinates(nrCoordsAdjusted)%xCoordinate, dikeHeight)
 
             if (xCoordsAdjusted(nrCoordsAdjusted) < xCoordsAdjusted(nrCoordsAdjusted-1)) then
                 succes = .false.
