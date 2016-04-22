@@ -22,7 +22,8 @@ implicit none
 private
 
 public :: overtoppingDllTest, overtoppingValidationTest, overtoppingZ2Test, influenceRoughnessTest, &
-          overtoppingValidationRoughnessTest, overtoppingMultipleValidationTest, overtoppingValidationTestZPoints
+          overtoppingValidationRoughnessTest, overtoppingMultipleValidationTest, overtoppingValidationTestZPoints, &
+          overtoppingDikeInProfileTest
 
 contains
 !> Test the functions in DikesOvertopping.dll.
@@ -136,6 +137,73 @@ subroutine overtoppingDllTest
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine overtoppingDllTest
+
+!! test Dike at one of the profile points
+!! @ingroup FailureMechanismsTests
+subroutine overtoppingDikeInProfileTest
+    use user32
+    use kernel32
+
+    integer                        :: p
+    external                       :: calculateQoF
+    integer                        :: i
+    logical                        :: succes
+    integer, parameter             :: npoints = 3
+    real(kind=wp)                  :: waveSteepness
+    type (tpOvertopping)           :: overtopping
+    character(len=128)             :: errorMessage      !< error message
+    type (tpLoad)                  :: load              !< structure with load data
+    type(OvertoppingGeometryTypeF) :: geometryF
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    real(kind=wp)                  :: criticalOvertoppingRate
+    type(tLogging)                 :: logging
+    integer                        :: ierr              !< error code
+
+    pointer            (qc, calculateQoF)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qc = getprocaddress (p, "calculateQoF"C)
+    !
+    ! initializations
+    !
+    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
+    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
+    modelFactors%m_z2     = 1.00_wp
+    modelFactors%frunup1  = 1.65_wp
+    modelFactors%frunup2  = 4.00_wp
+    modelFactors%frunup3  = 1.50_wp
+    modelFactors%typeRunup = 1
+    modelFactors%fshallow = 0.92
+    modelFactors%ComputedOvertopping = 1.0_wp
+    modelFactors%CriticalOvertopping = 1.0_wp
+    modelFactors%relaxationFactor    = 1.0d0
+    criticalOvertoppingRate        = 1.0d-3
+
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    do i = 1, npoints
+        geometryF%xcoords(i)   = 5 * i
+        geometryF%ycoords(i)   = 3 + 2 * i
+        if (i < npoints) geometryF%roughness(i) = 1.0_wp
+    enddo
+    geometryF%normal = 60.0_wp ! degrees
+    geometryF%npoints = npoints
+    !
+    !
+    load%h        =  5.50_wp
+    load%phi      = 50.00_wp
+    load%Hm0      =  1.00_wp
+    waveSteepness =  0.04_wp
+    load%Tm_10    = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
+    call assert_equal( ierr, 0, errorMessage )
+    !
+    dikeHeight  = 7.0_wp
+    call calculateQoF( load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging )
+    call assert_true ( succes, errorMessage )
+
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
+end subroutine overtoppingDikeInProfileTest
 
 !> Test the functions in dllOvertopping.dll.
 !!     these functions are:
