@@ -58,11 +58,11 @@
 
       ! calculate 2% wave run-up for small breaker parameters
       if (ksi0 < ksi0Limit) then
-         z2 = Hm0 * modelFactors%fRunup1 * gammaB * gammaF * gammaBeta * ksi0
+         z2 = Hm0 * fRunup1 * gammaB * gammaF * gammaBeta * ksi0
 
       ! calculate 2% wave run-up for large breaker parameters
       else if (ksi0 > 0.0d0) then
-         z2 = Hm0 * gammaF * gammaBeta * (modelFactors%fRunup2 - modelFactors%fRunup3/sqrt(ksi0))
+         z2 = Hm0 * gammaF * gammaBeta * (fRunup2 - fRunup3/sqrt(ksi0))
          z2 = max(z2, 0.0d0)
       else
          errorMessage = GetOvertoppingMessage(breaker_param_is_zero)
@@ -304,14 +304,13 @@
 !! calculate the breaker limit
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateBreakerLimit (modelFactors, gammaB, ksi0Limit, succes, errorMessage)
+   subroutine calculateBreakerLimit (gammaB, ksi0Limit, succes, errorMessage)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   type (tpOvertoppingInput), intent(in)  :: modelFactors   ! structure with model factors
    real(wp),                  intent(in)  :: gammaB         ! influence factor for berms
    real(wp),                  intent(out) :: ksi0Limit      ! limit value breaker parameter
    logical,                   intent(out) :: succes         ! flag for succes
@@ -339,10 +338,10 @@
    ! fRunup1 * gammaB * x^3 - fRunup2 * x + fRunup3 = 0
    
    ! set the coefficients of the cubic function
-   a =  modelFactors%fRunup1 * gammaB
+   a =  fRunup1 * gammaB
    b =  0.0d0
-   c = -modelFactors%fRunup2
-   d =  modelFactors%fRunup3
+   c = -fRunup2
+   d =  fRunup3
 
    ! calculate the real roots of the cubic function
    call realRootsCubicFunction (a, b, c, d, N, x, succes, errorMessage)

@@ -60,7 +60,6 @@ enum, bind(c)
     enumerator :: roughnessfactors_out_of_range
     enumerator :: allocateError
     enumerator :: xcoordinates_must_increase
-    enumerator :: typeRunup_not_in_range
     enumerator :: zero_or_negative_varModelFactorCriticalOvertopping
     enumerator :: zero_or_negative_critical_overtopping
     enumerator :: diffx_too_small
@@ -278,8 +277,6 @@ select case(language)
                 GetOvertoppingFormat = '("Memory allocation error for array(s) with total size: ",I0)'
             case (xcoordinates_must_increase)
                 GetOvertoppingFormat = '("x-coordinates must increase with dx >= ",F4.1," m")'
-            case (typeRunup_not_in_range)
-                GetOvertoppingFormat = '("TypeRunup must be 0 or 1, found: ",I0)'
             case (zero_or_negative_varModelFactorCriticalOvertopping)
                 GetOvertoppingFormat = '("Negative or zero variance of critical overtopping uncertainty model; variable number: ",I0)'
             case (zero_or_negative_critical_overtopping)
@@ -303,8 +300,6 @@ select case(language)
                 GetOvertoppingFormat = '("Geheugen allocatie fout voor array(s) met totale grootte: ",I0)'
             case (xcoordinates_must_increase)
                 GetOvertoppingFormat = '("x-coordinaten moeten toenemen met dx >= ",F4.1," m")'
-            case (typeRunup_not_in_range)
-                GetOvertoppingFormat = '("TypeRunup moet 0 of 1 zijn; gevonden: ",I0)'
             case (zero_or_negative_varModelFactorCriticalOvertopping)
                 GetOvertoppingFormat = '("Negatieve of nul variantie van kritieke overtopping model onzekerheid; variabel nummer: ",I0)'
             case (zero_or_negative_critical_overtopping)

@@ -5,7 +5,7 @@
 !
 !  Programmer: Bastiaan Kuijper, HKV consultants
 !
-!  Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+!  Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 !  $Id$
 !
 !***********************************************************************************************************
@@ -34,20 +34,20 @@
       real(wp)               :: Hm0                     !< significant wave height (m)
       real(wp)               :: Tm_10                   !< spectral wave period (s)
       real(wp)               :: phi                     !< wave direction (degrees)
-    end type tpLoad
+   end type tpLoad
+   
+   real(kind=wp), parameter :: fRunup1 = 1.65_wp
+   real(kind=wp), parameter :: fRunup2 = 4.00_wp
+   real(kind=wp), parameter :: fRunup3 = 1.50_wp
    
    !> OvertoppingModelFactors: C-structure with model factors
    type, public, bind(C) :: tpOvertoppingInput
       real(kind=wp) :: factorDeterminationQ_b_f_n         !< model factor for non-breaking waves
       real(kind=wp) :: factorDeterminationQ_b_f_b         !< model factor for breaking waves
       real(kind=wp) :: m_z2                               !< model factor describing the uncertainty of 2% runup height
-      real(kind=wp) :: frunup1                            !< model factor 1 for wave run-up  (for backwards compatability)
-      real(kind=wp) :: frunup2                            !< model factor 2 for wave run-up  (idem)
-      real(kind=wp) :: frunup3                            !< model factor 3 for wave run-up  (idem)
       real(kind=wp) :: fshallow                           !< model factor for shallow waves
       real(kind=wp) :: ComputedOvertopping                !< model factor computed overtopping
       real(kind=wp) :: CriticalOvertopping                !< model factor critical overtopping
-      integer       :: typeRunup                          !< 0: fRunup1, 2 and 3 are given; 1: m_z2 is given
       real(kind=wp) :: relaxationFactor                   !< relaxation factor iteration procedure wave runup
       real(kind=wp) :: reductionFactorForeshore = 0.5_wp  !< reduction factor foreshore
    end type tpOvertoppingInput
@@ -72,12 +72,6 @@
    real(wp),  parameter      :: rFactor_max   = 1.0d0             !< maximal value roughness factor dike segments
    real(wp),  parameter      :: mz2_min       = 0.0d0             !< minimal value model factor of 2% runup height
    real(wp),  parameter      :: mz2_max       = huge(mz2_max)     !< maximal value model factor of 2% runup height
-   real(wp),  parameter      :: fRunup1_min   = 0.0d0             !< minimal value model factor 1 for wave run-up
-   real(wp),  parameter      :: fRunup1_max   = huge(fRunup1_max) !< maximal value model factor 1 for wave run-up
-   real(wp),  parameter      :: fRunup2_min   = 0.0d0             !< minimal value model factor 2 for wave run-up
-   real(wp),  parameter      :: fRunup2_max   = huge(fRunup2_max) !< maximal value model factor 2 for wave run-up
-   real(wp),  parameter      :: fRunup3_min   = 0.0d0             !< minimal value model factor 3 for wave run-up
-   real(wp),  parameter      :: fRunup3_max   = huge(fRunup3_max) !< maximal value model factor 3 for wave run-up
    real(wp),  parameter      :: fB_min        = 0.0d0             !< minimal value model factor for breaking waves
    real(wp),  parameter      :: fB_max        = huge(fB_max)      !< maximal value model factor for breaking waves
    real(wp),  parameter      :: fN_min        = 0.0d0             !< minimal value model factor for non-breaking waves

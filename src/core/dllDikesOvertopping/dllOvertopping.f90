@@ -208,11 +208,6 @@ subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, errorStruct)
     nullify(xCoordsAdjusted)
     nullify(zCoordsAdjusted)
 
-    if (modelFactors%typeRunup == 0) then
-        success = .false.
-        errorText = 'validation only implemented for typeRunup=1'
-    endif
-
     if (success) then
         call basicGeometryTest(geometryF, success, errorStruct)
     endif

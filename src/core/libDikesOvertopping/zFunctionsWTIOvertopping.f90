@@ -13,7 +13,7 @@ module zFunctionsWTIOvertopping
     use precision,                      only : wp
     use overtoppingInterface,           only : tpProfileCoordinate, varModelFactorCriticalOvertopping
     use typeDefinitionsRTOovertopping,  only : xDiff_min, slope_min, tpGeometry, tpLoad, tpOvertoppingInput, tpOvertopping
-    use mainModuleRTOovertopping,       only : calculateOvertopping, convertOvertoppingInput
+    use mainModuleRTOovertopping,       only : calculateOvertopping
     use geometryModuleRTOovertopping,   only : initializeGeometry, deallocateGeometry
     use vectorUtilities,                only : interpolateLine
     use OvertoppingMessages
@@ -58,10 +58,6 @@ subroutine calculateQoRTO( dikeHeight, modelFactors, overtopping, load, geometry
     if (succes) then
         call initializeGeometry (geometry%psi, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, &
                                  geometry%roughnessFactors, geometryAdjusted, succes, errorMessage)
-    endif
-
-    if (succes) then
-        call convertOvertoppingInput(modelFactors, succes, errorMessage)
     endif
 
     if (succes) then

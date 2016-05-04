@@ -205,7 +205,7 @@ module waveRunup
 
    ! calculate limit value breaker parameter
    if (succes) then
-      call calculateBreakerLimit (modelFactors, gammaB, ksi0Limit, succes, errorMessage)
+      call calculateBreakerLimit (gammaB, ksi0Limit, succes, errorMessage)
    endif
 
    ! calculate z2% smooth (gammaB=1, gammaF=1)
@@ -239,7 +239,7 @@ module waveRunup
 
       ! calculate limit value breaker parameter
       if (succes) then
-         call calculateBreakerLimit (modelFactors, gammaB, ksi0Limit, succes, errorMessage)
+         call calculateBreakerLimit (gammaB, ksi0Limit, succes, errorMessage)
       endif
 
       ! calculate influence factor roughness (gammaF)

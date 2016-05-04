@@ -58,11 +58,7 @@ subroutine allLoadRTOTests( nCrossSections, nBasicTestSeries )
     modelFactors%factorDeterminationQ_b_f_n      = 2.3d0
     modelFactors%factorDeterminationQ_b_f_b      = 4.3d0
     modelFactors%m_z2    = 1.0d0
-    modelFactors%fRunup1 = 1.65d0
-    modelFactors%fRunup2 = 4.3d0
-    modelFactors%fRunup3 = 1.5d0
     modelFactors%fShallow = 0.92
-    modelFactors%typeRunup = 1
     modelFactors%relaxationFactor = 1.0d0
     call setLanguage('UK')
     !

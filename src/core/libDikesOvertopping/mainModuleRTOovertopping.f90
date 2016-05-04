@@ -24,7 +24,7 @@
    private
    
    public :: calculateOvertopping, calculateOvertoppingSection, calculateWaveOvertopping
-   public :: interpolateResultsSections, checkInputdata, convertOvertoppingInput, checkModelFactors
+   public :: interpolateResultsSections, checkInputdata, checkModelFactors
 
    contains
 !
@@ -448,7 +448,7 @@
 
    ! calculate limit value breaker parameter
    if (succes) then
-      call calculateBreakerLimit (modelFactors, gammaB, ksi0Limit, succes, errorMessage)
+      call calculateBreakerLimit (gammaB, ksi0Limit, succes, errorMessage)
    endif
 
    ! calculate influence factor roughness (gammaF)
@@ -672,15 +672,9 @@
 
    ierr = 0
    ! loop over model factors
-   do i=1, 8
+   do i=4, 8
       ! determine description model factor
       select case (i)
-         case (1)
-             par_txt = 'fRunup1'
-         case (2)
-             par_txt = 'fRunup2'
-         case (3)
-             par_txt = 'fRunup3'
          case (4)
              par_txt = GetOvertoppingParameter(par_fB)
          case (5)
@@ -694,18 +688,6 @@
       end select
       ! determine value and minimum/maximum model factor
       select case (i)
-         case (1)
-            par = modelFactors%fRunup1
-            par_min = fRunup1_min
-            par_max = fRunup1_max
-         case (2)
-             par = modelFactors%fRunup2
-             par_min = fRunup2_min
-             par_max = fRunup2_max
-         case (3)
-             par = modelFactors%fRunup3
-             par_min = fRunup3_min
-             par_max = fRunup3_max
          case (4)
              par = modelFactors%factorDeterminationQ_b_f_b
              par_min = fB_min
@@ -741,33 +723,6 @@
    enddo
 
    end subroutine checkModelFactors
-
-!> convertOvertoppingInput:
-!! convert the model factors from C-like to Fortran
-!!   @ingroup LibOvertopping
-!***********************************************************************************************************
-   subroutine convertOvertoppingInput(modelFactors, success, errorMessage)
-!***********************************************************************************************************
-!
-   implicit none
-   type (tpOvertoppingInput), intent(inout) :: modelFactors !< model factors and other input for overtopping
-   logical,                   intent(out)   :: success      !< flag for success
-   character(len=*),          intent(inout) :: errorMessage !< error message; only set when not successful
-! ==========================================================================================================
-
-    success = .true.
-    select case (modelFactors%TypeRunup)
-    case (0)
-        modelFactors%m_z2       =  1.0_wp
-    case (1)
-        modelFactors%fRunup1    =  1.65_wp
-        modelFactors%fRunup2    =  4.00_wp
-        modelFactors%fRunup3    =  1.50_wp
-    case default
-        success = .false.
-        write(errorMessage, GetOvertoppingFormat(typeRunup_not_in_range)) modelFactors%TypeRunup
-    end select
-   end subroutine convertOvertoppingInput
 
 !***********************************************************************************************************
    end module mainModuleRTOovertopping

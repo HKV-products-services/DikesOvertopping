@@ -81,10 +81,6 @@ subroutine overtoppingDllTest
     modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
     modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
     modelFactors%m_z2     = 1.00_wp
-    modelFactors%frunup1  = 1.65_wp
-    modelFactors%frunup2  = 4.00_wp
-    modelFactors%frunup3  = 1.50_wp
-    modelFactors%typeRunup = 1
     modelFactors%fshallow = 0.92
     modelFactors%ComputedOvertopping = 1.0_wp
     modelFactors%CriticalOvertopping = 1.0_wp
@@ -170,10 +166,6 @@ subroutine overtoppingDikeInProfileTest
     modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
     modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
     modelFactors%m_z2     = 1.00_wp
-    modelFactors%frunup1  = 1.65_wp
-    modelFactors%frunup2  = 4.00_wp
-    modelFactors%frunup3  = 1.50_wp
-    modelFactors%typeRunup = 1
     modelFactors%fshallow = 0.92
     modelFactors%ComputedOvertopping = 1.0_wp
     modelFactors%CriticalOvertopping = 1.0_wp
@@ -251,10 +243,6 @@ subroutine overtoppingZ2Test
     modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
     modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
     modelFactors%m_z2     = 1.00_wp
-    modelFactors%frunup1  = 1.65_wp
-    modelFactors%frunup2  = 4.00_wp
-    modelFactors%frunup3  = 1.50_wp
-    modelFactors%typeRunup = 1
     modelFactors%fshallow = 0.92
     modelFactors%ComputedOvertopping = 1.0_wp
     modelFactors%CriticalOvertopping = 1.0_wp
@@ -321,10 +309,6 @@ subroutine influenceRoughnessTest
     modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
     modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
     modelFactors%m_z2                       = 1.00_wp
-    modelFactors%frunup1                    = 1.65_wp
-    modelFactors%frunup2                    = 4.00_wp
-    modelFactors%frunup3                    = 1.50_wp
-    modelFactors%typeRunup                  = 1
     modelFactors%fshallow                   = 0.67778_wp
     modelFactors%ComputedOvertopping        = 1.0_wp
     modelFactors%CriticalOvertopping        = 1.0_wp
@@ -393,10 +377,6 @@ subroutine overtoppingValidationTest
     modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
     modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
     modelFactors%m_z2     = 1.00_wp
-    modelFactors%frunup1  = 1.75_wp
-    modelFactors%frunup2  = 4.30_wp
-    modelFactors%frunup3  = 1.60_wp
-    modelFactors%typeRunup = 1
     modelFactors%fshallow  = 0.92
     modelFactors%ComputedOvertopping = 1.0_wp
     modelFactors%CriticalOvertopping = 1.0_wp
@@ -468,10 +448,6 @@ subroutine overtoppingValidationRoughnessTest
     modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
     modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
     modelFactors%m_z2     = 1.00_wp
-    modelFactors%frunup1  = 1.75_wp
-    modelFactors%frunup2  = 4.30_wp
-    modelFactors%frunup3  = 1.60_wp
-    modelFactors%typeRunup = 1
     modelFactors%fshallow  = 0.92
     modelFactors%ComputedOvertopping = 1.0_wp
     modelFactors%CriticalOvertopping = 1.0_wp
@@ -530,10 +506,6 @@ subroutine overtoppingMultipleValidationTest
     modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
     modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
     modelFactors%m_z2     = 1.00_wp
-    modelFactors%frunup1  = 1.75_wp
-    modelFactors%frunup2  = 4.30_wp
-    modelFactors%frunup3  = 1.60_wp
-    modelFactors%typeRunup = 1
     modelFactors%fshallow  = 0.92
     modelFactors%ComputedOvertopping = 1.0_wp
     modelFactors%CriticalOvertopping = 1.0_wp
@@ -597,10 +569,6 @@ subroutine overtoppingValidationTestZPoints
     modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
     modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
     modelFactors%m_z2     = 1.00_wp
-    modelFactors%frunup1  = 1.75_wp
-    modelFactors%frunup2  = 4.30_wp
-    modelFactors%frunup3  = 1.60_wp
-    modelFactors%typeRunup = 1
     modelFactors%fshallow  = 0.92
     modelFactors%ComputedOvertopping = 1.0_wp
     modelFactors%CriticalOvertopping = 1.0_wp
