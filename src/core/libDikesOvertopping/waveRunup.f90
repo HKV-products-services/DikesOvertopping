@@ -1,5 +1,5 @@
 !> @file
-!! This file contains a module with the core computations for Dikes Overtopping
+!! This file contains a module with the iteration procedure for 2% wave runup
 !<
 !***********************************************************************************************************
 !
@@ -7,6 +7,8 @@
 !
 !  Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 !  $Id$
+!
+!> Iteration procedure for 2% wave runup
 !
 !***********************************************************************************************************
 module waveRunup

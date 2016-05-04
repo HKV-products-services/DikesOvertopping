@@ -1,16 +1,16 @@
-module overtoppingInterface
 !> @file
 !! This file contains the parameters and types (structs)
 !! as part of the interface to and from dllOvertopping
 !<
 !
-! Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+! Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 ! $Id$
 !
 !>
 !! Module for the interface of dllOvertopping
 !! @ingroup LibOvertopping
 !<
+module overtoppingInterface
     use precision, only : wp
     use, intrinsic :: iso_c_binding
     

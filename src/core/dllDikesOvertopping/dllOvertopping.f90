@@ -15,7 +15,7 @@
 ! $Id$
 !
 !
-!> Calculate one type of overtopping
+!> Main entry for the dll DikesOvertopping
 !
 module dllOvertopping
     use zFunctionsWTIOvertopping,      only : calculateQoRTO, zFuncLogRatios

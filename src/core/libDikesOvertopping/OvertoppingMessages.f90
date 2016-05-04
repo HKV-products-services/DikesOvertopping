@@ -1,4 +1,3 @@
-module OvertoppingMessages
 !> @file
 !! This file contains the messages in the overtopping dll, in Dutch or English
 !<
@@ -10,6 +9,7 @@ module OvertoppingMessages
 !! Module for the messages in the overtopping dll, in Dutch or English
 !! @ingroup LibOvertopping
 !<
+module OvertoppingMessages
 implicit none
 
 integer, parameter :: maxmsg = 128, maxpar=32

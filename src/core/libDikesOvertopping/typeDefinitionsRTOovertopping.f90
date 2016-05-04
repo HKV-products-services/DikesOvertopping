@@ -3,12 +3,15 @@
 !<
 !***********************************************************************************************************
 !
-!  Programmer: Bastiaan Kuijper, HKV consultants
+!  Programmer: Bastiaan Kuijper, HKV consultants / Edwin Spee, Deltares
 !
 !  Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 !  $Id$
 !
 !***********************************************************************************************************
+!
+!> type definitions for Dikes Overtopping
+!
    module typeDefinitionsRTOovertopping
 !***********************************************************************************************************
    !

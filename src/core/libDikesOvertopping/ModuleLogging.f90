@@ -2,9 +2,11 @@
 !! Module for steering the extra logging
 !<
 !
-! Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+! Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 !
 ! $Id$
+!
+!> steering the extra logging
 !
 module ModuleLogging
 use feedback_parameters, only : verboseNone, verboseBasic, verboseDetailed, verboseDebugging
