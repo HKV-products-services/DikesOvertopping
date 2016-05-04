@@ -26,7 +26,6 @@ namespace TestWrapper
                     Fshallow = 0.92,
                     ComputedOvertopping = 1,
                     CriticalOvertopping = 1,
-                    TypeRunup = 1,
                     Relaxationfactor = 1.0,
                     ReductionFactorForeshore = 0.5
                 };
@@ -76,7 +75,6 @@ namespace TestWrapper
                 Fshallow = 0.92,
                 ComputedOvertopping = 1,
                 CriticalOvertopping = 1,
-                TypeRunup = 1,
                 Relaxationfactor = 1.0,
                 ReductionFactorForeshore = 0.5
             };
@@ -105,7 +103,6 @@ namespace TestWrapper
                 Fshallow = -0.92,
                 ComputedOvertopping = 1,
                 CriticalOvertopping = 1,
-                TypeRunup = 1,
                 Relaxationfactor = 1.0,
                 ReductionFactorForeshore = 0.5
             };

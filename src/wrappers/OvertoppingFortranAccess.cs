@@ -17,13 +17,9 @@ namespace TestWrapper
         public double FactorDeterminationQnFn;  // model factor for non-breaking waves
         public double FactorDeterminationQbFb;  // model factor for breaking waves
         public double Mz2;                      // model factor describing the uncertainty of 2% runup height
-        public double Frunup1;                  // model factor 1 for wave run-up (for backwards compatability)
-        public double Frunup2;                  // model factor 2 for wave run-up (idem)
-        public double Frunup3;                  // model factor 3 for wave run-up (idem)
         public double Fshallow;                 // model factor for shallow waves
         public double ComputedOvertopping;      // model factor computed overtopping
         public double CriticalOvertopping;      // model factor critical overtopping
-        public int TypeRunup;                   // 0: fRunup1, 2 and 3 are given; 1: m_z2 is given
         public double Relaxationfactor;         // relaxation factor iteration procedure wave runup
         public double ReductionFactorForeshore; // reduction factor foreshore
     }
