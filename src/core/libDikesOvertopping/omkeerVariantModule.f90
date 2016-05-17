@@ -231,7 +231,6 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
                 minDikeHeight = maxDikeHeight
                 dis1 = dis2
                 maxDikeHeight = LogLinearInterpolate(X , Y , givenDischarge, ierr, errorText)
-                !maxDikeHeight + 1d0
             else
                 exit
             endif

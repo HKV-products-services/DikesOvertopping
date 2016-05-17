@@ -106,7 +106,7 @@ subroutine overtoppingDllTest
     load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
     call assert_equal(ierr, 0, errorMessage)
     !
-    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheigth
+    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheight
     !
     call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
     call assert_true(succes, errorMessage)
@@ -116,13 +116,13 @@ subroutine overtoppingDllTest
     call assert_true(succes, errorMessage)
     call assert_comparable(z, zExpected1a, margin, "Z value from dllOvertopping.dll; overflow")
     !
-    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel > dikeheigth (overflow)
+    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel > dikeheight (overflow)
     !
     load%h        =  9.50_wp
     call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
     call assert_false(succes, errorMessage)
     !
-    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheigth, without waves
+    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheight, without waves
     !
     load%h        =  5.50_wp
     load%Hm0      =  0.00_wp
@@ -266,7 +266,7 @@ subroutine overtoppingZ2Test
     load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
     call assert_equal(ierr, 0, errorMessage)
     !
-    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheigth
+    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheight
     !
     call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
     call assert_true(succes, errorMessage)
@@ -329,7 +329,7 @@ subroutine influenceRoughnessTest
     load%hm0   = 1d-6
     load%tm_10 = 1.912229230397281D-012
     !
-    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheigth
+    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheight
     !
     logging%verbosity = -1
     logging%filename = ' '
