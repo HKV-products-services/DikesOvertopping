@@ -32,7 +32,7 @@ contains
 !!     - calculateQoF
 !!     - versionNumber
 !!
-!!     - test overflow ( waterlevel > dike height)
+!!     - test overflow (waterlevel > dike height)
 !!     - test with and without waves
 !!
 !! @ingroup FailureMechanismsTests
@@ -103,32 +103,32 @@ subroutine overtoppingDllTest
     load%phi      = 50.00_wp
     load%Hm0      =  1.00_wp
     waveSteepness =  0.04_wp
-    load%Tm_10    = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
-    call assert_equal( ierr, 0, errorMessage )
+    load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
+    call assert_equal(ierr, 0, errorMessage)
     !
     ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheigth
     !
-    call calculateQoF( load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging )
-    call assert_true ( succes, errorMessage )
-    call assert_comparable ( overtopping%Qo, 0.808902537811215d-8, margin, 'Qo from dllOvertopping.dll')
-    call assert_comparable ( overtopping%z2, 1.51985829057_wp, margin, 'z2 from dllOvertopping.dll')
-    call calcZValue ( criticalOvertoppingRate, modelFactors, overtopping%Qo, z, succes, errorMessage)
-    call assert_true ( succes, errorMessage )
-    call assert_comparable( z, zExpected1a, margin, "Z value from dllOvertopping.dll; overflow" )
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(overtopping%Qo, 0.808902537811215d-8, margin, 'Qo from dllOvertopping.dll')
+    call assert_comparable(overtopping%z2, 1.51985829057_wp, margin, 'z2 from dllOvertopping.dll')
+    call calcZValue(criticalOvertoppingRate, modelFactors, overtopping%Qo, z, succes, errorMessage)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(z, zExpected1a, margin, "Z value from dllOvertopping.dll; overflow")
     !
     ! test actual computations in calculateQo and zFuncOvertopping for waterlevel > dikeheigth (overflow)
     !
     load%h        =  9.50_wp
-    call calculateQoF( load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging )
-    call assert_false ( succes, errorMessage )
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_false(succes, errorMessage)
     !
     ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheigth, without waves
     !
     load%h        =  5.50_wp
     load%Hm0      =  0.00_wp
-    call calculateQoF( load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging )
-    call calcZValue ( criticalOvertoppingRate, modelFactors, overtopping%Qo, z, succes, errorMessage)
-    call assert_comparable( z, zExpected1b, margin, "Z value from dllOvertopping.dll; no waves test" )
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call calcZValue(criticalOvertoppingRate, modelFactors, overtopping%Qo, z, succes, errorMessage)
+    call assert_comparable(z, zExpected1b, margin, "Z value from dllOvertopping.dll; no waves test")
 
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
@@ -186,12 +186,12 @@ subroutine overtoppingDikeInProfileTest
     load%phi      = 50.00_wp
     load%Hm0      =  1.00_wp
     waveSteepness =  0.04_wp
-    load%Tm_10    = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
-    call assert_equal( ierr, 0, errorMessage )
+    load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
+    call assert_equal(ierr, 0, errorMessage)
     !
     dikeHeight  = 7.0_wp
-    call calculateQoF( load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging )
-    call assert_true ( succes, errorMessage )
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
 
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
@@ -203,7 +203,7 @@ end subroutine overtoppingDikeInProfileTest
 !!     - calculateQoF
 !!     - versionNumber
 !!
-!!     - test overflow ( waterlevel > dike height)
+!!     - test overflow(waterlevel > dike height)
 !!     - test with and without waves
 !!
 !! @ingroup FailureMechanismsTests
@@ -263,15 +263,15 @@ subroutine overtoppingZ2Test
     load%phi      = 50.00_wp
     load%Hm0      =  1.00_wp
     waveSteepness =  0.04_wp
-    load%Tm_10    = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
-    call assert_equal( ierr, 0, errorMessage )
+    load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
+    call assert_equal(ierr, 0, errorMessage)
     !
     ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheigth
     !
-    call calculateQoF( load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging )
-    call assert_true ( succes, errorMessage )
-    call assert_comparable ( overtopping%Qo, 0.48213d0, margin, 'Qo from dllOvertopping.dll')
-    call assert_comparable ( overtopping%z2,  2.874674352d0, margin, 'z2 from dllOvertopping.dll')
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(overtopping%Qo, 0.48213d0, margin, 'Qo from dllOvertopping.dll')
+    call assert_comparable(overtopping%z2,  2.874674352d0, margin, 'z2 from dllOvertopping.dll')
 
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
@@ -333,9 +333,9 @@ subroutine influenceRoughnessTest
     !
     logging%verbosity = -1
     logging%filename = ' '
-    call calculateQoF( load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging )
-    call assert_true ( succes, errorMessage )
-    call assert_inbetween ( overtopping%z2, 1d-16, 2d-15, 'difference in z2')
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
+    call assert_inbetween(overtopping%z2, 1d-16, 2d-15, 'difference in z2')
 
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
@@ -347,7 +347,7 @@ end subroutine influenceRoughnessTest
 !!     - calculateQoF
 !!     - versionNumber
 !!
-!!     - test overflow ( waterlevel > dike height)
+!!     - test overflow (waterlevel > dike height)
 !!     - test with and without waves
 !!
 !! @ingroup FailureMechanismsTests
@@ -392,30 +392,30 @@ subroutine overtoppingValidationTest
     geometryF%normal = 60.0_wp ! degrees
     geometryF%npoints = npoints
     !
-    ! do validation of input ( geometry not correct ) :
+    ! do validation of input (geometry not correct) :
     !
     call initErrorMessages(errorStruct)
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     
     call assert_equal(errorStruct%messages(1)%message, 'Verticale coordinaten mogen niet afnemen.   0.00 en   -1.00 doen dat wel.', 'error handling')
     call assert_equal(errorStruct%messages(2)%message, 'Verticale coordinaten mogen niet afnemen.   4.00 en    0.00 doen dat wel.', 'error handling')
 
     !
-    ! do validation of input ( modelfactor m_z2 < 0 ) :
+    ! do validation of input (modelfactor m_z2 < 0) :
     !
     geometryF%ycoords = [-5, 0, 5, 6, 7]
     modelFactors%m_z2     = -1.00_wp
     call SetLanguage('UK')
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     
     call assert_equal(errorStruct%messages(3)%message, 'Model factor 2% wave runup smaller than  0.000', 'error handling')
     
     !
-    ! do validation of input ( modelfactor foreshore < 0.3 ) :
+    ! do validation of input (modelfactor foreshore < 0.3) :
     !
     modelFactors%m_z2                      = 1.00_wp
     modelFactors%reductionFactorForeshore  = 0.25_wp
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     call assert_equal(errorStruct%messages(4)%message, 'Model factor reduction factor foreshore not between  0.300 and  1.000', 'error handling')
 
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
@@ -463,19 +463,19 @@ subroutine overtoppingValidationRoughnessTest
     geometryF%normal = 60.0_wp ! degrees
     geometryF%npoints = npoints
     !
-    ! do validation of input ( geometry not correct ) :
+    ! do validation of input (geometry not correct) :
     !
     call SetLanguage('NL')
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     
     call assert_equal(errorStruct%messages(1)%message, 'Ruwheidsfactoren moeten liggen tussen 0.5 ... 1.0; gevonden:  0.00', 'error handling')
 
     geometryF%roughness = [ 0.49, 0.5, 0.5, 0.5 ]
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     
     call assert_equal(errorStruct%messages(2)%message, 'Ruwheidsfactoren moeten liggen tussen 0.5 ... 1.0; gevonden:  0.49', 'error handling')
     !
-    ! do validation of input ( modelfactor m_z2 < 0 ) :
+    ! do validation of input (modelfactor m_z2 < 0) :
     !
 end subroutine overtoppingValidationRoughnessTest
 
@@ -527,7 +527,7 @@ subroutine overtoppingMultipleValidationTest
     !
     call initErrorMessages(errorStruct)
     call SetLanguage('UK')
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 
     call assert_equal(4, errorStruct%nErrors, 'expected 4 validation errors')
     call assert_equal(trim(errorStruct%messages(1)%message), 'Coordinates in vertical direction must be non-decreasing.   5.00 and    4.00 are not.', 'error handling')
@@ -588,9 +588,9 @@ subroutine overtoppingValidationTestZPoints
     !
     call initErrorMessages(errorStruct)
     call SetLanguage('NL')
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     call SetLanguage('UK')
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 
     call assert_equal(2, errorStruct%nErrors, 'expected 2 validation errors')
     call assert_equal(errorStruct%messages(1)%message, 'Verticale coordinaten mogen niet afnemen.   0.00 en  -10.00 doen dat wel.', 'error handling')
@@ -599,9 +599,9 @@ subroutine overtoppingValidationTestZPoints
     geometryF%xcoords = [ 0d0, 40d0, 40.019d0 ]
     geometryF%ycoords = [-10d0, 0d0, 10d0]
     call SetLanguage('NL')
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     call SetLanguage('UK')
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     call assert_equal(4, errorStruct%nErrors, 'expected 4 (total) validation errors')
     call assert_equal(errorStruct%messages(3)%message, 'X-coordinaten moeten ten minste 0.02 van elkaar verschillen.  40.000 en   40.019 ligt te dicht bij elkaar.', 'error handling')
     call assert_equal(errorStruct%messages(4)%message, 'X-coordinates must differ at least 0.02.  40.000 and   40.019 are too close to each other.', 'error handling')
@@ -609,7 +609,7 @@ subroutine overtoppingValidationTestZPoints
     geometryF%xcoords = [ 0d0, 40d0, 40.0201d0 ]
     geometryF%ycoords = [ 0d0, 9.9d0, 10d0]
     call SetLanguage('NL')
-    call ValidateInputF( geometryF, dikeHeight, modelFactors, errorStruct )
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     call assert_equal(4, errorStruct%nErrors, 'expected 4 (total) validation errors')
 
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)

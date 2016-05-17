@@ -47,15 +47,15 @@ subroutine allovertoppingRTOTests
     call testWithLevel(overtoppingValidationTestZPoints, 'Test message of incorrect profile (z-value)', 1)
     !
     ! All test series with varying the load for different cross sections
-    call allLoadRTOTests( nCrossSections, nBasicTestSeries )
+    call allLoadRTOTests(nCrossSections, nBasicTestSeries)
 
     !
     ! All test series with adapting the cross section
-    call allCrossSectionsRTOTests( nCrossSections, nBasicTestSeries )
+    call allCrossSectionsRTOTests(nCrossSections, nBasicTestSeries)
 
     !
     ! All test series with adapting the roughness of one or more segments of the cross sections
-    call allCrossSectionRoughnessTests( nCrossSections, nBasicTestSeries )
+    call allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
 
     ! test for the adjustment of the cross section
     call testWithLevel(TestProfileAdjustment, "Test whether the profile is adapted correctly", 1)

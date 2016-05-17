@@ -30,7 +30,7 @@ contains
 !>
 !! Subroutine to calculate the overtopping discharge with the RTO-overtopping dll
 !! @ingroup LSF
-subroutine calculateQoRTO( dikeHeight, modelFactors, overtopping, load, geometry, succes, errorMessage )
+subroutine calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry, succes, errorMessage)
     real(kind=wp),                 intent(in)    :: dikeHeight     !< dike height
     type(tpOvertoppingInput),      intent(inout) :: modelFactors   !< struct with model factors
     type (tpOvertopping),          intent(out)   :: overtopping    !< structure with overtopping results
@@ -68,7 +68,7 @@ subroutine calculateQoRTO( dikeHeight, modelFactors, overtopping, load, geometry
         overtopping%Qo = tiny(1.0d0)
         overtopping%z2 = 0d0
     endif
-    call deallocateGeometry( geometryAdjusted )
+    call deallocateGeometry(geometryAdjusted)
 
     if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
     if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
@@ -78,8 +78,8 @@ end subroutine calculateQoRTO
 !>
 !! Subroutine to fill the profile in a structure and call the adjustment function of the profile due to a desired dike height
 !! @ingroup LSF
-subroutine profileInStructure( nrCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, &
-                               xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage )
+subroutine profileInStructure(nrCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, &
+                               xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage)
     integer,            intent(in)          :: nrCoordinates                !< number of coordinates of the profile
     real(kind=wp),      intent(in)          :: xcoordinates(nrCoordinates)  !< vector with x-coordinates of the profile
     real(kind=wp),      intent(in)          :: ycoordinates(nrCoordinates)  !< vector with y-coordinates of the profile
@@ -139,7 +139,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
     ! First the situation where the new dike height is close to the dike toe
     if (dikeHeight <= auxiliaryHeightToe) then
         nrCoordsAdjusted = 2
-        allocate( xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=ierr )
+        allocate(xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=ierr)
         if (ierr /= 0) then
             write(errorMessage, GetOvertoppingFormat(allocateError)) 2*nrCoordsAdjusted
             succes = .false.
@@ -152,7 +152,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
     else
         nrCoordsAdjusted = nrCoordinates
         do i = 2, nrCoordinates - 1
-            slope = ( coordinates(i+1)%zCoordinate - coordinates(i)%zCoordinate ) / ( coordinates(i+1)%xCoordinate - coordinates(i)%xCoordinate )
+            slope = (coordinates(i+1)%zCoordinate - coordinates(i)%zCoordinate) / (coordinates(i+1)%xCoordinate - coordinates(i)%xCoordinate)
             if (slope < slope_min .and. i < nrCoordinates - 1) then
                 !
                 ! the next segment of the cross section is a berm segment
@@ -166,7 +166,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
                 if (dikeHeight < auxiliaryHeight) then
                     nrCoordsAdjusted = i - 1
                     exit
-                elseif ( equalRealsRelative(dikeHeight, coordinates(i)%zCoordinate, 1d-12) ) then
+                elseif (equalRealsRelative(dikeHeight, coordinates(i)%zCoordinate, 1d-12)) then
                     nrCoordsAdjusted = i
                     exit
                 elseif (dikeHeight < coordinates(i)%zCoordinate) then
@@ -179,7 +179,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
         !
         ! allocate xCoordsAdjusted and zCoordsAdjusted and check result
         !
-        allocate( xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=ierr )
+        allocate(xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=ierr)
         if (ierr /= 0) then
             write(errorMessage, GetOvertoppingFormat(allocateError)) 2*nrCoordsAdjusted
             succes = .false.
@@ -224,12 +224,12 @@ function zFuncLogRatios(qo, qc, mqo, mqc, success, errorMessage) result (z)
     !   Use the logarithm instead of the function itself to avoid convergence problems
     ! - Tiny overtopping rates should not lead to log(0)
     !
-    if ( mqc > 0.0d0 .and. qc > 0.0d0 ) then
-        z = log( mqc * qc ) - log( max( mqo * qo, tiny(1.0d0) ) )
+    if (mqc > 0.0d0 .and. qc > 0.0d0) then
+        z = log(mqc * qc) - log(max(mqo * qo, tiny(1.0d0)))
         success = .true.
     else
         success = .false.
-        if ( mqc <= 0.0d0 ) then
+        if (mqc <= 0.0d0) then
             write(errorMessage, GetOvertoppingFormat(zero_or_negative_varModelFactorCriticalOvertopping)) &
                varModelFactorCriticalOvertopping
         else ! qc <=0.0d0

@@ -136,7 +136,7 @@
       endif
    endif
 
-   call deallocateGeometry( geometry )
+   call deallocateGeometry(geometry)
    
    end subroutine checkCrossSection
 
@@ -275,7 +275,7 @@ subroutine deallocateGeometry(geometry)
 !
     deallocate (geometry%xCoordinates, geometry%yCoordinates, geometry%roughnessFactors, &
                 geometry%xCoordDiff,   geometry%yCoordDiff,   geometry%segmentSlopes,    &
-                geometry%segmentTypes, stat = alloc_err )
+                geometry%segmentTypes, stat = alloc_err)
 
 end subroutine deallocateGeometry
 

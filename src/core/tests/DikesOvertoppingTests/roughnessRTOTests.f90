@@ -3,7 +3,7 @@
 !! RTO stands for Risk, Assessment and Design instruments (in dutch: Risico, Toets en Ontwerpinstrumentarium)
 !
 !
-! Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+! Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 ! $Id$
 !
 !>
@@ -40,7 +40,7 @@ contains
 !! the roughness of the cross sections is varied.
 !!
 !! @ingroup FailureMechanismsTests
-subroutine allCrossSectionRoughnessTests( nCrossSections, nBasicTestSeries )
+subroutine allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
 !
 !   input/output parameters
 !
@@ -79,8 +79,8 @@ subroutine allCrossSectionRoughnessTests( nCrossSections, nBasicTestSeries )
     waveSteepness = 0.04d0
     !
     ! compute the wave period
-    load%Tm_10 = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
-    call assert_equal( ierr, 0, errorMessage )
+    load%Tm_10 = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
+    call assert_equal(ierr, 0, errorMessage)
 
     nWaveDirections = 2
     allocate (phi(nWaveDirections))
@@ -112,7 +112,7 @@ subroutine allCrossSectionRoughnessTests( nCrossSections, nBasicTestSeries )
 
                 write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputRTOovertopping/output_section', i, '_test', numberTestSerie, '.txt'
                 errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
-                call assert_files_comparable( outputFile, frozenFile, trim(errorMessage) )
+                call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
 
             enddo
             deallocate (roughness)
@@ -154,12 +154,12 @@ subroutine TestSeriesRoughness
     ! read the cross section
     !
     write (crossSectionFile,'(a,i1,a)') '../DikesOvertoppingTests/InputRTOovertopping/Cross_section', crossSectionId, '.txt'
-    call readCrossSection( crossSectionFile, geometry, succes, errorMessage )
+    call readCrossSection(crossSectionFile, geometry, succes, errorMessage)
     !
     ! open the output file
-    call getFreeLuNumber( ounit )
+    call getFreeLuNumber(ounit)
     open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
-    call assert_equal( ios, 0, 'Unable to open the file: ' // trim(outputFile) )
+    call assert_equal(ios, 0, 'Unable to open the file: ' // trim(outputFile))
 
     write (ounit,'(a)') '# Input and results test serie RTO overtopping dll'
     write (ounit,'(a)') '#  1          2       3'
@@ -169,7 +169,7 @@ subroutine TestSeriesRoughness
     varmin  =  0.5d0
     varmax  =  1.0d0
     varstep =  0.01d0
-    nstep = nint( (varmax - varmin) / varstep)
+    nstep = nint((varmax - varmin) / varstep)
 
     do istep = 0, nstep
         var = varmin + dble(istep) * varstep
@@ -184,24 +184,24 @@ subroutine TestSeriesRoughness
         !
         ! compute the wave runup and the wave overtopping discharge with the RTO-overtopping module
         call calculateOvertopping (geometry, load, modelFactors, overtopping, succes, errorMessage)
-        if ( .not. succes ) then
-            write ( ounit, '(2a)') 'Failure: ', trim(errorMessage)
+        if (.not. succes) then
+            write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
         else
             !
             ! write the results to the output file
             write (ounit,'(f8.2,f11.3,f15.10)') var, load%h + overtopping%z2, overtopping%Qo
         end if
     enddo
-    close( ounit )
+    close(ounit)
 
-    call deallocateGeometry( geometry )
+    call deallocateGeometry(geometry)
 
 end subroutine TestSeriesRoughness
 
 !> Routine to determine the nummer of slope varying test series per cross section.
 !!
 !! @ingroup FailureMechanismsTests
-subroutine numberTestSeriesRoughness( crossSectionId, nRoughnesses )
+subroutine numberTestSeriesRoughness(crossSectionId, nRoughnesses)
 !
 !   input/output parameters
 !
@@ -230,7 +230,7 @@ end subroutine numberTestSeriesRoughness
 !> Routine to determine the slopes to vary the roughness in the test series per cross section.
 !!
 !! @ingroup FailureMechanismsTests
-subroutine roughnesses( crossSectionId, roughnessSlopesId, roughness )
+subroutine roughnesses(crossSectionId, roughnessSlopesId, roughness)
 !
 !   input/output parameters
 !
@@ -253,88 +253,88 @@ subroutine roughnesses( crossSectionId, roughnessSlopesId, roughness )
             roughness(1) = 1
         else
             ! only one roughness test serie
-            call assert_true ( .false. , 'Wrong roughnesses id-number')
+            call assert_true(.false. , 'Wrong roughnesses id-number')
         endif
     elseif ((crossSectionId == 2) .or. (crossSectionId == 3)) then
         if (roughnessSlopesId == 1) then
             ! first roughness test serie
             nSegments = 2
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 1
             roughness(2) = 2
         elseif (roughnessSlopesId == 2) then
             ! second roughness test serie
             nSegments = 1
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 1
         elseif (roughnessSlopesId == 3) then
             ! third roughness test serie
             nSegments = 1
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 2
         else
-            call assert_true ( .false. , 'Wrong roughnesses id-number')
+            call assert_true(.false. , 'Wrong roughnesses id-number')
         endif
     elseif (crossSectionId == 4) then
         if (roughnessSlopesId == 1) then
             ! first roughness test serie
             nSegments = 1
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 2
         elseif (roughnessSlopesId == 2) then
             ! second roughness test serie
             nSegments = 2
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 1
             roughness(2) = 3
         else
-            call assert_true ( .false. , 'Wrong roughnesses id-number')
+            call assert_true(.false. , 'Wrong roughnesses id-number')
         endif
     elseif ((crossSectionId == 5) .or. (crossSectionId == 6)) then
         if (roughnessSlopesId == 1) then
             ! first roughness test serie
             nSegments = 1
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 2
         elseif (roughnessSlopesId == 2) then
             ! second roughness test serie
             nSegments = 1
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 3
         elseif (roughnessSlopesId == 3) then
             ! third roughness test serie
             nSegments = 2
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 1
             roughness(2) = 3
         elseif (roughnessSlopesId == 4) then
             ! fourth roughness test serie
             nSegments = 2
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 2
             roughness(2) = 4
         else
-            call assert_true ( .false. , 'Wrong roughnesses id-number')
+            call assert_true(.false. , 'Wrong roughnesses id-number')
         endif
     elseif ((crossSectionId == 7) .or. (crossSectionId == 8)) then
         if (roughnessSlopesId == 1) then
             ! first roughness test serie
             nSegments = 2
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 2
             roughness(2) = 4
         elseif (roughnessSlopesId == 2) then
             ! second roughness test serie
             nSegments = 3
-            allocate (roughness(nSegments) )
+            allocate (roughness(nSegments))
             roughness(1) = 1
             roughness(2) = 3
             roughness(3) = 5
         else
-            call assert_true ( .false. , 'Wrong roughnesses id-number')
+            call assert_true(.false. , 'Wrong roughnesses id-number')
         endif
     else
-        call assert_true ( .false. , 'Wrong cross section id-number')
+        call assert_true(.false. , 'Wrong cross section id-number')
     endif
 
 end subroutine roughnesses

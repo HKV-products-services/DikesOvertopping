@@ -98,7 +98,7 @@
          overtopping%Qo = 0.0d0
     
       ! water level below toe of the cross section
-      elseif (h < toe ) then
+      elseif (h < toe) then
 
          ! water level lower than toe of the cross section
          overtopping%z2 = 0.0d0
@@ -150,9 +150,9 @@
                endif
             endif
          endif
-         call deallocateGeometry( geometryMergedBerms )
-         call deallocateGeometry( geometrysectionB )
-         call deallocateGeometry( geometrysectionF )
+         call deallocateGeometry(geometryMergedBerms)
+         call deallocateGeometry(geometrysectionB)
+         call deallocateGeometry(geometrysectionF)
       endif
 
    endif
@@ -355,7 +355,7 @@
          call removeDikeSegments (geometry, index, geometryAdjusted, succes, errorMessage)
 
          ! significant wave height is reduced due to foreshore
-         Hm0_red = min(Hm0, dH * modelFactors%reductionFactorForeshore )
+         Hm0_red = min(Hm0, dH * modelFactors%reductionFactorForeshore)
 
          ! calculate 2% wave run-up
          if (succes) then
@@ -447,7 +447,7 @@
       endif
    endif
 
-   call deallocateGeometry( geometryFlatBerms )
+   call deallocateGeometry(geometryFlatBerms)
 
    ! calculate limit value breaker parameter
    if (succes) then
@@ -502,7 +502,7 @@
       succes = .false.
       errorMessage = GetOvertoppingMessage(wl_above_crest_not_allowed)
    else
-      overtoppingOverflow = 0.6d0 * sqrt( gravityConstant * (freeBoard ** 3) )
+      overtoppingOverflow = 0.6d0 * sqrt(gravityConstant * (freeBoard ** 3))
       overtopping%Qo = overtopping%Qo + overtoppingOverflow
    endif
 

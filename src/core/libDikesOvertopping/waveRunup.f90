@@ -134,7 +134,7 @@ module waveRunup
       endif
    endif 
 
-   call deallocateGeometry( geometryFlatBerms )
+   call deallocateGeometry(geometryFlatBerms)
 
    ! -----------------------
    ! end iteration procedure
@@ -282,7 +282,7 @@ end function innerCalculation
       else
           relaxation = min(0.5_wp, relaxationFactor)
       endif
-      startValue = z2_end(i-1) * relaxation + ( 1.0_wp - relaxation) * z2_start(i-1)
+      startValue = z2_end(i-1) * relaxation + (1.0_wp - relaxation) * z2_start(i-1)
    endif
    end function determineStartingValue
 

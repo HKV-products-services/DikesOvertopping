@@ -37,7 +37,7 @@ contains
 !> Call all the basic overtopping test series for the RTO overtopping dll. In these test series the load parameters are varied.
 !!
 !! @ingroup FailureMechanismsTests
-subroutine allLoadRTOTests( nCrossSections, nBasicTestSeries )
+subroutine allLoadRTOTests(nCrossSections, nBasicTestSeries)
 !
 !   input/output parameters
 !
@@ -71,12 +71,12 @@ subroutine allLoadRTOTests( nCrossSections, nBasicTestSeries )
             
             write (crossSectionNumber,'(I1)') i
             write (testSerieNumber,   '(I2)') j
-            call testWithLevel( testSeriesLoadRTO, "Calculations with the RTO overtopping dll in the test serie " // &
+            call testWithLevel(testSeriesLoadRTO, "Calculations with the RTO overtopping dll in the test serie " // &
                                            trim(testSerieNumber) // " and cross section " // crossSectionNumber, 1)
             
             write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputRTOovertopping/output_section', i, '_test', j, '.txt'
             errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
-            call assert_files_comparable( outputFile, frozenFile, trim(errorMessage) )
+            call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
         enddo
     enddo
 
@@ -125,35 +125,35 @@ subroutine testSeriesLoadRTO
     ! Read the test serie
     !
     ! Open the file with the test serie
-    call getFreeLuNumber( tunit )
+    call getFreeLuNumber(tunit)
     open (unit=tunit, file=trim(testseriefile), status='old', iostat=ios)
-    call assert_equal( ios, 0, 'Unable to open the file: ' // trim(testseriefile) )
+    call assert_equal(ios, 0, 'Unable to open the file: ' // trim(testseriefile))
     !
     ! Skip comment lines in test serie file 
     comment='#'
     do while (comment == '#')
         read (tunit,'(a)', iostat=ios) comment
-        call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
+        call assert_equal(ios, 0, 'Read error from the file: ' // trim(testseriefile))
     enddo
     backspace(unit=tunit)
 
     ! read values for test serie in test serie file
     read(tunit,*,iostat=ios) varmin,varmax,varstep
-    call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
+    call assert_equal(ios, 0, 'Read error from the file: ' // trim(testseriefile))
     ! read water level (h)
     read(tunit,*,iostat=ios) load%h
-    call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
+    call assert_equal(ios, 0, 'Read error from the file: ' // trim(testseriefile))
     ! read wave height (Hm0)
     read(tunit,*,iostat=ios) load%Hm0
-    call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
+    call assert_equal(ios, 0, 'Read error from the file: ' // trim(testseriefile))
     ! read wave steepness
     read(tunit,*,iostat=ios) waveSteepness
-    call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
+    call assert_equal(ios, 0, 'Read error from the file: ' // trim(testseriefile))
     ! read wave direction w.r.t. North
     read(tunit,*,iostat=ios) load%phi
-    call assert_equal( ios, 0, 'Read error from the file: ' // trim(testseriefile) )
+    call assert_equal(ios, 0, 'Read error from the file: ' // trim(testseriefile))
 
-    close( tunit )
+    close(tunit)
 
     ! The parameter, which is varied in the test serie, has the value -999.99
     trig = -999.99d0
@@ -168,9 +168,9 @@ subroutine testSeriesLoadRTO
     endif
     !
     ! open the output file
-    call getFreeLuNumber( ounit )
+    call getFreeLuNumber(ounit)
     open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
-    call assert_equal( ios, 0, 'Unable to open the file: ' // trim(outputFile) )
+    call assert_equal(ios, 0, 'Unable to open the file: ' // trim(outputFile))
     !
     ! write headers to output file
     write (ounit,'(a)') '# Input and results test serie RTO overtopping dll'
@@ -193,26 +193,26 @@ subroutine testSeriesLoadRTO
 
         !
         ! compute the wave period
-        load%Tm_10 = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
-        call assert_equal( ierr, 0, errorMessage )
+        load%Tm_10 = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
+        call assert_equal(ierr, 0, errorMessage)
         !
         ! compute the angle of wave attack
-        beta = angleBetween2Directions( load%phi, geometry%psi, ierr, errorMessage )
-        call assert_equal( ierr, 0, errorMessage )
+        beta = angleBetween2Directions(load%phi, geometry%psi, ierr, errorMessage)
+        call assert_equal(ierr, 0, errorMessage)
         !
         ! Compute the wave runup and the wave overtopping discharge with the RTO-overtopping module
         call calculateOvertopping (geometry, load, modelFactors, overtopping, succes, errorMessage)
-        if ( .not. succes ) then
-            write ( ounit, '(2a)') 'Failure: ', trim(errorMessage)
+        if (.not. succes) then
+            write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
         else
         ! Write the results to the output file
             write (ounit,'(f8.2,2f8.3,f8.1,f8.2,f8.3,f15.10)') load%h, load%Hm0, waveSteepness, beta, load%Tm_10, &
                                                            load%h + overtopping%z2, overtopping%Qo
         end if
     enddo
-    close( ounit )
+    close(ounit)
 
-    call deallocateGeometry( geometry )
+    call deallocateGeometry(geometry)
 
 end subroutine testSeriesLoadRTO
 

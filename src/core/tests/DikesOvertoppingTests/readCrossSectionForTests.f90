@@ -61,24 +61,24 @@ subroutine readCrossSection(crossSectionFile, geometry, succes, errorMessage)
     allocate (roughnessFactors(nCoordinates))
 
     ios=0
-    call getFreeLuNumber( punit )
+    call getFreeLuNumber(punit)
     open (unit=punit, file=trim(crossSectionFile), status='old', iostat=ios)
-    call assert_equal( ios, 0, 'Unable to open the file: ' // trim(crossSectionFile) )
+    call assert_equal(ios, 0, 'Unable to open the file: ' // trim(crossSectionFile))
     !
     ! Skip comment lines in cross section file
     comment='#'
     do while (comment == '#')
        read (punit,'(a)', iostat=ios) comment
-       call assert_equal( ios, 0, 'Read error from the file: ' // trim(crossSectionFile) )
+       call assert_equal(ios, 0, 'Read error from the file: ' // trim(crossSectionFile))
     enddo
     backspace(unit=punit)
     !
     ! Read the cross section 
     do i = 1, nCoordinates
         read(punit,*,iostat=ios) xcoordinates(i), ycoordinates(i), roughnessfactors(i)
-        call assert_equal( ios, 0, 'Read error from the file: ' // trim(crossSectionFile) )
+        call assert_equal(ios, 0, 'Read error from the file: ' // trim(crossSectionFile))
     enddo
-    close( punit )
+    close(punit)
     !
     ! Set dike normal (this is used for all cross sections in all test series) 
     psi = 0.0d0
@@ -113,9 +113,9 @@ subroutine readNumberOfRelevantLines (fileName, NumberOfRelevantLines)
 !
 !   source
 !
-    call getFreeLuNumber( ifile )
-    open( ifile, file=trim( filename ), status='old', iostat=ios )
-    call assert_equal( ios, 0, 'File ' // trim( filename ) // ' can not opened' )
+    call getFreeLuNumber(ifile)
+    open(ifile, file=trim(filename), status='old', iostat=ios)
+    call assert_equal(ios, 0, 'File ' // trim(filename) // ' can not opened')
     !
     ! Read the file 
     i = 0
@@ -131,7 +131,7 @@ subroutine readNumberOfRelevantLines (fileName, NumberOfRelevantLines)
     numberOfRelevantLines = i - 1
     !
     ! close file
-    close( ifile )
+    close(ifile)
 
 end subroutine readNumberOfRelevantLines
 

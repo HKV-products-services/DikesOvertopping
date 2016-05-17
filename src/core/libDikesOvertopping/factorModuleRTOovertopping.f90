@@ -106,7 +106,7 @@
 
    endif
 
-   call deallocateGeometry( geometryNoBerms )
+   call deallocateGeometry(geometryNoBerms)
 
    end subroutine calculateTanAlpha
 
@@ -251,7 +251,7 @@
           call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, succes, errorMessage)
           if (succes) then
               sum_horzLengths = sum(horzLengths)
-              succes = ( sum_horzLengths > 0.0d0 )
+              succes = (sum_horzLengths > 0.0d0)
           endif
           if (succes) then
               gammaF = dot_product (horzLengths, rFactors) / sum_horzLengths
@@ -274,7 +274,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-       if ( errorMessage == ' ') then
+       if (errorMessage == ' ') then
            errorMessage = GetOvertoppingMessage(calc_influence_roughness)
        endif
    endif
@@ -393,7 +393,7 @@
             
                   if (z2 > -dH(N)) then
                      ! local water level + z2% above the berm (influence)
-                     rD(N) = 0.5d0 - 0.5d0 * cos( pi*dH(N)/z2 )
+                     rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/z2)
                   else
                      ! local water level + z2% on or below the berm (no influence)
                      rD(N) = 1.0d0
@@ -403,7 +403,7 @@
 
                   if (dH(N) < 2*Hm0) then
                      ! local water level less than 2*Hm0 above the berm (influence)
-                     rD(N) = 0.5d0 - 0.5d0 * cos( pi*dH(N)/(2*Hm0) )
+                     rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/(2*Hm0))
                   else
                      ! local water level 2*Hm0 or more above the berm (no influence)
                      rD(N) = 1.0d0
@@ -464,7 +464,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-      if ( errorMessage == ' ' ) then
+      if (errorMessage == ' ') then
          errorMessage = GetOvertoppingMessage(calc_influence_berms)
       endif
    endif

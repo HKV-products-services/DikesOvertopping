@@ -40,7 +40,7 @@ contains
 !! Wrapper for calculateQoF: convert C-like input structures to Fortran input structures
 !!
 !! @ingroup dllDikesOvertopping
-subroutine calculateQo ( load, geometryInput, dikeHeight, modelFactors, overtopping, success, errorText, verbosity, logFile)
+subroutine calculateQo(load, geometryInput, dikeHeight, modelFactors, overtopping, success, errorText, verbosity, logFile)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"calculateQo" :: calculateQo
     use geometryModuleRTOovertopping
     use typeDefinitionsRTOovertopping
@@ -63,7 +63,7 @@ subroutine calculateQo ( load, geometryInput, dikeHeight, modelFactors, overtopp
     logging%verbosity = verbosity
     logging%filename = logFile
 
-    call calculateQoF ( load, geometry, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+    call calculateQoF(load, geometry, dikeHeight, modelFactors, overtopping, success, errorText, logging)
 
 end subroutine calculateQo
 
@@ -71,7 +71,7 @@ end subroutine calculateQo
 !! Subroutine that calculates the discharge needed for the Z-function DikesOvertopping
 !!
 !! @ingroup dllDikesOvertopping
-subroutine calculateQoF ( load, geometryF, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, success, errorText, logging)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"calculateQoF" :: calculateQoF
     use geometryModuleRTOovertopping
     use typeDefinitionsRTOovertopping
@@ -89,14 +89,14 @@ subroutine calculateQoF ( load, geometryF, dikeHeight, modelFactors, overtopping
 !
     currentLogging = logging
 
-    call initializeGeometry (geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
+    call initializeGeometry(geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
                              geometryF%roughness, geometry, success, errorText)
 
     if (success) then
-        call calculateQoRTO ( dikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+        call calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
     endif
 
-    call deallocateGeometry( geometry )
+    call deallocateGeometry(geometry)
 end subroutine calculateQoF
 
 !>
@@ -104,7 +104,7 @@ end subroutine calculateQoF
 !! based on the discharge calculated with calculateQoF
 !!
 !! @ingroup dllDikesOvertopping
-subroutine calcZValue ( criticalOvertoppingRate, modelFactors, Qo, z, success, errorMessage)
+subroutine calcZValue(criticalOvertoppingRate, modelFactors, Qo, z, success, errorMessage)
 ! use alias, otherwise the name will be dllOvertopping_mp_calcZValue
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"calcZValue" :: calcZValue
     real(kind=wp), intent(in)               :: criticalOvertoppingRate    !< critical overtoppingrate
@@ -124,7 +124,7 @@ end subroutine calcZValue
 !! Wrapper for ValidateInputFold: convert C-like input structures to Fortran input structures
 !!
 !! @ingroup dllDikesOvertopping
-subroutine ValidateInputC ( geometryInput, dikeHeight, modelFactors, success, errorText)
+subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, errorText)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputC" :: ValidateInputC
     use geometryModuleRTOovertopping
     use typeDefinitionsRTOovertopping
@@ -147,7 +147,7 @@ subroutine ValidateInputC ( geometryInput, dikeHeight, modelFactors, success, er
 
     call initErrorMessages(errorStruct)
 
-    call ValidateInputF ( geometry, dikeHeight, modelFactors, errorStruct)
+    call ValidateInputF(geometry, dikeHeight, modelFactors, errorStruct)
 
     nMessages = errorStruct%nErrors + errorStruct%nWarnings
     success = nMessages == 0
@@ -175,7 +175,7 @@ end subroutine ValidateInputC
 !! Subroutine that validates the geometry
 !!
 !! @ingroup dllDikesOvertopping
-subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, errorStruct)
+subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputF" :: ValidateInputF
     use geometryModuleRTOovertopping
     use typeDefinitionsRTOovertopping
@@ -224,13 +224,13 @@ subroutine ValidateInputF ( geometryF, dikeHeight, modelFactors, errorStruct)
     endif
 
     if (success) then
-        call initializeGeometry (geometry%psi, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, &
-                                 geometry%roughnessFactors, geometryAdjusted, success, errorText)
-        call deallocateGeometry( geometryAdjusted )
-        call deallocateGeometry( geometry )
+        call initializeGeometry(geometry%psi, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, &
+                                geometry%roughnessFactors, geometryAdjusted, success, errorText)
+        call deallocateGeometry(geometryAdjusted)
+        call deallocateGeometry(geometry)
     endif
 
-    if ( .not. success) then
+    if (.not. success) then
         if (errorText /= ' ') then
             msgStruct%errorCode = 1
             msgStruct%severity  = severityError
@@ -255,7 +255,7 @@ end subroutine ValidateInputF
 !! Subroutine with omkeerVariant
 !!
 !! @ingroup dllDikesOvertopping
-subroutine omkeerVariantF ( load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+subroutine omkeerVariantF(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"omkeerVariantF" :: omkeerVariantF
     use geometryModuleRTOovertopping
     use typeDefinitionsRTOovertopping
@@ -273,7 +273,7 @@ subroutine omkeerVariantF ( load, geometryF, givenDischarge, dikeHeight, modelFa
 !
     type (tpGeometry)                          :: geometry       !< structure with geometry data
 !
-    call iterateToGivenDischarge ( load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
 end subroutine omkeerVariantF
 
 !>

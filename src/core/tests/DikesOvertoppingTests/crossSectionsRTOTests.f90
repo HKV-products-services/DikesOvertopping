@@ -41,7 +41,7 @@ contains
 !! the characteristics of the cross sections are varied.
 !!
 !! @ingroup FailureMechanismsTests
-subroutine allCrossSectionsRTOTests( nCrossSections, nBasicTestSeries )
+subroutine allCrossSectionsRTOTests(nCrossSections, nBasicTestSeries)
 !
 !   input/output parameters
 !
@@ -80,8 +80,8 @@ subroutine allCrossSectionsRTOTests( nCrossSections, nBasicTestSeries )
     waveSteepness = 0.04d0
     !
     ! compute the wave period
-    load%Tm_10 = computeWavePeriod( load%Hm0, waveSteepness, ierr, errorMessage )
-    call assert_equal( ierr, 0, errorMessage )
+    load%Tm_10 = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
+    call assert_equal(ierr, 0, errorMessage)
 
     nWaveDirections = 2
     allocate (phi(nWaveDirections))
@@ -111,7 +111,7 @@ subroutine allCrossSectionsRTOTests( nCrossSections, nBasicTestSeries )
 
                 write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputRTOovertopping/output_section', i, '_test', numberTestSerie, '.txt'
                 errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
-                call assert_files_comparable( outputFile, frozenFile, trim(errorMessage) )
+                call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
             enddo
         enddo
     enddo
@@ -139,7 +139,7 @@ subroutine allCrossSectionsRTOTests( nCrossSections, nBasicTestSeries )
 
                 write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputRTOovertopping/output_section', i, '_test', numberTestSerie, 'berm.txt'
                 errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
-                call assert_files_comparable( outputFile, frozenFile, trim(errorMessage) )
+                call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
             enddo
         enddo
     enddo
@@ -206,13 +206,13 @@ subroutine TestSeriesCrossSections
     !
     ! boundaries for variation of the slope
     call variableBoundaries (crossSectionId, numberTestSerie, varmin, varmax, varstep, varSlope)
-    nstep = nint( (varmax - varmin) / varstep)
+    nstep = nint((varmax - varmin) / varstep)
 
     !
     ! Open the output file
-    call getFreeLuNumber( ounit )
+    call getFreeLuNumber(ounit)
     open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
-    call assert_equal ( ios, 0 ,  'Unable to open the file: ' // trim(outputFile) )
+    call assert_equal(ios, 0 ,  'Unable to open the file: ' // trim(outputFile))
 
     write (ounit,'(a)') '# Input and results test serie RTO overtopping dll'
     write (ounit,'(a)') '#  1       2       3'
@@ -245,8 +245,8 @@ subroutine TestSeriesCrossSections
         !
         ! Compute the wave runup and the wave overtopping discharge with the RTO-overtopping module
         call calculateOvertopping (geometry, load, modelFactors, overtopping, succes, errorMessage)
-        if ( .not. succes ) then
-            write ( ounit, '(2a)') 'Failure: ', trim(errorMessage)
+        if (.not. succes) then
+            write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
         !
         ! Write the results to the output file
         else if (varSlope > 0) then
@@ -264,13 +264,13 @@ subroutine TestSeriesCrossSections
         endif
 
     enddo
-    close( ounit )
+    close(ounit)
 
-    call deallocateGeometry( geometry )
+    call deallocateGeometry(geometry)
 
-    deallocate( xCoordinates )
-    deallocate( yCoordinates )
-    deallocate( roughnessFactors )
+    deallocate(xCoordinates)
+    deallocate(yCoordinates)
+    deallocate(roughnessFactors)
 
 end subroutine TestSeriesCrossSections
 
@@ -546,7 +546,7 @@ end subroutine adaptCrossSection
 !>  Define the boundaries of the specific test serie for varying one characteristic of the cross section
 !!
 !! @ingroup FailureMechanismsTests
-subroutine numberExtraTestsSlopes( crossSectionId, nTestSeriesSlopes )
+subroutine numberExtraTestsSlopes(crossSectionId, nTestSeriesSlopes)
 !
 !   input/output parameters
 !
@@ -560,7 +560,7 @@ subroutine numberExtraTestsSlopes( crossSectionId, nTestSeriesSlopes )
     elseif ((crossSectionId == 7) .or. (crossSectionId == 8)) then
         nTestSeriesSlopes = 0
     else
-        call assert_true ( .false. , 'Wrong cross section id-number')
+        call assert_true(.false. , 'Wrong cross section id-number')
     endif
 
 end subroutine numberExtraTestsSlopes
@@ -599,17 +599,17 @@ subroutine TestProfileAdjustment
     
     dikeHeight = 0.74d0
     
-    call profileInStructure( nCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage )
+    call profileInStructure(nCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage)
     
     do i = 2, nrCoordsAdjusted
-        call assert_true (xCoordsAdjusted(i) > xCoordsAdjusted(i-1), "X coordinates increasing" )
+        call assert_true (xCoordsAdjusted(i) > xCoordsAdjusted(i-1), "X coordinates increasing")
     enddo
 
-    deallocate( xCoordinates )
-    deallocate( yCoordinates )
+    deallocate(xCoordinates)
+    deallocate(yCoordinates)
 
-    deallocate( xCoordsAdjusted )
-    deallocate( zCoordsAdjusted )
+    deallocate(xCoordsAdjusted)
+    deallocate(zCoordsAdjusted)
 
 end subroutine TestProfileAdjustment
 

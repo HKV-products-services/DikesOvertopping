@@ -128,13 +128,13 @@
    
       ! breaking waves
       Qb = (0.067d0/sqrt(tanAlpha)) * gammaB * ksi0 * &
-               exp( -modelFactors%factorDeterminationQ_b_f_b * ((hCrest-h)/Hm0) * (1/(ksi0 * gammaBeta * gammaB * gammaF)) )
+               exp(-modelFactors%factorDeterminationQ_b_f_b * ((hCrest-h)/Hm0) * (1/(ksi0 * gammaBeta * gammaB * gammaF)))
    
       ! non-breaking waves
-      Qn = 0.2d0 * exp ( -modelFactors%factorDeterminationQ_b_f_n * ((hCrest-h)/Hm0) * (1/(gammaBeta * gammaF)) )
+      Qn = 0.2d0 * exp(-modelFactors%factorDeterminationQ_b_f_n * ((hCrest-h)/Hm0) * (1/(gammaBeta * gammaF)))
 
       ! shallow waves
-      Qs = (10.0d0 ** -modelFactors%fshallow) * exp( -(hCrest-h) / (gammaBeta * gammaF * Hm0 * (0.33d0+0.022d0*max(ksi0,7.0d0))) )
+      Qs = (10.0d0 ** -modelFactors%fshallow) * exp(-(hCrest-h) / (gammaBeta * gammaF * Hm0 * (0.33d0+0.022d0*max(ksi0,7.0d0))))
 
    endif
 
@@ -148,7 +148,7 @@
 
             ! 5 < breaker parameter < 7
             if (Qn > 0d0 .and. Qs > 0d0) then
-               Qo = max(Qn, exp( log(Qn) + (log(Qs)-log(Qn))*(ksi0-5.0d0)/2 )) * sqrt(gravityConstant * Hm0**3)
+               Qo = max(Qn, exp(log(Qn) + (log(Qs)-log(Qn))*(ksi0-5.0d0)/2)) * sqrt(gravityConstant * Hm0**3)
             else
                Qo = 0d0
             endif
@@ -453,9 +453,9 @@
             ratioT = ratioB + ratioF + ratioBeta
 
             ! adjust the influence factors
-            gammaB    = gammaB    * exp( (ratioB   /ratioT) * log(0.4d0/gammaT) )
-            gammaF    = gammaF    * exp( (ratioF   /ratioT) * log(0.4d0/gammaT) )
-            gammaBeta = gammaBeta * exp( (ratioBeta/ratioT) * log(0.4d0/gammaT) )
+            gammaB    = gammaB    * exp((ratioB   /ratioT) * log(0.4d0/gammaT))
+            gammaF    = gammaF    * exp((ratioF   /ratioT) * log(0.4d0/gammaT))
+            gammaBeta = gammaBeta * exp((ratioBeta/ratioT) * log(0.4d0/gammaT))
             
          endif         
 
