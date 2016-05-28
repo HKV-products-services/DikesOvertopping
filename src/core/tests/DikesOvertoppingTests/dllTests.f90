@@ -23,7 +23,7 @@ private
 
 public :: overtoppingDllTest, overtoppingValidationTest, overtoppingZ2Test, influenceRoughnessTest, &
           overtoppingValidationRoughnessTest, overtoppingMultipleValidationTest, overtoppingValidationTestZPoints, &
-          overtoppingDikeInProfileTest
+          overtoppingDikeInProfileTest, LoadNaNTest
 
 contains
 !> Test the functions in DikesOvertopping.dll.
@@ -340,6 +340,80 @@ subroutine influenceRoughnessTest
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine influenceRoughnessTest
+
+!> Test NaN in load in dllOvertopping.dll.
+!!
+!! @ingroup FailureMechanismsTests
+subroutine LoadNaNTest
+    use user32
+    use kernel32
+
+    integer                        :: p
+    external                       :: calculateQoF
+    integer                        :: i
+    logical                        :: succes
+    integer, parameter             :: npoints = 2
+    type (tpOvertopping)           :: overtopping
+    character(len=128)             :: errorMessage
+    type (tpLoad)                  :: load              !< structure with load data
+    type(OvertoppingGeometryTypeF) :: geometryF
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    type(tLogging)                 :: logging
+
+    pointer            (qc, calculateQoF)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qc = getprocaddress (p, "calculateQoF"C)
+    !
+    ! initializations
+    !
+    dikeHeight = 3.7_wp
+    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
+    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
+    modelFactors%m_z2                       = 1.00_wp
+    modelFactors%fshallow                   = 0.67778_wp
+    modelFactors%ComputedOvertopping        = 1.0_wp
+    modelFactors%CriticalOvertopping        = 1.0_wp
+    modelFactors%relaxationFactor           = 1.0d0
+    modelFactors%reductionfactorforeshore   = 0.5_wp
+
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    geometryF%xcoords(1) =  0.0_wp
+    geometryF%xcoords(2) = 24.0_wp
+    geometryF%ycoords(1) = -3.0_wp
+    geometryF%ycoords(2) =  3.0_wp
+    geometryF%roughness  =  1.0_wp
+    geometryF%normal     =  0.0_wp
+    geometryF%npoints    =  npoints
+    !
+    !
+    ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheight
+    !
+    logging%verbosity = -1
+    logging%filename = ' '
+    do i = 1, 4
+        load%h     = -0.361314622129615_wp
+        load%phi   = 45.0_wp
+        load%hm0   = 1d-6
+        load%tm_10 = 1.912229230397281D-012
+        select case(i)
+        case(1)
+            call set_nan(load%h)
+        case(2)
+            call set_nan(load%phi)
+        case(3)
+            call set_nan(load%hm0)
+        case(4)
+            call set_nan(load%tm_10)
+        end select
+        call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+        call assert_false(succes, errorMessage)
+    enddo
+
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
+end subroutine LoadNaNTest
 
 !> Test the functions in dllOvertopping.dll.
 !!     these functions are:

@@ -267,15 +267,15 @@ subroutine deallocateGeometry(geometry)
 !
     type (tpGeometry), intent(inout) :: geometry     !< structure with geometry data
 !
-!   Local parameter
-!
-    integer(kind=2)                  :: alloc_err    !< parameter to catch error messages
-!
 !   source
 !
-    deallocate (geometry%xCoordinates, geometry%yCoordinates, geometry%roughnessFactors, &
-                geometry%xCoordDiff,   geometry%yCoordDiff,   geometry%segmentSlopes,    &
-                geometry%segmentTypes, stat = alloc_err)
+    if (associated(geometry%xCoordinates))     deallocate(geometry%xCoordinates)
+    if (associated(geometry%yCoordinates))     deallocate(geometry%yCoordinates)
+    if (associated(geometry%roughnessFactors)) deallocate(geometry%roughnessFactors)
+    if (associated(geometry%xCoordDiff))       deallocate(geometry%xCoordDiff)
+    if (associated(geometry%yCoordDiff))       deallocate(geometry%yCoordDiff)
+    if (associated(geometry%segmentSlopes))    deallocate(geometry%segmentSlopes)
+    if (associated(geometry%segmentTypes))     deallocate(geometry%segmentTypes)
 
 end subroutine deallocateGeometry
 

@@ -619,7 +619,10 @@
 
    ! check local water level
    if (succes) then
-      if (load%h > geometry%yCoordinates(geometry%nCoordinates)) then 
+      if (isnan(load%h)) then
+         succes = .false.
+         errorMessage = 'load%h is NaN'
+      else if (load%h > geometry%yCoordinates(geometry%nCoordinates)) then 
          succes = .false.
          errorMessage = GetOvertoppingMessage(wl_above_crest)
       endif
@@ -627,16 +630,16 @@
 
    ! check wave height and period
    if (succes) then
-      if (load%Hm0   < 0.0d0) succes = .false.
-      if (load%Tm_10 < 0.0d0) succes = .false.
+      if (load%Hm0   < 0.0d0 .or. isnan(load%Hm0)) succes = .false.
+      if (load%Tm_10 < 0.0d0 .or. isnan(load%Tm_10)) succes = .false.
       if (.not. succes) then
          errorMessage = GetOvertoppingMessage(wave_height_or_periode_less_zero)
       endif
    endif
-   
+
    ! check wave direction
    if (succes) then
-      if ((load%phi < 0.0d0) .or. (load%phi > 360.0d0)) then
+      if ((load%phi < 0.0d0) .or. (load%phi > 360.0d0) .or. isnan(load%phi)) then
          succes = .false.
          errorMessage = GetOvertoppingMessage(wave_direction_not_in_range)
       endif

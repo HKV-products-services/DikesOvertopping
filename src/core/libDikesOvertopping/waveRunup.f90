@@ -81,24 +81,26 @@ module waveRunup
    ! -------------------------
 
    ! iteration procedure for calculating 2% wave run-up
-   do i=1, z2_iter_max1
+   if (succes) then
+      do i=1, z2_iter_max1
 
-      ! edit number of iterations
-      Niterations = Niterations + 1
-      
-      z2_start(i) = determineStartingValue(i, modelFactors%relaxationFactor, z2_start, z2_end, Hm0)
-      
-      z2_end(i) = innerCalculation(geometry, h, Hm0, gammaBeta_z, modelFactors, z2_start(i), s0, geometryFlatBerms, succes, errorMessage)
+         ! edit number of iterations
+         Niterations = Niterations + 1
 
-      ! calculate convergence criterium
-      convergence = (abs(z2_start(i) - z2_end(i)) < z2_margin)
+         z2_start(i) = determineStartingValue(i, modelFactors%relaxationFactor, z2_start, z2_end, Hm0)
 
-      ! exit loop when an error occurs or convergence is reached
-      if ((.not. succes) .or. (convergence)) then
-          exit
-      endif
+         z2_end(i) = innerCalculation(geometry, h, Hm0, gammaBeta_z, modelFactors, z2_start(i), s0, geometryFlatBerms, succes, errorMessage)
 
-   enddo
+         ! calculate convergence criterium
+         convergence = (abs(z2_start(i) - z2_end(i)) < z2_margin)
+
+         ! exit loop when an error occurs or convergence is reached
+         if ((.not. succes) .or. (convergence)) then
+             exit
+         endif
+
+      enddo
+   endif
    
    if (succes .and. .not. convergence) then
       !

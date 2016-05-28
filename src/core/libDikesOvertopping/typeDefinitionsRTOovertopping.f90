@@ -19,16 +19,16 @@
    
    !> tpGeometry: structure with geometry data
    type, public              :: tpGeometry
-      real(wp)               :: psi                     !< dike normal (degrees)
-      integer                :: nCoordinates            !< number of coordinates cross section 
-      real(wp),    pointer   :: xCoordinates(:)         !< vector with x-coordinates cross section (m)
-      real(wp),    pointer   :: yCoordinates(:)         !< vector with y-coordinates cross section (m+NAP)
-      real(wp),    pointer   :: roughnessFactors(:)     !< vector with roughness factors cross section
-      real(wp),    pointer   :: xCoordDiff(:)           !< vector with differences in x-coordinates (m)
-      real(wp),    pointer   :: yCoordDiff(:)           !< vector with differences in y-coordinates (m)
-      real(wp),    pointer   :: segmentSlopes(:)        !< vector with slopes dike segments
-      integer, pointer       :: segmentTypes(:)         !< vector with segment types (1=slope,2=berm,3=other)
-      integer                :: NbermSegments           !< number of berm segments
+      real(wp)               :: psi                              !< dike normal (degrees)
+      integer                :: nCoordinates                     !< number of coordinates cross section 
+      real(wp),    pointer   :: xCoordinates(:)      => null()   !< vector with x-coordinates cross section (m)
+      real(wp),    pointer   :: yCoordinates(:)      => null()   !< vector with y-coordinates cross section (m+NAP)
+      real(wp),    pointer   :: roughnessFactors(:)  => null()   !< vector with roughness factors cross section
+      real(wp),    pointer   :: xCoordDiff(:)        => null()   !< vector with differences in x-coordinates (m)
+      real(wp),    pointer   :: yCoordDiff(:)        => null()   !< vector with differences in y-coordinates (m)
+      real(wp),    pointer   :: segmentSlopes(:)     => null()   !< vector with slopes dike segments
+      integer, pointer       :: segmentTypes(:)                  !< vector with segment types (1=slope,2=berm,3=other)
+      integer                :: NbermSegments                    !< number of berm segments
    end type tpGeometry
 
    !> tpLoad: structure with load parameters

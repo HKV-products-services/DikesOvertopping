@@ -46,6 +46,8 @@ subroutine allovertoppingRTOTests
     call testWithLevel(overtoppingMultipleValidationTest, 'Test validation of incorrect profile and negative model factor in one call', 1)
     call testWithLevel(overtoppingValidationTestZPoints, 'Test message of incorrect profile (z-value)', 1)
     !
+    call testWithLevel(LoadNaNTest, 'Test error handling in case of NaN in load', 1)
+    !
     ! All test series with varying the load for different cross sections
     call allLoadRTOTests(nCrossSections, nBasicTestSeries)
 
