@@ -3,7 +3,7 @@
 !! RTO stands for Risk, Assessment and Design instruments (in dutch: Risico, Toets en Ontwerpinstrumentarium)
 !
 !
-! Copyright (c) 2015, Deltares, HKV lijn in water, TNO
+! Copyright (c) 2016, Deltares, HKV lijn in water, TNO
 ! $Id$
 !
 !>
@@ -18,7 +18,6 @@ module crossSectionsAdaptionTests
     use waveParametersUtilities
     use readCrossSectionForTests
     use mainModuleRTOovertopping
-    use zFunctionsWTIOvertopping
     use typeDefinitionsRTOovertopping
     use geometryModuleRTOovertopping
     
@@ -33,7 +32,7 @@ module crossSectionsAdaptionTests
 
     private
     
-    public :: allCrossSectionsRTOTests, TestProfileAdjustment
+    public :: allCrossSectionsRTOTests
 
 contains
 
@@ -564,53 +563,5 @@ subroutine numberExtraTestsSlopes(crossSectionId, nTestSeriesSlopes)
     endif
 
 end subroutine numberExtraTestsSlopes
-
-!> test for the adjustment of the cross section
-!!
-!! @ingroup FailureMechanismsTests
-subroutine TestProfileAdjustment
-!
-!   Local parameters
-!
-    integer                 :: nCoordinates         ! number of coordinates
-    integer                 :: nrCoordsAdjusted     ! number of coordinates
-    real(wp), allocatable   :: xCoordinates(:)      ! x-coordinates (m)
-    real(wp), allocatable   :: yCoordinates    (:)  ! y-coordinates (m+NAP)
-    real(kind=wp), pointer  :: xCoordsAdjusted(:)   ! vector with x-coordinates of the adjusted profile
-    real(kind=wp), pointer  :: zCoordsAdjusted(:)   ! vector with y-coordinates of the adjusted profile
-    logical                 :: succes               ! flag for succes
-    character(len=255)      :: errorMessage         ! error message
-    real(kind=wp)           :: dikeHeight           ! vector with x-coordinates of the adjusted profile
-    integer                 :: i                    ! do-loop counter
-    
-    nCoordinates = 4
-    allocate (xCoordinates (nCoordinates))
-    allocate (yCoordinates (nCoordinates))
-    
-    xCoordinates(1) = 28.5d0
-    xCoordinates(2) = 30.55d0
-    xCoordinates(3) = 34.17d0
-    xCoordinates(4) = 37.0d0
-    
-    yCoordinates(1) = 0.02d0
-    yCoordinates(2) = 0.36d0
-    yCoordinates(3) = 1.12d0
-    yCoordinates(4) = 1.74d0
-    
-    dikeHeight = 0.74d0
-    
-    call profileInStructure(nCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage)
-    
-    do i = 2, nrCoordsAdjusted
-        call assert_true (xCoordsAdjusted(i) > xCoordsAdjusted(i-1), "X coordinates increasing")
-    enddo
-
-    deallocate(xCoordinates)
-    deallocate(yCoordinates)
-
-    deallocate(xCoordsAdjusted)
-    deallocate(zCoordsAdjusted)
-
-end subroutine TestProfileAdjustment
 
 end module crossSectionsAdaptionTests

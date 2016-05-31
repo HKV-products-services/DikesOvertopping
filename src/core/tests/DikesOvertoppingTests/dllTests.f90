@@ -14,6 +14,7 @@ use overtoppingInterface, only : OvertoppingGeometryTypeF
 use typeDefinitionsRTOovertopping
 use ModuleLogging
 use waveParametersUtilities, only : computeWavePeriod
+use zFunctionsWTIOvertopping, only : profileInStructure
 use ftnunit
 use errorMessages
 
@@ -21,11 +22,23 @@ implicit none
 
 private
 
-public :: overtoppingDllTest, overtoppingValidationTest, overtoppingZ2Test, influenceRoughnessTest, &
-          overtoppingValidationRoughnessTest, overtoppingMultipleValidationTest, overtoppingValidationTestZPoints, &
-          overtoppingDikeInProfileTest, LoadNaNTest
+public :: allOvertoppingDllTests
 
 contains
+
+subroutine allOvertoppingDllTests
+    call testWithLevel(overtoppingDllTest, 'Test the external overtopping dll', 1)
+    call testWithLevel(overtoppingDikeInProfileTest, 'Test a dikeheight at one of the profile points', 1)
+    call testWithLevel(influenceRoughnessTest, 'Test influence roughness', 1)
+    call testWithLevel(overtoppingValidationTest, 'Test validation of incorrect profile and negative model factor', 1)
+    call testWithLevel(overtoppingValidationRoughnessTest, 'Test validation of invalid roughness', 1)
+    call testWithLevel(overtoppingMultipleValidationTest, 'Test validation of incorrect profile and negative model factor in one call', 1)
+    call testWithLevel(overtoppingValidationTestZPoints, 'Test message of incorrect profile (z-value)', 1)
+    call testWithLevel(overtoppingZ2Test, 'Test h+z2 > dikeheight', 1)
+    call testWithLevel(LoadNaNTest, 'Test error handling in case of NaN in load', 1)
+    call testWithLevel(TestProfileAdjustment, "Test whether the profile is adapted correctly", 1)
+end subroutine allOvertoppingDllTests
+    
 !> Test the functions in DikesOvertopping.dll.
 !!     these functions are:
 !!     - calcZValue
@@ -35,7 +48,7 @@ contains
 !!     - test overflow (waterlevel > dike height)
 !!     - test with and without waves
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikeOvertoppingTests
 subroutine overtoppingDllTest
     use user32
     use kernel32
@@ -135,7 +148,7 @@ subroutine overtoppingDllTest
 end subroutine overtoppingDllTest
 
 !! test Dike at one of the profile points
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikeOvertoppingTests
 subroutine overtoppingDikeInProfileTest
     use user32
     use kernel32
@@ -206,7 +219,7 @@ end subroutine overtoppingDikeInProfileTest
 !!     - test overflow(waterlevel > dike height)
 !!     - test with and without waves
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikeOvertoppingTests
 subroutine overtoppingZ2Test
     use user32
     use kernel32
@@ -280,14 +293,13 @@ end subroutine overtoppingZ2Test
 !> Test influence roughness in dllOvertopping.dll.
 !!
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikeOvertoppingTests
 subroutine influenceRoughnessTest
     use user32
     use kernel32
 
     integer                        :: p
     external                       :: calculateQoF
-   !integer                        :: i
     logical                        :: succes
     integer, parameter             :: npoints = 2
     type (tpOvertopping)           :: overtopping
@@ -343,7 +355,7 @@ end subroutine influenceRoughnessTest
 
 !> Test NaN in load in dllOvertopping.dll.
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikeOvertoppingTests
 subroutine LoadNaNTest
     use user32
     use kernel32
@@ -424,7 +436,7 @@ end subroutine LoadNaNTest
 !!     - test overflow (waterlevel > dike height)
 !!     - test with and without waves
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikeOvertoppingTests
 subroutine overtoppingValidationTest
     use user32
     use kernel32
@@ -553,7 +565,7 @@ subroutine overtoppingValidationRoughnessTest
     !
 end subroutine overtoppingValidationRoughnessTest
 
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikeOvertoppingTests
 subroutine overtoppingMultipleValidationTest
     use user32
     use kernel32
@@ -616,7 +628,7 @@ subroutine overtoppingMultipleValidationTest
 
 end subroutine overtoppingMultipleValidationTest
 
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikeOvertoppingTests
 subroutine overtoppingValidationTestZPoints
     use user32
     use kernel32
@@ -689,5 +701,53 @@ subroutine overtoppingValidationTestZPoints
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine overtoppingValidationTestZPoints
+
+!> test for the adjustment of the cross section
+!!
+!! @ingroup DikeOvertoppingTests
+subroutine TestProfileAdjustment
+!
+!   Local parameters
+!
+    integer                 :: nCoordinates         ! number of coordinates
+    integer                 :: nrCoordsAdjusted     ! number of coordinates
+    real(wp), allocatable   :: xCoordinates(:)      ! x-coordinates (m)
+    real(wp), allocatable   :: yCoordinates    (:)  ! y-coordinates (m+NAP)
+    real(kind=wp), pointer  :: xCoordsAdjusted(:)   ! vector with x-coordinates of the adjusted profile
+    real(kind=wp), pointer  :: zCoordsAdjusted(:)   ! vector with y-coordinates of the adjusted profile
+    logical                 :: succes               ! flag for succes
+    character(len=255)      :: errorMessage         ! error message
+    real(kind=wp)           :: dikeHeight           ! vector with x-coordinates of the adjusted profile
+    integer                 :: i                    ! do-loop counter
+    
+    nCoordinates = 4
+    allocate (xCoordinates (nCoordinates))
+    allocate (yCoordinates (nCoordinates))
+    
+    xCoordinates(1) = 28.5d0
+    xCoordinates(2) = 30.55d0
+    xCoordinates(3) = 34.17d0
+    xCoordinates(4) = 37.0d0
+    
+    yCoordinates(1) = 0.02d0
+    yCoordinates(2) = 0.36d0
+    yCoordinates(3) = 1.12d0
+    yCoordinates(4) = 1.74d0
+    
+    dikeHeight = 0.74d0
+    
+    call profileInStructure(nCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage)
+    
+    do i = 2, nrCoordsAdjusted
+        call assert_true (xCoordsAdjusted(i) > xCoordsAdjusted(i-1), "X coordinates increasing")
+    enddo
+
+    deallocate(xCoordinates)
+    deallocate(yCoordinates)
+
+    deallocate(xCoordsAdjusted)
+    deallocate(zCoordsAdjusted)
+
+end subroutine TestProfileAdjustment
 
 end module dllTests

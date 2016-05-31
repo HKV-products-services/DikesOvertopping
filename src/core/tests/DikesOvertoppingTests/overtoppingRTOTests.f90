@@ -16,7 +16,6 @@ module overtoppingRTOTests
     use crossSectionRoughnessTests
     use dllTests
     use omkeerVariantTests
-    use ftnunit
 
     implicit none
     private
@@ -32,21 +31,14 @@ subroutine allovertoppingRTOTests
     integer, parameter      :: nCrossSections   = 8     !< number of cross sections
     integer, parameter      :: nBasicTestSeries = 7     !< number of basic test series
 
+    !
     ! Test using external dll
-    call testWithLevel(overtoppingDllTest, 'Test the external overtopping dll', 1)
-    call testWithLevel(overtoppingDikeInProfileTest, 'Test a dikeheight at one of the profile points', 1)
+    call allOvertoppingDllTests
 
+    !    
     ! test for 'omkeerVariant'
     call allOmkeerVariantTests
 
-    call testWithLevel(overtoppingZ2Test, 'Test h+z2 > dikeheight', 1)
-    call testWithLevel(overtoppingValidationTest, 'Test validation of incorrect profile and negative model factor', 1)
-    call testWithLevel(overtoppingValidationRoughnessTest, 'Test validation of invalid roughness', 1)
-    call testWithLevel(influenceRoughnessTest, 'Test influence roughness', 1)
-    call testWithLevel(overtoppingMultipleValidationTest, 'Test validation of incorrect profile and negative model factor in one call', 1)
-    call testWithLevel(overtoppingValidationTestZPoints, 'Test message of incorrect profile (z-value)', 1)
-    !
-    call testWithLevel(LoadNaNTest, 'Test error handling in case of NaN in load', 1)
     !
     ! All test series with varying the load for different cross sections
     call allLoadRTOTests(nCrossSections, nBasicTestSeries)
@@ -58,9 +50,6 @@ subroutine allovertoppingRTOTests
     !
     ! All test series with adapting the roughness of one or more segments of the cross sections
     call allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
-
-    ! test for the adjustment of the cross section
-    call testWithLevel(TestProfileAdjustment, "Test whether the profile is adapted correctly", 1)
 
 end subroutine allovertoppingRTOTests
 

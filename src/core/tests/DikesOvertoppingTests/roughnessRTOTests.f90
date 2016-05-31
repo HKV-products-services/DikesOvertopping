@@ -101,8 +101,7 @@ subroutine allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
                 load%phi = phi(k)
                 numberTestSerie = numberTestSerie + 1
                 
-                write (outputFile,'(a,i1,a,i2.2,a)') './output_section', crossSectionId, '_test', &
-                                        numberTestSerie, '.txt'
+                write (outputFile,'(a,i1,a,i2.2,a)') './output_section', crossSectionId, '_test', numberTestSerie, '.txt'
 
                 write (crossSectionNumber,'(I1)') crossSectionId
                 write (testSerieNumber,   '(I2)') numberTestSerie
