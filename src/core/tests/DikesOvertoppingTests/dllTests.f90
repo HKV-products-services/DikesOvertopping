@@ -15,8 +15,11 @@ use typeDefinitionsRTOovertopping
 use ModuleLogging
 use waveParametersUtilities, only : computeWavePeriod
 use zFunctionsWTIOvertopping, only : profileInStructure
+use testHelper, only : init_modelfactors_and_load
 use ftnunit
 use errorMessages
+use user32
+use kernel32
 
 implicit none
 
@@ -50,9 +53,6 @@ end subroutine allOvertoppingDllTests
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingDllTest
-    use user32
-    use kernel32
-
     real(kind=wp)      :: z                 !< z value
 
     real(kind=wp), parameter :: zExpected1a =   11.725
@@ -68,7 +68,6 @@ subroutine overtoppingDllTest
     integer                        :: i
     logical                        :: succes
     integer, parameter             :: npoints = 3
-    real(kind=wp)                  :: waveSteepness
     type (tpOvertopping)           :: overtopping
     character(len=128)             :: errorMessage      !< error message
     type (tpLoad)                  :: load              !< structure with load data
@@ -77,7 +76,6 @@ subroutine overtoppingDllTest
     type(tpOvertoppingInput)       :: modelFactors
     real(kind=wp)                  :: criticalOvertoppingRate
     type(tLogging)                 :: logging
-    integer                        :: ierr              !< error code
 
     pointer            (qz, calcZValue)
     pointer            (qv, versionNumber)
@@ -91,13 +89,7 @@ subroutine overtoppingDllTest
     ! initializations
     !
     dikeHeight  = 9.1_wp
-    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
-    modelFactors%m_z2     = 1.00_wp
-    modelFactors%fshallow = 0.92
-    modelFactors%ComputedOvertopping = 1.0_wp
-    modelFactors%CriticalOvertopping = 1.0_wp
-    modelFactors%relaxationFactor    = 1.0d0
+    call init_modelfactors_and_load(modelFactors, load)
     criticalOvertoppingRate        = 1.0d-3
 
     call versionNumber(version)
@@ -110,14 +102,6 @@ subroutine overtoppingDllTest
     enddo
     geometryF%normal = 60.0_wp ! degrees
     geometryF%npoints = npoints
-    !
-    !
-    load%h        =  5.50_wp
-    load%phi      = 50.00_wp
-    load%Hm0      =  1.00_wp
-    waveSteepness =  0.04_wp
-    load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
-    call assert_equal(ierr, 0, errorMessage)
     !
     ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheight
     !
@@ -150,15 +134,11 @@ end subroutine overtoppingDllTest
 !! test Dike at one of the profile points
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingDikeInProfileTest
-    use user32
-    use kernel32
-
     integer                        :: p
     external                       :: calculateQoF
     integer                        :: i
     logical                        :: succes
     integer, parameter             :: npoints = 3
-    real(kind=wp)                  :: waveSteepness
     type (tpOvertopping)           :: overtopping
     character(len=128)             :: errorMessage      !< error message
     type (tpLoad)                  :: load              !< structure with load data
@@ -167,7 +147,6 @@ subroutine overtoppingDikeInProfileTest
     type(tpOvertoppingInput)       :: modelFactors
     real(kind=wp)                  :: criticalOvertoppingRate
     type(tLogging)                 :: logging
-    integer                        :: ierr              !< error code
 
     pointer            (qc, calculateQoF)
 
@@ -176,13 +155,7 @@ subroutine overtoppingDikeInProfileTest
     !
     ! initializations
     !
-    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
-    modelFactors%m_z2     = 1.00_wp
-    modelFactors%fshallow = 0.92
-    modelFactors%ComputedOvertopping = 1.0_wp
-    modelFactors%CriticalOvertopping = 1.0_wp
-    modelFactors%relaxationFactor    = 1.0d0
+    call init_modelfactors_and_load(modelFactors, load)
     criticalOvertoppingRate        = 1.0d-3
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
@@ -193,14 +166,6 @@ subroutine overtoppingDikeInProfileTest
     enddo
     geometryF%normal = 60.0_wp ! degrees
     geometryF%npoints = npoints
-    !
-    !
-    load%h        =  5.50_wp
-    load%phi      = 50.00_wp
-    load%Hm0      =  1.00_wp
-    waveSteepness =  0.04_wp
-    load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
-    call assert_equal(ierr, 0, errorMessage)
     !
     dikeHeight  = 7.0_wp
     call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
@@ -212,18 +177,13 @@ end subroutine overtoppingDikeInProfileTest
 
 !> Test the functions in dllOvertopping.dll.
 !!     these functions are:
-!!     - calcZValue
 !!     - calculateQoF
-!!     - versionNumber
 !!
 !!     - test overflow(waterlevel > dike height)
 !!     - test with and without waves
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingZ2Test
-    use user32
-    use kernel32
-
     real(kind=wp), parameter :: zExpected1a =   29.88985_wp
     real(kind=wp), parameter :: zExpected1b =  701.48866_wp
     real(kind=wp), parameter :: zExpected2 = -6.43985_wp
@@ -234,7 +194,6 @@ subroutine overtoppingZ2Test
     integer                        :: i
     logical                        :: succes
     integer, parameter             :: npoints = 3
-    real(kind=wp)                  :: waveSteepness
     type (tpOvertopping)           :: overtopping
     character(len=128)             :: errorMessage      !< error message
     type (tpLoad)                  :: load              !< structure with load data
@@ -243,7 +202,6 @@ subroutine overtoppingZ2Test
     type(tpOvertoppingInput)       :: modelFactors
     real(kind=wp)                  :: criticalOvertoppingRate
     type(tLogging)                 :: logging
-    integer                        :: ierr              !< error code
 
     pointer            (qc, calculateQoF)
 
@@ -253,13 +211,7 @@ subroutine overtoppingZ2Test
     ! initializations
     !
     dikeHeight  = 9.1_wp
-    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
-    modelFactors%m_z2     = 1.00_wp
-    modelFactors%fshallow = 0.92
-    modelFactors%ComputedOvertopping = 1.0_wp
-    modelFactors%CriticalOvertopping = 1.0_wp
-    modelFactors%relaxationFactor    = 1.0d0
+    call init_modelfactors_and_load(modelFactors, load, 8.99_wp)
     criticalOvertoppingRate        = 1.0d-3
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
@@ -270,14 +222,6 @@ subroutine overtoppingZ2Test
     enddo
     geometryF%normal = 60.0_wp ! degrees
     geometryF%npoints = npoints
-    !
-    !
-    load%h        =  8.99_wp
-    load%phi      = 50.00_wp
-    load%Hm0      =  1.00_wp
-    waveSteepness =  0.04_wp
-    load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
-    call assert_equal(ierr, 0, errorMessage)
     !
     ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheight
     !
@@ -295,9 +239,6 @@ end subroutine overtoppingZ2Test
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine influenceRoughnessTest
-    use user32
-    use kernel32
-
     integer                        :: p
     external                       :: calculateQoF
     logical                        :: succes
@@ -318,14 +259,10 @@ subroutine influenceRoughnessTest
     ! initializations
     !
     dikeHeight = 3.7_wp
-    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
-    modelFactors%m_z2                       = 1.00_wp
-    modelFactors%fshallow                   = 0.67778_wp
-    modelFactors%ComputedOvertopping        = 1.0_wp
-    modelFactors%CriticalOvertopping        = 1.0_wp
-    modelFactors%relaxationFactor           = 1.0d0
-    modelFactors%reductionfactorforeshore   = 0.5_wp
+    call init_modelfactors_and_load(modelFactors, load, -0.361314622129615_wp)
+    load%phi   = 45.0_wp
+    load%hm0   = 1d-6
+    load%tm_10 = 1.912229230397281D-012
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     geometryF%xcoords(1) =  0.0_wp
@@ -335,11 +272,6 @@ subroutine influenceRoughnessTest
     geometryF%roughness  =  1.0_wp
     geometryF%normal     =  0.0_wp
     geometryF%npoints    =  npoints
-    !
-    load%h     = -0.361314622129615_wp
-    load%phi   = 45.0_wp
-    load%hm0   = 1d-6
-    load%tm_10 = 1.912229230397281D-012
     !
     ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheight
     !
@@ -357,9 +289,6 @@ end subroutine influenceRoughnessTest
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine LoadNaNTest
-    use user32
-    use kernel32
-
     integer                        :: p
     external                       :: calculateQoF
     integer                        :: i
@@ -381,14 +310,7 @@ subroutine LoadNaNTest
     ! initializations
     !
     dikeHeight = 3.7_wp
-    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
-    modelFactors%m_z2                       = 1.00_wp
-    modelFactors%fshallow                   = 0.67778_wp
-    modelFactors%ComputedOvertopping        = 1.0_wp
-    modelFactors%CriticalOvertopping        = 1.0_wp
-    modelFactors%relaxationFactor           = 1.0d0
-    modelFactors%reductionfactorforeshore   = 0.5_wp
+    call init_modelfactors_and_load(modelFactors, load)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     geometryF%xcoords(1) =  0.0_wp
@@ -438,9 +360,6 @@ end subroutine LoadNaNTest
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingValidationTest
-    use user32
-    use kernel32
-
     integer                        :: p
     external                       :: ValidateInputF, SetLanguage
     integer, parameter             :: npoints = 5
@@ -460,13 +379,7 @@ subroutine overtoppingValidationTest
     ! initializations
     !
     dikeHeight  = 9.1_wp
-    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
-    modelFactors%m_z2     = 1.00_wp
-    modelFactors%fshallow  = 0.92
-    modelFactors%ComputedOvertopping = 1.0_wp
-    modelFactors%CriticalOvertopping = 1.0_wp
-    modelFactors%relaxationFactor    = 1.0d0
+    call init_modelfactors_and_load(modelFactors)
     criticalOvertoppingRate          = 1.0d-3
     criticalOvertoppingRate        = 1.0d-3
 
@@ -509,9 +422,6 @@ subroutine overtoppingValidationTest
 end subroutine overtoppingValidationTest
 
 subroutine overtoppingValidationRoughnessTest
-    use user32
-    use kernel32
-
     integer                        :: p
     external                       :: ValidateInputF, SetLanguage
     integer, parameter             :: npoints = 5
@@ -531,13 +441,7 @@ subroutine overtoppingValidationRoughnessTest
     ! initializations
     !
     dikeHeight  = 9.1_wp
-    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
-    modelFactors%m_z2     = 1.00_wp
-    modelFactors%fshallow  = 0.92
-    modelFactors%ComputedOvertopping = 1.0_wp
-    modelFactors%CriticalOvertopping = 1.0_wp
-    modelFactors%relaxationFactor    = 1.0d0
+    call init_modelfactors_and_load(modelFactors)
     criticalOvertoppingRate          = 1.0d-3
     criticalOvertoppingRate        = 1.0d-3
 
@@ -567,9 +471,6 @@ end subroutine overtoppingValidationRoughnessTest
 
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingMultipleValidationTest
-    use user32
-    use kernel32
-
     integer                        :: p
     external                       :: ValidateInputF, SetLanguage
     integer, parameter             :: npoints = 5
@@ -589,14 +490,7 @@ subroutine overtoppingMultipleValidationTest
     ! initializations
     !
     dikeHeight  = 9.1_wp
-    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
-    modelFactors%m_z2     = 1.00_wp
-    modelFactors%fshallow  = 0.92
-    modelFactors%ComputedOvertopping = 1.0_wp
-    modelFactors%CriticalOvertopping = 1.0_wp
-    modelFactors%relaxationFactor    = 1.0d0
-    criticalOvertoppingRate          = 1.0d-3
+    call init_modelfactors_and_load(modelFactors)
     criticalOvertoppingRate        = 1.0d-3
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
@@ -630,9 +524,6 @@ end subroutine overtoppingMultipleValidationTest
 
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingValidationTestZPoints
-    use user32
-    use kernel32
-
     integer                        :: p
     external                       :: ValidateInputF, SetLanguage
     integer, parameter             :: npoints = 3
@@ -652,14 +543,7 @@ subroutine overtoppingValidationTestZPoints
     ! initializations
     !
     dikeHeight  = 0 ! 9.1_wp
-    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
-    modelFactors%m_z2     = 1.00_wp
-    modelFactors%fshallow  = 0.92
-    modelFactors%ComputedOvertopping = 1.0_wp
-    modelFactors%CriticalOvertopping = 1.0_wp
-    modelFactors%relaxationFactor    = 1.0d0
-    criticalOvertoppingRate          = 1.0d-3
+    call init_modelfactors_and_load(modelFactors)
     criticalOvertoppingRate        = 1.0d-3
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))

@@ -33,5 +33,6 @@
 		<File RelativePath=".\omkeerVariantTests.f90"/>
 		<File RelativePath=".\overtoppingRTOTests.f90"/>
 		<File RelativePath=".\readCrossSectionForTests.f90"/>
-		<File RelativePath=".\roughnessRTOTests.f90"/></Filter></Files>
+		<File RelativePath=".\roughnessRTOTests.f90"/>
+		<File RelativePath=".\testHelper.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>

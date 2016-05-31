@@ -14,10 +14,11 @@ use typeDefinitionsRTOovertopping
 use overtoppingInterface
 use ModuleLogging
 use ftnunit
-use waveParametersUtilities
+use testHelper, only : init_modelfactors_and_load
 use omkeerVariantModule
 use user32
 use kernel32
+
 implicit none
 
 private
@@ -28,16 +29,16 @@ contains
 
 !> Performs all tests
 subroutine allOmkeerVariantTests
-    call testWithLevel(omkeerVariantTestBasic, "inverse of overtoppingDllTest test", 1)
-    call testWithLevel(omkeerVariantTestWithHighDischarge, "inverse of overtoppingDllTest test, high discharge", 1)
-    call testWithLevel(omkeerVariantTestWithDikeHeigthInProfile, "inverse of overtoppingDllTest test, expected dikeheight in profile", 1)
-    call testWithLevel(omkeerVariantTestWithBerm, "inverse of overtoppingDllTest test, with berm", 1)
-    call testWithLevel(omkeerVariantTestWithBermAndDikeHeightJustAboveBerm1, "inverse of overtoppingDllTest test, with berm and dikeheight just above berm", 1)
-    call testWithLevel(omkeerVariantTestWithBermAndDikeHeightJustAboveBerm2, "inverse of overtoppingDllTest test, with berm and expected dikeheight just above berm", 1)
-    call testWithLevel(omkeerVariantTestWith1_15BermAndDikeHeightHalfwayBerm, "inverse of overtoppingDllTest test, with 1:15 berm and expected dikeheight halfway berm", 1)
-    call testWithLevel(omkeerVariantTestWithVerySmallDischarge, "inverse of overtoppingDllTest test, with a very small discharge", 1)
-    call testWithLevel(omkeerVariantTestWithWaterlevelBelowToe, "inverse of overtoppingDllTest test, with water level below toe", 1)
-    call testWithLevel(omkeerVariantTestWithExpectedDikeheightHalfwaySlope, "inverse of overtoppingDllTest test, with expected dikeheight halfway last slope segment", 1)
+    call testWithLevel(omkeerVariantTestBasic,                                "omkeerVariantTest: inverse of overtoppingDllTest test", 1)
+    call testWithLevel(omkeerVariantTestWithHighDischarge,                    "omkeerVariantTest: high discharge", 1)
+    call testWithLevel(omkeerVariantTestWithDikeHeigthInProfile,              "omkeerVariantTest: expected dikeheight in profile", 1)
+    call testWithLevel(omkeerVariantTestWithBerm,                             "omkeerVariantTest: with berm", 1)
+    call testWithLevel(omkeerVariantTestWithBermAndDikeHeightJustAboveBerm1,  "omkeerVariantTest: with berm and dikeheight just above berm", 1)
+    call testWithLevel(omkeerVariantTestWithBermAndDikeHeightJustAboveBerm2,  "omkeerVariantTest: with berm and expected dikeheight just above berm", 1)
+    call testWithLevel(omkeerVariantTestWith1_15BermAndDikeHeightHalfwayBerm, "omkeerVariantTest: with 1:15 berm and expected dikeheight halfway berm", 1)
+    call testWithLevel(omkeerVariantTestWithVerySmallDischarge,               "omkeerVariantTest: with a very small discharge", 1)
+    call testWithLevel(omkeerVariantTestWithWaterlevelBelowToe,               "omkeerVariantTest: with water level below toe", 1)
+    call testWithLevel(omkeerVariantTestWithExpectedDikeheightHalfwaySlope,   "omkeerVariantTest: with expected dikeheight halfway last slope segment", 1)
 end subroutine allOmkeerVariantTests
 
 !> inverse of overtoppingDllTest test:
@@ -67,7 +68,7 @@ subroutine omkeerVariantTestBasic
     !
     ! initializations
     !
-    call init_modalfactors_and_load(modelFactors, load)
+    call init_modelfactors_and_load(modelFactors, load)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     do i = 1, npoints
@@ -110,7 +111,7 @@ subroutine omkeerVariantTestWithHighDischarge
     !
     ! initializations
     !
-    call init_modalfactors_and_load(modelFactors, load)
+    call init_modelfactors_and_load(modelFactors, load)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     do i = 1, npoints
@@ -153,7 +154,7 @@ subroutine omkeerVariantTestWithDikeHeigthInProfile
     !
     ! initializations
     !
-    call init_modalfactors_and_load(modelFactors, load)
+    call init_modelfactors_and_load(modelFactors, load)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     do i = 1, npoints
@@ -196,7 +197,7 @@ subroutine omkeerVariantTestWithBerm
     !
     ! initializations
     !
-    call init_modalfactors_and_load(modelFactors, load)
+    call init_modelfactors_and_load(modelFactors, load)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     ii = 0
@@ -241,7 +242,7 @@ subroutine omkeerVariantTestWithBermAndDikeHeightJustAboveBerm1
     !
     ! initializations
     !
-    call init_modalfactors_and_load(modelFactors, load)
+    call init_modelfactors_and_load(modelFactors, load)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     ii = 0
@@ -272,7 +273,8 @@ end subroutine omkeerVariantTestWithBermAndDikeHeightJustAboveBerm1
 !> as omkeerVariantTestWithBermAndDikeHeightJustAboveBerm1, but with expected dikeheight just above berm
 !! @ingroup DikeOvertoppingTests
 subroutine omkeerVariantTestWithBermAndDikeHeightJustAboveBerm2
-    integer                        :: i, ii
+    integer                        :: i
+    integer                        :: ii
     logical                        :: succes
     integer, parameter             :: npoints = 4
     type (tpOvertopping)           :: overtopping
@@ -287,7 +289,7 @@ subroutine omkeerVariantTestWithBermAndDikeHeightJustAboveBerm2
     !
     ! initializations
     !
-    call init_modalfactors_and_load(modelFactors, load)
+    call init_modelfactors_and_load(modelFactors, load)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     ii = 0
@@ -335,7 +337,7 @@ subroutine omkeerVariantTestWith1_15BermAndDikeHeightHalfwayBerm
     !
     ! initializations
     !
-    call init_modalfactors_and_load(modelFactors, load)
+    call init_modelfactors_and_load(modelFactors, load)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     ii = 0
@@ -385,7 +387,7 @@ subroutine omkeerVariantTestWithVerySmallDischarge
     !
     ! initializations
     !
-    call init_modalfactors_and_load(modelFactors, load)
+    call init_modelfactors_and_load(modelFactors, load)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     ii = 0
@@ -418,7 +420,8 @@ end subroutine omkeerVariantTestWithVerySmallDischarge
 !> as omkeerVariantTestWith1_15BermAndDikeHeightHalfwayBerm, test water level below toe
 !! @ingroup DikeOvertoppingTests
 subroutine omkeerVariantTestWithWaterlevelBelowToe
-    integer                        :: i, ii
+    integer                        :: i
+    integer                        :: ii
     logical                        :: succes
     integer, parameter             :: npoints = 4
     type (tpOvertopping)           :: overtopping
@@ -435,7 +438,7 @@ subroutine omkeerVariantTestWithWaterlevelBelowToe
     !
     ! initializations
     !
-    call init_modalfactors_and_load(modelFactors, load, 4.90_wp)
+    call init_modelfactors_and_load(modelFactors, load, 4.90_wp)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     ii = 0
@@ -466,7 +469,8 @@ end subroutine omkeerVariantTestWithWaterlevelBelowToe
 !> as omkeerVariantTestWith1_15BermAndDikeHeightHalfwayBerm, but expected dikeheight halfway last slope segment
 !! @ingroup DikeOvertoppingTests
 subroutine omkeerVariantTestWithExpectedDikeheightHalfwaySlope
-    integer                        :: i, ii
+    integer                        :: i
+    integer                        :: ii
     logical                        :: succes
     integer, parameter             :: npoints = 4
     type (tpOvertopping)           :: overtopping
@@ -483,7 +487,7 @@ subroutine omkeerVariantTestWithExpectedDikeheightHalfwaySlope
     !
     ! initializations
     !
-    call init_modalfactors_and_load(modelFactors, load)
+    call init_modelfactors_and_load(modelFactors, load)
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     ii = 0
@@ -512,34 +516,5 @@ subroutine omkeerVariantTestWithExpectedDikeheightHalfwaySlope
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine omkeerVariantTestWithExpectedDikeheightHalfwaySlope
-
-subroutine init_modalfactors_and_load(modelFactors, load, waveheight)
-    type(tpOvertoppingInput), intent(out) :: modelFactors      !< structure with modelFactors
-    type (tpLoad), intent(out)            :: load              !< structure with load data
-    real(kind=wp), intent(in), optional   :: waveheight
-
-    real(kind=wp)                         :: waveSteepness
-    character(len=128)                    :: errorMessage      !< error message
-    integer                               :: ierr              !< error code
-
-    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
-    modelFactors%m_z2                       = 1.00_wp
-    modelFactors%fshallow                   = 0.92
-    modelFactors%ComputedOvertopping        = 1.0_wp
-    modelFactors%CriticalOvertopping        = 1.0_wp
-    modelFactors%relaxationFactor           = 1.0d0
-
-    if (present(waveheight)) then
-        load%h        =  waveheight
-    else
-        load%h        =  5.50_wp
-    endif
-    load%phi      = 50.00_wp
-    load%Hm0      =  1.00_wp
-    waveSteepness =  0.04_wp
-    load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
-    call assert_equal(ierr, 0, errorMessage)
-end subroutine init_modalfactors_and_load
 
 end module omkeerVariantTests
