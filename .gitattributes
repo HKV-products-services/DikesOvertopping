@@ -2,13 +2,11 @@
 doc/Dikes[!!-~]Overtopping[!!-~]Kernel[!!-~]-[!!-~]Technical[!!-~]Documentation.pdf -text
 doc/Dikes[!!-~]Overtopping[!!-~]Kernel[!!-~]-[!!-~]Technical[!!-~]design.docx -text
 doc/Dikes[!!-~]Overtopping[!!-~]Kernel[!!-~]-[!!-~]Technical[!!-~]design.pdf -text
-doc/Dikes[!!-~]Overtopping[!!-~]Kernel[!!-~]-[!!-~]Technical[!!-~]design_Summary.pdf -text svneol=unset#unset
 doc/Overtopping[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]report.docx -text
 doc/ScientDoc/TRRunupOvertopping.pdf -text svneol=unset#unset
 doc/ScientDoc/technischrapportgolfoploopengolfoverslagbijdijken.pdf -text
 doc/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Functional[!!-~]design.docx -text
-doc/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Functional[!!-~]design.pdf -text
-doc/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Functional[!!-~]design_Summary.pdf -text
+doc/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Functional[!!-~]design.pdf -text svneol=unset#application/octet-stream
 doc/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]plan.docx -text
 doc/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]plan.pdf -text
 doc/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]plan_Summary.pdf -text
