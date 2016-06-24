@@ -52,7 +52,6 @@ enum, bind(c)
     enumerator :: wl_above_crest
     enumerator :: wave_height_or_periode_less_zero
     enumerator :: wave_direction_not_in_range
-    enumerator :: no_convergence_2percent_wave_runup
     enumerator :: RemovingHorizontalBerm
 ! formats :
     enumerator :: model_factor_smaller_than
@@ -175,8 +174,6 @@ select case(language)
                 GetOvertoppingMessage = 'Wave height and/or wave period less than zero'
             case (wave_direction_not_in_range)
                 GetOvertoppingMessage = 'Wave direction not between 0 and 360 degree'
-            case (no_convergence_2percent_wave_runup)
-                GetOvertoppingMessage = 'No convergence in iteration procedure 2% wave run-up'
             case (RemovingHorizontalBerm)
                 GetOvertoppingMessage = 'Try to remove a horizontal berm'
             case default
@@ -246,8 +243,6 @@ select case(language)
                 GetOvertoppingMessage = 'Golf hoogte en/of golf periode kleiner dan nul'
             case (wave_direction_not_in_range)
                 GetOvertoppingMessage = 'Golf hoek niet tussen 0 and 360 graden'
-            case (no_convergence_2percent_wave_runup)
-                GetOvertoppingMessage = 'Geen convergentie in iteratief proces voor bepaling 2% golf oploop'
             case (RemovingHorizontalBerm)
                 GetOvertoppingMessage = 'Probeer een horizontale berm te verwijderen'
             case default

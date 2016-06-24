@@ -41,14 +41,14 @@
 !
 !  Input/output parameters
 !
-   real(wp),                  intent(in)     :: Hm0            !< significant wave height (m)
-   real(wp),                  intent(in)     :: ksi0           !< breaker parameter
-   real(wp),                  intent(in)     :: ksi0Limit      !< limit value breaker parameter
-   real(wp),                  intent(inout)  :: gammaB         !< influence factor berms
-   real(wp),                  intent(inout)  :: gammaF         !< influence factor roughness
-   real(wp),                  intent(inout)  :: gammaBeta      !< influence factor angle of wave attack
+   real(kind=wp),             intent(in)     :: Hm0            !< significant wave height (m)
+   real(kind=wp),             intent(in)     :: ksi0           !< breaker parameter
+   real(kind=wp),             intent(in)     :: ksi0Limit      !< limit value breaker parameter
+   real(kind=wp),             intent(inout)  :: gammaB         !< influence factor berms
+   real(kind=wp),             intent(inout)  :: gammaF         !< influence factor roughness
+   real(kind=wp),             intent(inout)  :: gammaBeta      !< influence factor angle of wave attack
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
-   real(wp),                  intent(out)    :: z2             !< 2% wave run-up (m)
+   real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
    logical,                   intent(out)    :: succes         !< flag for succes
    character(len=*),          intent(out)    :: errorMessage   !< error message
 
@@ -90,24 +90,24 @@
 !
 !  Input/output parameters
 !
-   real(wp),                 intent(in)  :: h              !< local water level (m+NAP)
-   real(wp),                 intent(in)  :: Hm0            !< significant wave height (m)
-   real(wp),                 intent(in)  :: tanAlpha       !< representative slope angle
-   real(wp),                 intent(in)  :: gammaB         !< influence factor berms
-   real(wp),                 intent(in)  :: gammaF         !< influence factor roughness
-   real(wp),                 intent(in)  :: gammaBeta      !< influence factor angle of wave attack
-   real(wp),                 intent(in)  :: ksi0           !< breaker parameter
-   real(wp),                 intent(in)  :: hCrest         !< crest level (m+NAP)
+   real(kind=wp),            intent(in)  :: h              !< local water level (m+NAP)
+   real(kind=wp),            intent(in)  :: Hm0            !< significant wave height (m)
+   real(kind=wp),            intent(in)  :: tanAlpha       !< representative slope angle
+   real(kind=wp),            intent(in)  :: gammaB         !< influence factor berms
+   real(kind=wp),            intent(in)  :: gammaF         !< influence factor roughness
+   real(kind=wp),            intent(in)  :: gammaBeta      !< influence factor angle of wave attack
+   real(kind=wp),            intent(in)  :: ksi0           !< breaker parameter
+   real(kind=wp),            intent(in)  :: hCrest         !< crest level (m+NAP)
    type(tpOvertoppingInput), intent(in)  :: modelFactors   !< structure with model factors
-   real(wp),                 intent(out) :: Qo             !< wave overtopping discharge (l/m per s)
+   real(kind=wp),            intent(out) :: Qo             !< wave overtopping discharge (l/m per s)
    logical,                  intent(out) :: succes         !< flag for succes
    character(len=*),         intent(out) :: errorMessage   !< error message
 !
 !  Local parameters
 !
-   real(wp)  :: Qb !< dimensionless  overtopping discharge for breaking waves
-   real(wp)  :: Qn !< dimensionless  overtopping discharge for non-breaking waves
-   real(wp)  :: Qs !< dimensionless  overtopping discharge for shallow waves
+   real(kind=wp)  :: Qb !< dimensionless  overtopping discharge for breaking waves
+   real(kind=wp)  :: Qn !< dimensionless  overtopping discharge for non-breaking waves
+   real(kind=wp)  :: Qs !< dimensionless  overtopping discharge for shallow waves
 
 ! ==========================================================================================================
 
@@ -187,8 +187,8 @@
 !
 !  Input/output parameters
 !
-   real(wp), intent(in)  :: Tm_10 !< spectral wave period (s)
-   real(wp), intent(out) :: L0    !< wave length (m)
+   real(kind=wp), intent(in)  :: Tm_10 !< spectral wave period (s)
+   real(kind=wp), intent(out) :: L0    !< wave length (m)
 
 ! ==========================================================================================================
 
@@ -208,15 +208,15 @@
 !
 !  Input/output parameters
 !
-   real(wp),         intent(in)  :: Hm0            !< significant wave height (m)
-   real(wp),         intent(in)  :: Tm_10          !< spectral wave period (s)
-   real(wp),         intent(out) :: s0             !< wave steepness
+   real(kind=wp),    intent(in)  :: Hm0            !< significant wave height (m)
+   real(kind=wp),    intent(in)  :: Tm_10          !< spectral wave period (s)
+   real(kind=wp),    intent(out) :: s0             !< wave steepness
    logical,          intent(out) :: succes         !< flag for succes
    character(len=*), intent(out) :: errorMessage   !< error message
 !
 !  Local parameters
 !
-   real(wp)  :: L0 !< wave length (m)
+   real(kind=wp)  :: L0 !< wave length (m)
 
 ! ==========================================================================================================
 
@@ -250,9 +250,9 @@
 !
 !  Input/output parameters
 !
-   real(wp),         intent(in)  :: tanAlpha       !< representative slope angle
-   real(wp),         intent(in)  :: s0             !< wave steepness
-   real(wp),         intent(out) :: ksi0           !< breaker parameter
+   real(kind=wp),    intent(in)  :: tanAlpha       !< representative slope angle
+   real(kind=wp),    intent(in)  :: s0             !< wave steepness
+   real(kind=wp),    intent(out) :: ksi0           !< breaker parameter
    logical,          intent(out) :: succes         !< flag for succes
    character(len=*), intent(out) :: errorMessage   !< error message
 
@@ -291,9 +291,9 @@
 !
 !  Input/output parameters
 !
-   real(wp), intent(in)  :: phi   !< wave direction (degree)
-   real(wp), intent(in)  :: psi   !< dike normal (degree)
-   real(wp), intent(out) :: beta  !< angle of wave attack (degree)
+   real(kind=wp), intent(in)  :: phi   !< wave direction (degree)
+   real(kind=wp), intent(in)  :: psi   !< dike normal (degree)
+   real(kind=wp), intent(out) :: beta  !< angle of wave attack (degree)
 
 ! ==========================================================================================================
 
@@ -314,19 +314,22 @@
 !
 !  Input/output parameters
 !
-   real(wp),                  intent(in)  :: gammaB         ! influence factor for berms
-   real(wp),                  intent(out) :: ksi0Limit      ! limit value breaker parameter
+   real(kind=wp),             intent(in)  :: gammaB         ! influence factor for berms
+   real(kind=wp),             intent(out) :: ksi0Limit      ! limit value breaker parameter
    logical,                   intent(out) :: succes         ! flag for succes
    character(len=*),          intent(out) :: errorMessage   ! error message
 !
 !  Local parameters
 !
-   real(wp) :: a, b, c, d  !< coefficients cubic function
-   integer  :: N           !< number of real roots cubic function
-   real(wp) :: x(3)        !< real roots cubic function
-   integer  :: i           !< counter real roots cubic function
-   integer  :: M           !< number of possible limit values breaker parameter
-   real(wp) :: ksi0(2)     !< possible limit values breaker parameter
+   real(kind=wp) :: a           !< coefficients cubic function
+   real(kind=wp) :: b           !< coefficients cubic function
+   real(kind=wp) :: c           !< coefficients cubic function
+   real(kind=wp) :: d           !< coefficients cubic function
+   integer  :: N                !< number of real roots cubic function
+   real(kind=wp) :: x(3)        !< real roots cubic function
+   integer  :: i                !< counter real roots cubic function
+   integer  :: M                !< number of possible limit values breaker parameter
+   real(kind=wp) :: ksi0(2)     !< possible limit values breaker parameter
 
 ! ==========================================================================================================
 
@@ -382,25 +385,25 @@
 !
 !  Input/output parameters
 !
-   real(wp),         intent(inout)  :: gammaB         !< influence factor berms
-   real(wp),         intent(inout)  :: gammaF         !< influence factor roughness
-   real(wp),         intent(inout)  :: gammaBeta      !< influence factor angle of wave attack
+   real(kind=wp),    intent(inout)  :: gammaB         !< influence factor berms
+   real(kind=wp),    intent(inout)  :: gammaF         !< influence factor roughness
+   real(kind=wp),    intent(inout)  :: gammaBeta      !< influence factor angle of wave attack
    integer,          intent(in)     :: gammaBetaType  !< type influence factor angle of wave attack: 1 = wave run-up, 2 = overtopping
-   real(wp),         intent(in)     :: ksi0           !< breaker parameter
-   real(wp),         intent(in)     :: ksi0Limit      !< limit value breaker parameter
+   real(kind=wp),    intent(in)     :: ksi0           !< breaker parameter
+   real(kind=wp),    intent(in)     :: ksi0Limit      !< limit value breaker parameter
    logical,          intent(out)    :: succes         !< flag for succes
    character(len=*), intent(out)    :: errorMessage   !< error message
 !
 !  Local parameters
 !
-   real(wp)  :: gammaB_min     !< minimal value influence factor berms
-   real(wp)  :: gammaF_min     !< minimal value influence factor roughness
-   real(wp)  :: gammaBeta_min  !< minimal value influence factor angle of wave attack
-   real(wp)  :: gammaT         !< total influence factor
-   real(wp)  :: ratioB         !< ratio influence factor berms
-   real(wp)  :: ratioF         !< ratio influence factor roughness
-   real(wp)  :: ratioBeta      !< ratio influence factor angle of wave attack
-   real(wp)  :: ratioT         !< sum ratios influence factors
+   real(kind=wp)  :: gammaB_min     !< minimal value influence factor berms
+   real(kind=wp)  :: gammaF_min     !< minimal value influence factor roughness
+   real(kind=wp)  :: gammaBeta_min  !< minimal value influence factor angle of wave attack
+   real(kind=wp)  :: gammaT         !< total influence factor
+   real(kind=wp)  :: ratioB         !< ratio influence factor berms
+   real(kind=wp)  :: ratioF         !< ratio influence factor roughness
+   real(kind=wp)  :: ratioBeta      !< ratio influence factor angle of wave attack
+   real(kind=wp)  :: ratioT         !< sum ratios influence factors
 
 ! ==========================================================================================================
 
@@ -480,12 +483,12 @@
 !
 !  Input/output parameters
 !
-   real(wp),         intent(in)  :: a              !< coefficient a cubic function
-   real(wp),         intent(in)  :: b              !< coefficient b cubic function
-   real(wp),         intent(in)  :: c              !< coefficient c cubic function
-   real(wp),         intent(in)  :: d              !< coefficient d cubic function
+   real(kind=wp),    intent(in)  :: a              !< coefficient a cubic function
+   real(kind=wp),    intent(in)  :: b              !< coefficient b cubic function
+   real(kind=wp),    intent(in)  :: c              !< coefficient c cubic function
+   real(kind=wp),    intent(in)  :: d              !< coefficient d cubic function
    integer,          intent(out) :: N              !< number of real roots cubic function
-   real(wp),         intent(out) :: x(3)           !< real roots cubic function
+   real(kind=wp),    intent(out) :: x(3)           !< real roots cubic function
    logical,          intent(out) :: succes         !< flag for succes
    character(len=*), intent(out) :: errorMessage   !< error message
 !
@@ -536,17 +539,17 @@
 !
 !  Input/output parameters
 !
-   real(wp),         intent(in)  :: a              !< coefficients a cubic function
-   real(wp),         intent(in)  :: b              !< coefficients b cubic function
-   real(wp),         intent(in)  :: c              !< coefficients c cubic function
-   real(wp),         intent(in)  :: d              !< coefficients d cubic function
+   real(kind=wp),    intent(in)  :: a              !< coefficients a cubic function
+   real(kind=wp),    intent(in)  :: b              !< coefficients b cubic function
+   real(kind=wp),    intent(in)  :: c              !< coefficients c cubic function
+   real(kind=wp),    intent(in)  :: d              !< coefficients d cubic function
    double complex,   intent(out) :: z(3)           !< roots cubic function
    logical,          intent(out) :: succes         !< flag for succes
    character(len=*), intent(out) :: errorMessage   !< error message
 !
 !  Local parameters
 !
-   real(wp)  :: p, q  !< coefficients depressed cubic function
+   real(kind=wp)  :: p, q  !< coefficients depressed cubic function
 
 ! ==========================================================================================================
 
@@ -589,8 +592,8 @@
 !
 !  Input/output parameters
 !
-   real(wp),        intent(in)  :: p     !< coefficient p depressed cubic
-   real(wp),        intent(in)  :: q     !< coefficient q depressed cubic
+   real(kind=wp),   intent(in)  :: p     !< coefficient p depressed cubic
+   real(kind=wp),   intent(in)  :: q     !< coefficient q depressed cubic
    double complex,  intent(out) :: z(3)  !< roots depressed cubic
 !
 !  Local parameters
@@ -636,7 +639,7 @@
 !  Local parameters
 !
    double complex, parameter   :: i = cmplx(0.0d0,1.0d0)   !< complex number i
-   real(wp)                    :: arg                      !< argument complex number
+   real(kind=wp)               :: arg                      !< argument complex number
 
 ! ==========================================================================================================
 
@@ -671,12 +674,12 @@
 !
 !  Input/output parameters
 !
-   real(wp), intent(in)  :: x1 !< first real
-   real(wp), intent(in)  :: x2 !< second real
+   real(kind=wp), intent(in)  :: x1 !< first real
+   real(kind=wp), intent(in)  :: x2 !< second real
 !
 !  Local parameters
 !
-   real(wp), parameter   :: margin = 1.0d-6 !< relative value for the margin
+   real(kind=wp), parameter   :: margin = 1.0d-6 !< relative value for the margin
       
 ! ==========================================================================================================
 
@@ -695,11 +698,11 @@
 !
 !  Input/output parameters
 !
-   real(wp), intent(in)  :: x  !< real number
+   real(kind=wp), intent(in)  :: x  !< real number
 !
 !  Local parameters
 !
-   real(wp), parameter   :: margin = 1.0d-14 !< absolute value for the margin
+   real(kind=wp), parameter   :: margin = 1.0d-14 !< absolute value for the margin
       
 ! ==========================================================================================================
 

@@ -42,20 +42,20 @@
 !
 !  Input/output parameters
 !
-   real(wp),            intent(in)  :: h              !< local water level (m+NAP)
-   real(wp),            intent(in)  :: Hm0            !< significant wave height (m)
-   real(wp),            intent(in)  :: z2             !< 2% wave run-up (m)
+   real(kind=wp),       intent(in)  :: h              !< local water level (m+NAP)
+   real(kind=wp),       intent(in)  :: Hm0            !< significant wave height (m)
+   real(kind=wp),       intent(in)  :: z2             !< 2% wave run-up (m)
    type(tpGeometry),    intent(in)  :: geometry       !< structure with geometry data
-   real(wp),            intent(out) :: tanAlpha       !< representative slope angle
+   real(kind=wp),       intent(out) :: tanAlpha       !< representative slope angle
    logical,             intent(out) :: succes         !< flag for succes
    character(len=*),    intent(out) :: errorMessage   !< error message
 !
 !  Local parameters
 !
    type(tpGeometry)  :: geometryNoBerms   !< geometry without berms
-   real(wp)          :: yLower            !< y-coordinate lower bound representative slope (m+NAP)
-   real(wp)          :: yUpper            !< y-coordinate upper bound representative slope (m+NAP)
-   real(wp)          :: dx                !< horizontal distance between lower and upper bound (m)
+   real(kind=wp)     :: yLower            !< y-coordinate lower bound representative slope (m+NAP)
+   real(kind=wp)     :: yUpper            !< y-coordinate upper bound representative slope (m+NAP)
+   real(kind=wp)     :: dx                !< horizontal distance between lower and upper bound (m)
 
 ! ==========================================================================================================
 
@@ -121,17 +121,17 @@
 !
 !  Input/output parameters
 !
-   real(wp), intent(inout)  :: Hm0         !< significant wave height (m)
-   real(wp), intent(inout)  :: Tm_10       !< spectral wave period (s)
-   real(wp), intent(in)     :: beta        !< angle of wave attack (degree)
-   real(wp), intent(out)    :: gammaBeta_z !< influence factor angle of wave attack 2% wave run-up
-   real(wp), intent(out)    :: gammaBeta_o !< influence factor angle of wave attack overtopping
+   real(kind=wp), intent(inout)  :: Hm0         !< significant wave height (m)
+   real(kind=wp), intent(inout)  :: Tm_10       !< spectral wave period (s)
+   real(kind=wp), intent(in)     :: beta        !< angle of wave attack (degree)
+   real(kind=wp), intent(out)    :: gammaBeta_z !< influence factor angle of wave attack 2% wave run-up
+   real(kind=wp), intent(out)    :: gammaBeta_o !< influence factor angle of wave attack overtopping
 
 ! ==========================================================================================================
 
    ! calculate influence factors angle of wave attack for 2% wave run-up and overtopping
-   gammaBeta_z = 1 - 0.0022d0 * min(beta,80.0d0)
-   gammaBeta_o = 1 - 0.0033d0 * min(beta,80.0d0)
+   gammaBeta_z = 1d0 - 0.0022d0 * min(beta,80.0d0)
+   gammaBeta_o = 1d0 - 0.0033d0 * min(beta,80.0d0)
 
    ! adjustment of the wave parameters if beta > 80
    if (beta > 80.0d0) then
@@ -161,28 +161,28 @@
 !
 !  Input/output parameters
 !
-   real(wp),               intent(in)  :: h              !< local water level (m+NAP)
-   real(wp),               intent(in)  :: ksi0           !< breaker parameter
-   real(wp),               intent(in)  :: ksi0Limit      !< limit value breaker parameter
-   real(wp),               intent(in)  :: gammaB         !< influence factor berms
-   real(wp),               intent(in)  :: z2             !< 2% wave run-up (m)
+   real(kind=wp),          intent(in)  :: h              !< local water level (m+NAP)
+   real(kind=wp),          intent(in)  :: ksi0           !< breaker parameter
+   real(kind=wp),          intent(in)  :: ksi0Limit      !< limit value breaker parameter
+   real(kind=wp),          intent(in)  :: gammaB         !< influence factor berms
+   real(kind=wp),          intent(in)  :: z2             !< 2% wave run-up (m)
    type(tpGeometry),       intent(in)  :: geometry       !< structure with geometry data
-   real(wp),               intent(out) :: gammaF         !< influence factor roughness
+   real(kind=wp),          intent(out) :: gammaF         !< influence factor roughness
    logical,                intent(out) :: succes         !< flag for succes
    character(len=*),       intent(out) :: errorMessage   !< error message
 !
 !  Local parameters
 !
-   real(wp), allocatable :: rFactors(:)     !< roughness factors  of segments with influence
-   real(wp), allocatable :: horzLengths(:)  !< horizontal lengths of segments with influence (m)
-   real(wp)              :: yLower          !< y-coordinate lower bound segments with influence (m+NAP)
-   real(wp)              :: yUpper          !< y-coordinate upper bound segments with influence (m+NAP)
-   integer               :: iLower          !< index dike segment lower bound
-   integer               :: iUpper          !< index dike segment upper bound
-   real(wp)              :: sum_horzLengths !< sum of all horzLengths
-   real(wp), parameter   :: one = 1.0_wp    !< constant in comparision with breaker parameters
-   real(wp), parameter   :: ten = 10.0_wp   !< constant in comparision with breaker parameters
-   integer               :: ierr            !< error code of allocate
+   real(kind=wp), allocatable :: rFactors(:)     !< roughness factors  of segments with influence
+   real(kind=wp), allocatable :: horzLengths(:)  !< horizontal lengths of segments with influence (m)
+   real(kind=wp)              :: yLower          !< y-coordinate lower bound segments with influence (m+NAP)
+   real(kind=wp)              :: yUpper          !< y-coordinate upper bound segments with influence (m+NAP)
+   integer                    :: iLower          !< index dike segment lower bound
+   integer                    :: iUpper          !< index dike segment upper bound
+   real(kind=wp)              :: sum_horzLengths !< sum of all horzLengths
+   real(kind=wp), parameter   :: one = 1.0_wp    !< constant in comparision with breaker parameters
+   real(kind=wp), parameter   :: ten = 10.0_wp   !< constant in comparision with breaker parameters
+   integer                    :: ierr            !< error code of allocate
 
 ! ==========================================================================================================
 
@@ -292,31 +292,31 @@
 !
 !  Input/output parameters
 !
-   real(wp),               intent(in)  :: h              !< local water level (m+NAP)
-   real(wp),               intent(in)  :: Hm0            !< significant wave height (m)
-   real(wp),               intent(in)  :: z2             !< 2% wave run-up (m)
+   real(kind=wp),          intent(in)  :: h              !< local water level (m+NAP)
+   real(kind=wp),          intent(in)  :: Hm0            !< significant wave height (m)
+   real(kind=wp),          intent(in)  :: z2             !< 2% wave run-up (m)
    type(tpGeometry),       intent(in)  :: geometry       !< structure with geometry data
-   real(wp),               intent(out) :: gammaB         !< influence factor berms
+   real(kind=wp),          intent(out) :: gammaB         !< influence factor berms
    logical,                intent(out) :: succes         !< flag for succes
    character(len=*),       intent(out) :: errorMessage   !< error message
 !
 !  Local parameters
 !
-   integer   :: i                          !< counter dike segments
-   integer   :: N                          !< counter berm segmetns
-   real(wp)  :: B (geometry%NbermSegments) !< berm widths (m)
-   real(wp)  :: hB(geometry%NbermSegments) !< berm heights (m+NAP)
-   real(wp)  :: LB(geometry%NbermSegments) !< berm influence lengths (m)
-   real(wp)  :: rB(geometry%NbermSegments) !< relative berm widths
-   real(wp)  :: dH(geometry%NbermSegments) !< berm depths (m)
-   real(wp)  :: rD(geometry%NbermSegments) !< relative depths
-   real(wp)  :: yLower                     !< y-coordinate lower bound influence length (m+NAP)
-   real(wp)  :: yUpper                     !< y-coordinate upper bound influence length (m+NAP)
-   real(wp)  :: f1(geometry%NbermSegments) !< vector with help factors for combining influence factors
-   real(wp)  :: f2(geometry%NbermSegments) !< vector with help factors for combining influence factors
-   real(wp)  :: f3                         !< help factor for combining influence factors
-   real(wp)  :: f4                         !< help factor for combining influence factors
-   real(wp)  :: f5                         !< help factor for combining influence factors
+   integer        :: i                          !< counter dike segments
+   integer        :: N                          !< counter berm segmetns
+   real(kind=wp)  :: B (geometry%NbermSegments) !< berm widths (m)
+   real(kind=wp)  :: hB(geometry%NbermSegments) !< berm heights (m+NAP)
+   real(kind=wp)  :: LB(geometry%NbermSegments) !< berm influence lengths (m)
+   real(kind=wp)  :: rB(geometry%NbermSegments) !< relative berm widths
+   real(kind=wp)  :: dH(geometry%NbermSegments) !< berm depths (m)
+   real(kind=wp)  :: rD(geometry%NbermSegments) !< relative depths
+   real(kind=wp)  :: yLower                     !< y-coordinate lower bound influence length (m+NAP)
+   real(kind=wp)  :: yUpper                     !< y-coordinate upper bound influence length (m+NAP)
+   real(kind=wp)  :: f1(geometry%NbermSegments) !< vector with help factors for combining influence factors
+   real(kind=wp)  :: f2(geometry%NbermSegments) !< vector with help factors for combining influence factors
+   real(kind=wp)  :: f3                         !< help factor for combining influence factors
+   real(kind=wp)  :: f4                         !< help factor for combining influence factors
+   real(kind=wp)  :: f5                         !< help factor for combining influence factors
 
 ! ==========================================================================================================
 

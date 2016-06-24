@@ -51,22 +51,22 @@
 !
 !  Local parameters
 !
-   type (tpGeometry)    :: geometryMergedBerms  !< structure with merged sequential berms
-   real(wp)             :: toe                  !< height of the dike toe (m+NAP)
-   real(wp)             :: crest                !< crest height (m+NAP)
-   real(wp)             :: h                    !< water level (m+NAP)
-   real(wp)             :: Hm0                  !< significant wave height (m)
-   real(wp)             :: Tm_10                !< spectral wave period (s)
-   real(wp)             :: beta                 !< angle of wave attack (degree)
-   real(wp)             :: gammaBeta_z          !< influence factor angle of wave attack 2% wave run-up
-   real(wp)             :: gammaBeta_o          !< influence factor angle of wave attack overtopping
-   real(wp)             :: L0                   !< wave length (m)
-   integer              :: NwideBerms           !< number of wide berms
-   type (tpGeometry)    :: geometrySectionB     !< geometry data with wide berms to ordinary berms
-   type (tpGeometry)    :: geometrySectionF     !< geometry data with wide berms to foreshores
-   type (tpOvertopping) :: overtoppingB         !< structure with overtopping results for ordinary berms
-   type (tpOvertopping) :: overtoppingF         !< structure with overtopping results for foreshores
-   real(wp), parameter  :: tinyWaves = 1d-7     !< waves smaller than tinyWaves can be neglected
+   type (tpGeometry)        :: geometryMergedBerms  !< structure with merged sequential berms
+   real(kind=wp)            :: toe                  !< height of the dike toe (m+NAP)
+   real(kind=wp)            :: crest                !< crest height (m+NAP)
+   real(kind=wp)            :: h                    !< water level (m+NAP)
+   real(kind=wp)            :: Hm0                  !< significant wave height (m)
+   real(kind=wp)            :: Tm_10                !< spectral wave period (s)
+   real(kind=wp)            :: beta                 !< angle of wave attack (degree)
+   real(kind=wp)            :: gammaBeta_z          !< influence factor angle of wave attack 2% wave run-up
+   real(kind=wp)            :: gammaBeta_o          !< influence factor angle of wave attack overtopping
+   real(kind=wp)            :: L0                   !< wave length (m)
+   integer                  :: NwideBerms           !< number of wide berms
+   type (tpGeometry)        :: geometrySectionB     !< geometry data with wide berms to ordinary berms
+   type (tpGeometry)        :: geometrySectionF     !< geometry data with wide berms to foreshores
+   type (tpOvertopping)     :: overtoppingB         !< structure with overtopping results for ordinary berms
+   type (tpOvertopping)     :: overtoppingF         !< structure with overtopping results for foreshores
+   real(kind=wp), parameter :: tinyWaves = 1d-7     !< waves smaller than tinyWaves can be neglected
 
 ! ==========================================================================================================
 
@@ -171,12 +171,12 @@
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   real(wp),                  intent(in)     :: h              !< local water level (m+NAP)
-   real(wp),                  intent(in)     :: Hm0            !< significant wave height (m)
-   real(wp),                  intent(in)     :: Tm_10          !< spectral wave period (s)
-   real(wp),                  intent(in)     :: L0             !< wave length (m)
-   real(wp),                  intent(inout)  :: gammaBeta_z    !< influence angle wave attack wave run-up
-   real(wp),                  intent(inout)  :: gammaBeta_o    !< influence angle wave attack overtopping
+   real(kind=wp),             intent(in)     :: h              !< local water level (m+NAP)
+   real(kind=wp),             intent(in)     :: Hm0            !< significant wave height (m)
+   real(kind=wp),             intent(in)     :: Tm_10          !< spectral wave period (s)
+   real(kind=wp),             intent(in)     :: L0             !< wave length (m)
+   real(kind=wp),             intent(inout)  :: gammaBeta_z    !< influence angle wave attack wave run-up
+   real(kind=wp),             intent(inout)  :: gammaBeta_o    !< influence angle wave attack overtopping
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    type (tpOvertopping),      intent(out)    :: overtopping    !< structure with overtopping results
    logical,                   intent(out)    :: succes         !< flag for succes
@@ -186,12 +186,12 @@
 !
    integer           :: foreshoreCase     !< foreshore case
    integer           :: i                 !< counter dike segments
-   real(wp)          :: B                 !< width of berm segment (m)
+   real(kind=wp)     :: B                 !< width of berm segment (m)
    integer           :: index             !< index coordinates at the end of the foreshore
-   real(wp)          :: hBerm             !< average berm height (m)
-   real(wp)          :: z2max             !< maximum 2% wave run-up due to foreshore (m)
-   real(wp)          :: dH                !< water depth at the end of the foreshore (m)
-   real(wp)          :: Hm0_red           !< reduced significant wave height (m)
+   real(kind=wp)     :: hBerm             !< average berm height (m)
+   real(kind=wp)     :: z2max             !< maximum 2% wave run-up due to foreshore (m)
+   real(kind=wp)     :: dH                !< water depth at the end of the foreshore (m)
+   real(kind=wp)     :: Hm0_red           !< reduced significant wave height (m)
    type (tpGeometry) :: geometryAdjusted  !< geometry with removed dike segments
 
 ! ==========================================================================================================
@@ -398,25 +398,25 @@
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   real(wp),                  intent(in)     :: h              !< local water level (m+NAP)
-   real(wp),                  intent(in)     :: Hm0            !< significant wave height (m)
-   real(wp),                  intent(in)     :: Tm_10          !< spectral wave period (s)
-   real(wp),                  intent(in)     :: z2             !< 2% wave run-up (m)
-   real(wp),                  intent(inout)  :: gammaBeta_o    !< influence angle wave attack overtopping
+   real(kind=wp),             intent(in)     :: h              !< local water level (m+NAP)
+   real(kind=wp),             intent(in)     :: Hm0            !< significant wave height (m)
+   real(kind=wp),             intent(in)     :: Tm_10          !< spectral wave period (s)
+   real(kind=wp),             intent(in)     :: z2             !< 2% wave run-up (m)
+   real(kind=wp),             intent(inout)  :: gammaBeta_o    !< influence angle wave attack overtopping
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
-   real(wp),                  intent(out)    :: Qo             !< wave overtopping discharge (m3/m per s)
+   real(kind=wp),             intent(out)    :: Qo             !< wave overtopping discharge (m3/m per s)
    logical,                   intent(out)    :: succes         !< flag for succes
    character(len=*),          intent(out)    :: errorMessage   !< error message
 !
 !  Local parameters
 !
    type (tpGeometry) :: geometryFlatBerms !< structure with geometry data with horizontal berms
-   real(wp)          :: s0                !< wave steepness
-   real(wp)          :: tanAlpha          !< representative slope angle
-   real(wp)          :: ksi0              !< breaker parameter
-   real(wp)          :: ksi0Limit         !< limit value breaker parameter
-   real(wp)          :: gammaB            !< influence factor berms
-   real(wp)          :: gammaF            !< influence factor roughness
+   real(kind=wp)     :: s0                !< wave steepness
+   real(kind=wp)     :: tanAlpha          !< representative slope angle
+   real(kind=wp)     :: ksi0              !< breaker parameter
+   real(kind=wp)     :: ksi0Limit         !< limit value breaker parameter
+   real(kind=wp)     :: gammaB            !< influence factor berms
+   real(kind=wp)     :: gammaF            !< influence factor roughness
    
 ! ==========================================================================================================
 
@@ -492,8 +492,8 @@
 !
 !  Local parameters
 !
-   real(wp)  :: freeBoard               !< overflow depth
-   real(wp)  :: overtoppingOverflow     !< overtopping discharge for overflow
+   real(kind=wp)  :: freeBoard               !< overflow depth
+   real(kind=wp)  :: overtoppingOverflow     !< overtopping discharge for overflow
 
 ! ==========================================================================================================
 
@@ -521,7 +521,7 @@
 !  Input/output parameters
 !
    type (tpGeometry),      intent(in)  :: geometry       !< structure with geometry data
-   real(wp),               intent(in)  :: L0             !< wave length (m)
+   real(kind=wp),          intent(in)  :: L0             !< wave length (m)
    integer,                intent(in)  :: NwideBerms     !< number of wide berms
    type (tpOvertopping),   intent(in)  :: overtoppingB   !< structure with overtopping results ordinary berms
    type (tpOvertopping),   intent(in)  :: overtoppingF   !< structure with overtopping results foreshores
@@ -531,10 +531,10 @@
 !
 !  Local parameters
 !
-   integer   :: i              !< counter dike segments
-   real(wp)  :: B              !< width of berm segment (m)
-   real(wp)  :: Bsum           !< total width of wide berms (m)
-   real(wp)  :: interpFactor   !< interpolation factor
+   integer        :: i              !< counter dike segments
+   real(kind=wp)  :: B              !< width of berm segment (m)
+   real(kind=wp)  :: Bsum           !< total width of wide berms (m)
+   real(kind=wp)  :: interpFactor   !< interpolation factor
 
 ! ==========================================================================================================
 
@@ -672,9 +672,9 @@
 !
    integer           :: i        !< counter model factors
    character(len=32) :: par_txt  !< description model factor
-   real(wp)          :: par      !< value model factor
-   real(wp)          :: par_min  !< minimal value model factor
-   real(wp)          :: par_max  !< maximal value model factor
+   real(kind=wp)     :: par      !< value model factor
+   real(kind=wp)     :: par_min  !< minimal value model factor
+   real(kind=wp)     :: par_max  !< maximal value model factor
 
    ierr = 0
    ! loop over model factors

@@ -39,7 +39,7 @@ contains
 !> Call all the cross section varying overtopping test series for the RTO overtopping dll. In these test series 
 !! the characteristics of the cross sections are varied.
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine allCrossSectionsRTOTests(nCrossSections, nBasicTestSeries)
 !
 !   input/output parameters
@@ -49,18 +49,18 @@ subroutine allCrossSectionsRTOTests(nCrossSections, nBasicTestSeries)
 !
 !   local parameters
 !
-    character(len=120)    :: frozenFile             ! frozen copy of the output file of the testserie
-    character(len=128)    :: errorMessage           ! error message
-    character(len=1)      :: crossSectionNumber     ! number of the cross section
-    character(len=2)      :: testSerieNumber        ! number of the test serie
+    character(len=120)         :: frozenFile             ! frozen copy of the output file of the testserie
+    character(len=128)         :: errorMessage           ! error message
+    character(len=1)           :: crossSectionNumber     ! number of the cross section
+    character(len=2)           :: testSerieNumber        ! number of the test serie
 
-    integer               :: i, j, k                ! do-loop counters
-    integer               :: nWaveDirections        ! number of wave directions in the test series
-    integer               :: nTestSeriesSlopes      ! amount of test series for slopes
+    integer                    :: i, j, k                ! do-loop counters
+    integer                    :: nWaveDirections        ! number of wave directions in the test series
+    integer                    :: nTestSeriesSlopes      ! amount of test series for slopes
 
-    real(wp)              :: waveSteepness          ! wave steepness
-    real(wp), allocatable :: phi(:)                 ! wave directions
-    integer               :: ierr                   ! error code
+    real(kind=wp)              :: waveSteepness          ! wave steepness
+    real(kind=wp), allocatable :: phi(:)                 ! wave directions
+    integer                    :: ierr                   ! error code
 !
 !   source
 !
@@ -149,35 +149,35 @@ end subroutine allCrossSectionsRTOTests
 
 !> One test serie with varying one characteristic of the cross sections.
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine TestSeriesCrossSections
 !
 !   Local parameters
 !
-    character(len=90)     :: crossSectionFile     ! file with cross section coordinates
-    integer               :: ounit                ! unit-number for the output file
+    character(len=90)          :: crossSectionFile     ! file with cross section coordinates
+    integer                    :: ounit                ! unit-number for the output file
 
-    real(wp)              :: psi                  ! dike normal (degree)
-    integer               :: nCoordinates         ! number of coordinates
-    real(wp), allocatable :: xCoordinates    (:)  ! x-coordinates (m)
-    real(wp), allocatable :: yCoordinates    (:)  ! y-coordinates (m+NAP)
-    real(wp), allocatable :: roughnessFactors(:)  ! roughness factors
+    real(kind=wp)              :: psi                  ! dike normal (degree)
+    integer                    :: nCoordinates         ! number of coordinates
+    real(kind=wp), allocatable :: xCoordinates    (:)  ! x-coordinates (m)
+    real(kind=wp), allocatable :: yCoordinates    (:)  ! y-coordinates (m+NAP)
+    real(kind=wp), allocatable :: roughnessFactors(:)  ! roughness factors
 
-    integer               :: ios                  ! input/output-status
-    integer               :: nstep                ! number of computations in the test serie
-    integer               :: istep                ! do-loop counter in the test serie
+    integer                    :: ios                  ! input/output-status
+    integer                    :: nstep                ! number of computations in the test serie
+    integer                    :: istep                ! do-loop counter in the test serie
 
-    real(wp)              :: var                  ! value of the variable in the test serie
-    real(wp)              :: varmin               ! minimum value of the variable in the test serie
-    real(wp)              :: varmax               ! maximum value of the variable in the test serie
-    real(wp)              :: varstep              ! step size of the variable in the test serie
-    integer               :: varSlope             ! number of the slope to vary
+    real(kind=wp)              :: var                  ! value of the variable in the test serie
+    real(kind=wp)              :: varmin               ! minimum value of the variable in the test serie
+    real(kind=wp)              :: varmax               ! maximum value of the variable in the test serie
+    real(kind=wp)              :: varstep              ! step size of the variable in the test serie
+    integer                    :: varSlope             ! number of the slope to vary
 
-    type (tpGeometry)     :: geometry             ! structure with geometry data
-    type (tpOvertopping)  :: overtopping          ! structure with overtopping results
-    logical               :: succes               ! flag for succes
-    character(len=250)    :: errorMessage         ! error message
-    character(len=5)      :: ratio                ! ratio to be printed
+    type (tpGeometry)          :: geometry             ! structure with geometry data
+    type (tpOvertopping)       :: overtopping          ! structure with overtopping results
+    logical                    :: succes               ! flag for succes
+    character(len=250)         :: errorMessage         ! error message
+    character(len=5)           :: ratio                ! ratio to be printed
 !
 !   source
 !
@@ -275,16 +275,16 @@ end subroutine TestSeriesCrossSections
 
 !> Define the boundaries of the specific test serie for varying one characteristic of the cross section
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine variableBoundaries (crossSectionId, numberTestSerie, varmin, varmax, varstep, varSlope)
 !
 !   input/output parameters
 !
     integer,       intent(in)  :: crossSectionId       !< id-number of the cross section 
     integer,       intent(in)  :: numberTestSerie      !< number of test serie
-    real(wp),      intent(out) :: varmin               !< minimum value of the variable in the test serie
-    real(wp),      intent(out) :: varmax               !< maximum value of the variable in the test serie
-    real(wp),      intent(out) :: varstep              !< step size of the variable in the test serie
+    real(kind=wp), intent(out) :: varmin               !< minimum value of the variable in the test serie
+    real(kind=wp), intent(out) :: varmax               !< maximum value of the variable in the test serie
+    real(kind=wp), intent(out) :: varstep              !< step size of the variable in the test serie
     integer,       intent(out) :: varSlope             !< number of the slope to vary
 !
 !   source
@@ -428,17 +428,17 @@ end subroutine variableBoundaries
 
 !> Routine to adapt the cross section
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine adaptCrossSection (crossSectionId, numberTestSerie, var, nCoordinates, xCoordinates, yCoordinates)
 !
 !   Input/output parameters
 !
-    integer,   intent(in)    :: crossSectionId             !< id-number of the cross section 
-    integer,   intent(in)    :: numberTestSerie            !< number of test serie
-    real(wp),  intent(in)    :: var                        !< value of the variable in the test serie
-    integer,   intent(in)    :: nCoordinates               !< number of coordinates
-    real(wp),  intent(inout) :: xCoordinates(nCoordinates) !< x-coordinates (m)
-    real(wp),  intent(inout) :: yCoordinates(nCoordinates) !< y-coordinates (m+NAP)
+    integer,        intent(in)    :: crossSectionId             !< id-number of the cross section 
+    integer,        intent(in)    :: numberTestSerie            !< number of test serie
+    real(kind=wp),  intent(in)    :: var                        !< value of the variable in the test serie
+    integer,        intent(in)    :: nCoordinates               !< number of coordinates
+    real(kind=wp),  intent(inout) :: xCoordinates(nCoordinates) !< x-coordinates (m)
+    real(kind=wp),  intent(inout) :: yCoordinates(nCoordinates) !< y-coordinates (m+NAP)
 !
 !   source
 !
@@ -544,7 +544,7 @@ end subroutine adaptCrossSection
 
 !>  Define the boundaries of the specific test serie for varying one characteristic of the cross section
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine numberExtraTestsSlopes(crossSectionId, nTestSeriesSlopes)
 !
 !   input/output parameters

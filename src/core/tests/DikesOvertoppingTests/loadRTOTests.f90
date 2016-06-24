@@ -36,7 +36,7 @@ contains
 
 !> Call all the basic overtopping test series for the RTO overtopping dll. In these test series the load parameters are varied.
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine allLoadRTOTests(nCrossSections, nBasicTestSeries)
 !
 !   input/output parameters
@@ -84,37 +84,37 @@ end subroutine allLoadRTOTests
 
 !> One test serie with varying one load parameter.
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine testSeriesLoadRTO
 !
 !   Local parameters
 !
-    integer              :: tunit                ! unit-number for the test serie file
-    integer              :: ounit                ! unit-number for the output file
-    integer              :: ios                  ! input/output-status
+    integer                  :: tunit                ! unit-number for the test serie file
+    integer                  :: ounit                ! unit-number for the output file
+    integer                  :: ios                  ! input/output-status
 
-    integer              :: nstep                ! number of computations in the test serie
-    integer              :: istep                ! do-loop counter in the test serie
+    integer                  :: nstep                ! number of computations in the test serie
+    integer                  :: istep                ! do-loop counter in the test serie
 
-    real(wp)             :: waveSteepness        ! wave steepness
-    real(wp)             :: beta                 ! wave direction w.r.t. the dike normal
-    real(wp)             :: var                  ! value of the variable in the test serie
-    real(wp)             :: varmin               ! minimum value of the variable in the test serie
-    real(wp)             :: varmax               ! maximum value of the variable in the test serie
-    real(wp)             :: varstep              ! step size of the variable in the test serie
-    real(wp)             :: trig                 ! trigger for the variable in the test serie
+    real(kind=wp)            :: waveSteepness        ! wave steepness
+    real(kind=wp)            :: beta                 ! wave direction w.r.t. the dike normal
+    real(kind=wp)            :: var                  ! value of the variable in the test serie
+    real(kind=wp)            :: varmin               ! minimum value of the variable in the test serie
+    real(kind=wp)            :: varmax               ! maximum value of the variable in the test serie
+    real(kind=wp)            :: varstep              ! step size of the variable in the test serie
+    real(kind=wp)            :: trig                 ! trigger for the variable in the test serie
 
-    character(len=1)     :: comment              ! comment character
-    character(len=2)     :: free                 ! symbol for the parameter to vary in the test serie 
+    character(len=1)         :: comment              ! comment character
+    character(len=2)         :: free                 ! symbol for the parameter to vary in the test serie 
 
-    type (tpGeometry)    :: geometry             ! structure with geometry data
-    type (tpLoad)        :: load                 ! structure with load data
-    type (tpOvertopping) :: overtopping          ! structure with overtopping results
-    logical              :: succes               ! flag for succes
-    character(len=250)   :: errorMessage         ! error message
+    type (tpGeometry)        :: geometry             ! structure with geometry data
+    type (tpLoad)            :: load                 ! structure with load data
+    type (tpOvertopping)     :: overtopping          ! structure with overtopping results
+    logical                  :: succes               ! flag for succes
+    character(len=250)       :: errorMessage         ! error message
 
-    real(wp), parameter  :: margin = 1.0d-6      ! relative value for the margin
-    integer              :: ierr                 ! error code
+    real(kind=wp), parameter :: margin = 1.0d-6      ! relative value for the margin
+    integer                  :: ierr                 ! error code
 !
 !   source
 !

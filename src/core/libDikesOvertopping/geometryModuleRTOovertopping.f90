@@ -41,11 +41,11 @@
 !
 !  Input/output parameters
 !
-   real(wp),         intent(in)  :: psi                              !< dike normal (degree)
+   real(kind=wp),    intent(in)  :: psi                              !< dike normal (degrees)
    integer,          intent(in)  :: nCoordinates                     !< number of coordinates
-   real(wp),         intent(in)  :: xCoordinates    (nCoordinates)   !< x-coordinates (m)
-   real(wp),         intent(in)  :: yCoordinates    (nCoordinates)   !< y-coordinates (m+NAP)
-   real(wp),         intent(in)  :: roughnessFactors(nCoordinates-1) !< roughness factors
+   real(kind=wp),    intent(in)  :: xCoordinates    (nCoordinates)   !< x-coordinates (m)
+   real(kind=wp),    intent(in)  :: yCoordinates    (nCoordinates)   !< y-coordinates (m+NAP)
+   real(kind=wp),    intent(in)  :: roughnessFactors(nCoordinates-1) !< roughness factors
    logical,          intent(out) :: succes                           !< flag for succes
    character(len=*), intent(out) :: errorMessage                     !< error message
 !
@@ -152,11 +152,11 @@
 !
 !  Input/output parameters
 !
-   real(wp),            intent(in)  :: psi                              !< dike normal (degree)
+   real(kind=wp),       intent(in)  :: psi                              !< dike normal (degree)
    integer,             intent(in)  :: nCoordinates                     !< number of coordinates
-   real(wp),            intent(in)  :: xCoordinates    (nCoordinates)   !< x-coordinates (m)
-   real(wp),            intent(in)  :: yCoordinates    (nCoordinates)   !< y-coordinates (m+NAP)
-   real(wp),            intent(in)  :: roughnessFactors(nCoordinates-1) !< roughness factors
+   real(kind=wp),       intent(in)  :: xCoordinates    (nCoordinates)   !< x-coordinates (m)
+   real(kind=wp),       intent(in)  :: yCoordinates    (nCoordinates)   !< y-coordinates (m+NAP)
+   real(kind=wp),       intent(in)  :: roughnessFactors(nCoordinates-1) !< roughness factors
    type (tpGeometry),   intent(out) :: geometry                         !< structure with geometry data
    logical,             intent(out) :: succes                           !< flag for succes
    character(len=*),    intent(out) :: errorMessage                     !< error message
@@ -433,10 +433,10 @@ end subroutine deallocateGeometry
    integer  :: i                 !< counter dike segments
    logical  :: sequentialBerms   !< flag for sequential berms
    integer  :: index             !< index of first berm
-   real(wp) :: B1                !< width of first berm
-   real(wp) :: B2                !< width of second berm
-   real(wp) :: rFactor1          !< roughness factor of first berm
-   real(wp) :: rFactor2          !< roughness factor of second berm
+   real(kind=wp) :: B1           !< width of first berm
+   real(kind=wp) :: B2           !< width of second berm
+   real(kind=wp) :: rFactor1     !< roughness factor of first berm
+   real(kind=wp) :: rFactor2     !< roughness factor of second berm
 
 ! ==========================================================================================================
 
@@ -539,10 +539,10 @@ end subroutine deallocateGeometry
 !
 !  Local parameters
 !
-   integer   :: i     !< counter dike segments
-   real(wp)  :: hBerm !< average berm height (m)
-   real(wp)  :: dx1   !< horizontal distance from previous point to starting point horizontal berm (m)
-   real(wp)  :: dx2   !< horizontal distance from end point horizontal berm to next point (m)
+   integer        :: i     !< counter dike segments
+   real(kind=wp)  :: hBerm !< average berm height (m)
+   real(kind=wp)  :: dx1   !< horizontal distance from previous point to starting point horizontal berm (m)
+   real(kind=wp)  :: dx2   !< horizontal distance from end point horizontal berm to next point (m)
    
 ! ==========================================================================================================
 
@@ -628,9 +628,9 @@ end subroutine deallocateGeometry
 !
 !  Local parameters
 !
-   integer   :: i     !< counter dike segments
-   integer   :: N     !< counter points cross section without berms
-   real(wp)  :: Bsum  !< total berm width (m)
+   integer        :: i     !< counter dike segments
+   integer        :: N     !< counter points cross section without berms
+   real(kind=wp)  :: Bsum  !< total berm width (m)
 
 ! ==========================================================================================================
 
@@ -786,7 +786,7 @@ end subroutine deallocateGeometry
 !  Input/output parameters
 !
    type (tpGeometry),   intent(in)  :: geometry          !< structure with geometry data
-   real(wp),            intent(in)  :: L0                !< wave length (m)
+   real(kind=wp),       intent(in)  :: L0                !< wave length (m)
    integer,             intent(out) :: NwideBerms        !< number of wide berms
    type (tpGeometry),   intent(out) :: geometrySectionB  !< geometry data with wide berms to ordinary berms
    type (tpGeometry),   intent(out) :: geometrySectionF  !< geometry data with wide berms to foreshores
@@ -795,10 +795,10 @@ end subroutine deallocateGeometry
 !
 !  Local parameters
 !
-   integer   :: i           !< counter dike segments
-   real(wp)  :: B           !< width of berm segment (m)
-   real(wp)  :: horzShift   !< horizontal shift to adapt wide berms (m)
-   real(wp)  :: vertShift   !< vertical shift to adapt wide berms (m)
+   integer        :: i           !< counter dike segments
+   real(kind=wp)  :: B           !< width of berm segment (m)
+   real(kind=wp)  :: horzShift   !< horizontal shift to adapt wide berms (m)
+   real(kind=wp)  :: vertShift   !< vertical shift to adapt wide berms (m)
 
 ! ==========================================================================================================
 
@@ -891,18 +891,18 @@ end subroutine deallocateGeometry
 !  Input/output parameters
 !
    type (tpGeometry), intent(in)  :: geometry                             !< structure with geometry data
-   real(wp),          intent(in)  :: yLower                               !< y-coord. lower bound (m+NAP)
-   real(wp),          intent(in)  :: yUpper                               !< y-coord. upper bound (m+NAP)
-   real(wp),          intent(out) :: horzLengths(geometry%nCoordinates-1) !< horizontal lengths segments (m)
+   real(kind=wp),     intent(in)  :: yLower                               !< y-coord. lower bound (m+NAP)
+   real(kind=wp),     intent(in)  :: yUpper                               !< y-coord. upper bound (m+NAP)
+   real(kind=wp),     intent(out) :: horzLengths(geometry%nCoordinates-1) !< horizontal lengths segments (m)
    logical,           intent(out) :: succes                               !< flag for succes
    character(len=*),  intent(out) :: errorMessage                         !< error message
 !
 !  Local parameters
 !
-   integer   :: iLower   !< index dike segment lower bound
-   integer   :: iUpper   !< index dike segment upper bound
-   real(wp)  :: dy       !< vertical distance (m)
-   real(wp)  :: dx       !< horizontal distance (m)
+   integer        :: iLower   !< index dike segment lower bound
+   integer        :: iUpper   !< index dike segment upper bound
+   real(kind=wp)  :: dy       !< vertical distance (m)
+   real(kind=wp)  :: dx       !< horizontal distance (m)
 
 ! ==========================================================================================================
 
@@ -987,16 +987,16 @@ end subroutine deallocateGeometry
 !  Input/output parameters
 !
    type (tpGeometry),   intent(in)     :: geometry       !< structure with geometry data
-   real(wp),            intent(in)     :: yLower         !< y-coordinate lower bound (m+NAP)
-   real(wp),            intent(in)     :: yUpper         !< y-coordinate upper bound (m+NAP)
-   real(wp),            intent(out)    :: dx             !< horizontal distance between bounds (m)
+   real(kind=wp),       intent(in)     :: yLower         !< y-coordinate lower bound (m+NAP)
+   real(kind=wp),       intent(in)     :: yUpper         !< y-coordinate upper bound (m+NAP)
+   real(kind=wp),       intent(out)    :: dx             !< horizontal distance between bounds (m)
    logical,             intent(out)    :: succes         !< flag for succes
    character(len=*),    intent(out)    :: errorMessage   !< error message
 !
 !  Local parameters
 !
-   real(wp), allocatable :: horzLengths(:) !< horizontal lengths segments (m)
-   integer               :: ierr           !< error code allocate
+   real(kind=wp), allocatable :: horzLengths(:) !< horizontal lengths segments (m)
+   integer                    :: ierr           !< error code allocate
 
 ! ==========================================================================================================
 

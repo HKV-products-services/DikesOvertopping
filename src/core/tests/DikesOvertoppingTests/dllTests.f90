@@ -593,16 +593,16 @@ subroutine TestProfileAdjustment
 !
 !   Local parameters
 !
-    integer                 :: nCoordinates         ! number of coordinates
-    integer                 :: nrCoordsAdjusted     ! number of coordinates
-    real(wp), allocatable   :: xCoordinates(:)      ! x-coordinates (m)
-    real(wp), allocatable   :: yCoordinates    (:)  ! y-coordinates (m+NAP)
-    real(kind=wp), pointer  :: xCoordsAdjusted(:)   ! vector with x-coordinates of the adjusted profile
-    real(kind=wp), pointer  :: zCoordsAdjusted(:)   ! vector with y-coordinates of the adjusted profile
-    logical                 :: succes               ! flag for succes
-    character(len=255)      :: errorMessage         ! error message
-    real(kind=wp)           :: dikeHeight           ! vector with x-coordinates of the adjusted profile
-    integer                 :: i                    ! do-loop counter
+    integer                    :: nCoordinates         ! number of coordinates
+    integer                    :: nrCoordsAdjusted     ! number of coordinates
+    real(kind=wp), allocatable :: xCoordinates(:)      ! x-coordinates (m)
+    real(kind=wp), allocatable :: yCoordinates(:)      ! y-coordinates (m+NAP)
+    real(kind=wp), pointer     :: xCoordsAdjusted(:)   ! vector with x-coordinates of the adjusted profile
+    real(kind=wp), pointer     :: zCoordsAdjusted(:)   ! vector with y-coordinates of the adjusted profile
+    logical                    :: succes               ! flag for succes
+    character(len=255)         :: errorMessage         ! error message
+    real(kind=wp)              :: dikeHeight           ! vector with x-coordinates of the adjusted profile
+    integer                    :: i                    ! do-loop counter
     
     nCoordinates = 4
     allocate (xCoordinates (nCoordinates))

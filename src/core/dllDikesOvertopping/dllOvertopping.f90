@@ -271,8 +271,6 @@ subroutine omkeerVariantF(load, geometryF, givenDischarge, dikeHeight, modelFact
     character(len=*), intent(out)              :: errorText      !< error message (only set if not successful)
     type(tLogging), intent(in)                 :: logging        !< logging struct
 !
-    type (tpGeometry)                          :: geometry       !< structure with geometry data
-!
     call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
 end subroutine omkeerVariantF
 

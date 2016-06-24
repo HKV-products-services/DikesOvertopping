@@ -28,7 +28,7 @@ contains
 
 !> Routine to read the cross section file
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine readCrossSection(crossSectionFile, geometry, succes, errorMessage)
 !
 !   input/output parameters
@@ -40,16 +40,16 @@ subroutine readCrossSection(crossSectionFile, geometry, succes, errorMessage)
 !
 !   local parameters
 !
-    integer                :: punit                ! unit-number for the cross section file
-    integer                :: ios                  ! input/output-status
-    character(len=1)       :: comment              ! comment character
+    integer                     :: punit                ! unit-number for the cross section file
+    integer                     :: ios                  ! input/output-status
+    character(len=1)            :: comment              ! comment character
 
-    integer                :: i                    ! counter
-    real(wp)               :: psi                  ! dike normal (degree)
-    integer                :: nCoordinates         ! number of coordinates
-    real(wp), allocatable  :: xCoordinates    (:)  ! x-coordinates (m)
-    real(wp), allocatable  :: yCoordinates    (:)  ! y-coordinates (m+NAP)
-    real(wp), allocatable  :: roughnessFactors(:)  ! roughness factors
+    integer                     :: i                    ! counter
+    real(kind=wp)               :: psi                  ! dike normal (degree)
+    integer                     :: nCoordinates         ! number of coordinates
+    real(kind=wp), allocatable  :: xCoordinates    (:)  ! x-coordinates (m)
+    real(kind=wp), allocatable  :: yCoordinates    (:)  ! y-coordinates (m+NAP)
+    real(kind=wp), allocatable  :: roughnessFactors(:)  ! roughness factors
 !
 !   source
 !
@@ -96,7 +96,7 @@ end subroutine readCrossSection
 
 !> Read the number of relevant lines in a cross section file for testing the RTO overtopping dll
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine readNumberOfRelevantLines (fileName, NumberOfRelevantLines)
 !
 !   input/output parameters
@@ -137,7 +137,7 @@ end subroutine readNumberOfRelevantLines
 
 !> Assign the number of test series for the slopes of a cross section
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine numberTestSeriesSlopes (crossSectionId, nTestSeriesSlopes)
 !
 !   input/output parameters

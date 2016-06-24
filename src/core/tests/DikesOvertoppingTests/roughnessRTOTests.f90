@@ -23,12 +23,12 @@ module crossSectionRoughnessTests
 !
     implicit none
 
-    type (tpOvertoppingInput),  private     :: modelFactors         ! structure with model factors
-    type (tpLoad),              private     :: load                 ! structure with load data
-    character(len=90),          private     :: outputFile           ! file for the output of the testserie
-    integer,                    private     :: crossSectionId       ! id-number of the cross section 
-    integer,                    private     :: numberTestSerie      ! number of test serie
-    real(wp), pointer,          private     :: roughness(:)         ! roughness variation for segment numbers
+    type (tpOvertoppingInput)  :: modelFactors         ! structure with model factors
+    type (tpLoad)              :: load                 ! structure with load data
+    character(len=90)          :: outputFile           ! file for the output of the testserie
+    integer                    :: crossSectionId       ! id-number of the cross section 
+    integer                    :: numberTestSerie      ! number of test serie
+    real(kind=wp), pointer     :: roughness(:)         ! roughness variation for segment numbers
 
     private
     
@@ -39,7 +39,7 @@ contains
 !> Call all the roughness varying overtopping test series for the RTO overtopping dll. In these test series 
 !! the roughness of the cross sections is varied.
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
 !
 !   input/output parameters
@@ -49,19 +49,19 @@ subroutine allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
 !
 !   local parameters
 !
-    character(len=120)      :: frozenFile           ! frozen copy of the output file of the testserie
-    character(len=128)      :: errorMessage         ! error message
-    character(len=1)        :: crossSectionNumber   ! number of the cross section
-    character(len=2)        :: testSerieNumber      ! number of the test serie
+    character(len=120)         :: frozenFile           ! frozen copy of the output file of the testserie
+    character(len=128)         :: errorMessage         ! error message
+    character(len=1)           :: crossSectionNumber   ! number of the cross section
+    character(len=2)           :: testSerieNumber      ! number of the test serie
 
-    integer                 :: i, j, k              ! do-loop counters
-    integer                 :: nTestSeriesSlopes    ! amount of test series for slopes
-    integer                 :: nWaveDirections      ! number of wave directions in the test series
-    integer                 :: nRoughnesses         ! number of test series for the roughness for the specific cross section
+    integer                    :: i, j, k              ! do-loop counters
+    integer                    :: nTestSeriesSlopes    ! amount of test series for slopes
+    integer                    :: nWaveDirections      ! number of wave directions in the test series
+    integer                    :: nRoughnesses         ! number of test series for the roughness for the specific cross section
 
-    real(wp), allocatable   :: phi(:)               ! wave directions
-    real(wp)                :: waveSteepness        ! wave steepness
-    integer                 :: ierr                 ! error code
+    real(kind=wp), allocatable :: phi(:)               ! wave directions
+    real(kind=wp)              :: waveSteepness        ! wave steepness
+    integer                    :: ierr                 ! error code
 !
 !   source
 !
@@ -123,7 +123,7 @@ end subroutine allCrossSectionRoughnessTests
 
 !> One test serie with varying the roughness of one or more segments of the cross sections.
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine TestSeriesRoughness
 !
 !   local parameters
@@ -138,10 +138,10 @@ subroutine TestSeriesRoughness
     integer              :: nstep                ! number of computations in the test serie
     integer              :: istep                ! do-loop counter in the test serie
 
-    real(wp)             :: var                  ! value of the variable in the test serie
-    real(wp)             :: varmin               ! minimum value of the variable in the test serie
-    real(wp)             :: varmax               ! maximum value of the variable in the test serie
-    real(wp)             :: varstep              ! step size of the variable in the test serie
+    real(kind=wp)        :: var                  ! value of the variable in the test serie
+    real(kind=wp)        :: varmin               ! minimum value of the variable in the test serie
+    real(kind=wp)        :: varmax               ! maximum value of the variable in the test serie
+    real(kind=wp)        :: varstep              ! step size of the variable in the test serie
 
     type (tpGeometry)    :: geometry             ! structure with geometry data
     type (tpOvertopping) :: overtopping          ! structure with overtopping results
@@ -199,7 +199,7 @@ end subroutine TestSeriesRoughness
 
 !> Routine to determine the nummer of slope varying test series per cross section.
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine numberTestSeriesRoughness(crossSectionId, nRoughnesses)
 !
 !   input/output parameters
@@ -228,14 +228,14 @@ end subroutine numberTestSeriesRoughness
 
 !> Routine to determine the slopes to vary the roughness in the test series per cross section.
 !!
-!! @ingroup FailureMechanismsTests
+!! @ingroup DikesOvertoppingTests
 subroutine roughnesses(crossSectionId, roughnessSlopesId, roughness)
 !
 !   input/output parameters
 !
     integer,    intent(in)      :: crossSectionId       !< id-number of the cross section
     integer,    intent(in)      :: roughnessSlopesId    !< id-number of the roughness variation
-    real(wp),   pointer         :: roughness(:)         !< roughness variation structure with segment numbers
+    real(kind=wp), pointer      :: roughness(:)         !< roughness variation structure with segment numbers
 !
 !   local parameter
 !

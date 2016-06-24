@@ -29,7 +29,7 @@ contains
 
 !>
 !! Subroutine to calculate the overtopping discharge with the RTO-overtopping dll
-!! @ingroup LSF
+!! @ingroup LibOvertopping
 subroutine calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry, succes, errorMessage)
     real(kind=wp),                 intent(in)    :: dikeHeight     !< dike height
     type(tpOvertoppingInput),      intent(inout) :: modelFactors   !< struct with model factors
@@ -77,7 +77,7 @@ end subroutine calculateQoRTO
 
 !>
 !! Subroutine to fill the profile in a structure and call the adjustment function of the profile due to a desired dike height
-!! @ingroup LSF
+!! @ingroup LibOvertopping
 subroutine profileInStructure(nrCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, &
                                xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage)
     integer,            intent(in)          :: nrCoordinates                !< number of coordinates of the profile
@@ -103,7 +103,7 @@ end subroutine profileInStructure
 
 !>
 !! Subroutine adjust the profile due to a desired dike height
-!! @ingroup LSF
+!! @ingroup LibOvertopping
 subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage)
 
     integer,                    intent(in)  :: nrCoordinates                !< number of coordinates of the profile
@@ -207,7 +207,7 @@ end subroutine adjustProfile
 
 !>
 !! Routine to compute the limit state value by using the logs of the overtopping discharges (computed and desired)
-!! @ingroup LSF
+!! @ingroup LibOvertopping
 function zFuncLogRatios(qo, qc, mqo, mqc, success, errorMessage) result (z)
     real (kind=wp),   intent(in)  :: qo            !< computed overtopping discharge
     real (kind=wp),   intent(in)  :: qc            !< Critical overtopping discharge
