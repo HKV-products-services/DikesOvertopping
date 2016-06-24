@@ -19,6 +19,8 @@ module waveRunup
    use formulaModuleRTOovertopping
    use geometryModuleRTOovertopping
    use OvertoppingMessages
+   use utilities
+   use ModuleLogging
 
    implicit none
 
@@ -40,12 +42,12 @@ module waveRunup
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   real(wp),                  intent(in)     :: h              !< local water level (m+NAP)
-   real(wp),                  intent(in)     :: Hm0            !< significant wave height (m)
-   real(wp),                  intent(in)     :: Tm_10          !< spectral wave period (s)
-   real(wp),                  intent(inout)  :: gammaBeta_z    !< influence factor angle wave attack 2% run-up
+   real(kind=wp),             intent(in)     :: h              !< local water level (m+NAP)
+   real(kind=wp),             intent(in)     :: Hm0            !< significant wave height (m)
+   real(kind=wp),             intent(in)     :: Tm_10          !< spectral wave period (s)
+   real(kind=wp),             intent(inout)  :: gammaBeta_z    !< influence factor angle wave attack 2% run-up
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
-   real(wp),                  intent(out)    :: z2             !< 2% wave run-up (m)
+   real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
    logical,                   intent(out)    :: succes         !< flag for succes
    character(len=*),          intent(out)    :: errorMessage   !< error message
 !
@@ -101,7 +103,7 @@ module waveRunup
 
       enddo
    endif
-   
+
    if (succes .and. .not. convergence) then
       !
       ! iteration process, even with relaxation does not converge
@@ -128,7 +130,7 @@ module waveRunup
          if ((.not. succes) .or. (convergence)) then
             exit
          endif
-      
+
       enddo
       if ((succes) .and. (.not. convergence)) then
          call convergedWithResidu(z2_start, z2_end)
@@ -142,37 +144,30 @@ module waveRunup
    ! end iteration procedure
    ! -----------------------
 
-   ! check if iteration procedure converged
+   ! if no error occured, return z2_end of last iteration
    if (succes) then
-      
-      if (convergence) then
-     
-         ! when convergence is reached 2% wave run-up equals value in last iteration step
-         z2 = z2_end(Niterations)
-   
-      else
-
-         ! determine error message when no convergence is reached
-         succes = .false.
-         errorMessage = GetOvertoppingMessage(no_convergence_2percent_wave_runup)
-      endif
-
+      z2 = z2_end(Niterations)
    endif
 
    end subroutine iterationWaveRunup
-   
+
+!> innerCalculation:
+!! inner calculation for the wave runup
+!!   @ingroup LibOvertopping
+!***********************************************************************************************************
    function innerCalculation(geometry, h, Hm0, gammaBeta_z, modelFactors, z2, s0, &
                              geometryFlatBerms, succes, errorMessage) result(z2_end)
+!***********************************************************************************************************
    implicit none
 !
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry           !< structure with geometry data
-   real(wp),                  intent(in)     :: h                  !< local water level (m+NAP)
-   real(wp),                  intent(in)     :: Hm0                !< significant wave height (m)
-   real(wp),                  intent(inout)  :: gammaBeta_z        !< influence factor angle wave attack 2% run-up
+   real(kind=wp),             intent(in)     :: h                  !< local water level (m+NAP)
+   real(kind=wp),             intent(in)     :: Hm0                !< significant wave height (m)
+   real(kind=wp),             intent(inout)  :: gammaBeta_z        !< influence factor angle wave attack 2% run-up
    type (tpOvertoppingInput), intent(in)     :: modelFactors       !< structure with model factors
-   real(wp),                  intent(in)     :: z2                 !< 2% wave run-up (m)
+   real(kind=wp),             intent(in)     :: z2                 !< 2% wave run-up (m)
    real(kind=wp),             intent(in)     :: s0                 !< wave steepness
    type (tpGeometry),         intent(in)     :: geometryFlatBerms  !< structure with geometry data with horizontal berms
    logical,                   intent(out)    :: succes             !< flag for succes
@@ -188,6 +183,8 @@ module waveRunup
    real(kind=wp)     :: gammaF     !< influence factor roughness
    real(kind=wp)     :: z2_rough   !< 2% wave run-up (no berms)
    real(kind=wp)     :: gammaB     !< influence factor berms
+   
+! ==========================================================================================================
 
    ! initialize influence factor berms and roughness and z2_end
    gammaB     = 1.0d0
@@ -264,14 +261,30 @@ module waveRunup
 
    endif
 
-end function innerCalculation
+   end function innerCalculation
 
+!> determineStartingValue:
+!! helper function to find a start value for z2
+!!   @ingroup LibOvertopping
+!***********************************************************************************************************
    function determineStartingValue(i, relaxationFactor, z2_start, z2_end, Hm0) result (startValue)
-   integer, intent(in)        :: i
-   real(kind=wp), intent(in)  :: relaxationFactor, z2_start(:), z2_end(:), Hm0
-   real(kind=wp)              :: startValue
+!***********************************************************************************************************
+   implicit none
+!
+!  Input/output parameters
+!
+   integer, intent(in)        :: i                  !< current iteration number
+   real(kind=wp), intent(in)  :: relaxationFactor   !< relaxation factor as given by user
+   real(kind=wp), intent(in)  :: z2_start(:)        !< array with z2 values at the start of the iteration i
+   real(kind=wp), intent(in)  :: z2_end(:)          !< array with z2 values at the end of iteration i
+   real(kind=wp), intent(in)  :: Hm0                !< significant wave height
+   real(kind=wp)              :: startValue         !< return value: start value for z2 in current iteration
+!
+!  Local parameters
+!
+   real(kind=wp) :: relaxation    ! locally adjusted relaxation factor
    
-   real(kind=wp) :: relaxation
+! ==========================================================================================================
 
    ! determine starting value 2% wave run-up for this iteration step
    if (i == 1) then
@@ -288,42 +301,68 @@ end function innerCalculation
    endif
    end function determineStartingValue
 
+!> findSmallestResidu:
+!! helper function to find the smallest residu
+!!   @ingroup LibOvertopping
+!***********************************************************************************************************
    integer function findSmallestResidu(z2_start, z2_end, n)
-   real(kind=wp), intent(in)  :: z2_start(:), z2_end(:)
-   integer, intent(in), optional :: n
-   !
-   ! locals
-   !
-   real(kind=wp), allocatable :: residu(:)
-   integer :: j, k, maxi
-   real(kind=wp) :: min_res
+!***********************************************************************************************************
+   implicit none
+!
+!  Input/output parameters
+!
+   real(kind=wp), intent(in)     :: z2_start(:) !< array with z2 values at the start of the iteration i
+   real(kind=wp), intent(in)     :: z2_end(:)   !< array with z2 values at the end of iteration i
+   integer, intent(in), optional :: n           !< number of iterations already done
+!
+!  Local parameters
+!
+   real(kind=wp) :: residu  ! difference between z2_end and z2_start in iteration i
+   integer       :: j       ! loop counter
+   integer       :: k       ! iteration with lowest residu during search
+   integer       :: maxi    ! upper bound of arrays z2_start and z2_end
+   real(kind=wp) :: min_res ! minimal difference found
    
+! ==========================================================================================================
+
    if (present(n)) then
          maxi = n
-      else
+   else
          maxi = size(z2_start)
    endif
-   allocate(residu(maxi))
+
    min_res = huge(min_res)
    do j = 1, maxi
-       residu(j) = z2_end(j) - z2_start(j)
-       if (abs(residu(j)) < min_res) then
+       residu = z2_end(j) - z2_start(j)
+       if (abs(residu) < min_res) then
            k = j
-           min_res = abs(residu(j))
+           min_res = abs(residu)
        endif
    enddo
-   deallocate(residu)
    findSmallestResidu = k
 
    end function findSmallestResidu
 
+!> convergedWithResidu:
+!! helper function to handle convergence with a higher residu than expected
+!! if logging is enabled, it writes a small message to the logfile
+!!   @ingroup LibOvertopping
+!***********************************************************************************************************
    subroutine convergedWithResidu(z2_start, z2_end)
-   use utilities
-   use ModuleLogging
-   real(kind=wp), intent(in)    :: z2_start(:)
-   real(kind=wp), intent(inout) :: z2_end(:)
-
-   integer :: iunit, k
+!***********************************************************************************************************
+   implicit none
+!
+!  Input/output parameters
+!
+   real(kind=wp), intent(in)    :: z2_start(:)  !< array with z2 values at the start of the iteration i
+   real(kind=wp), intent(inout) :: z2_end(:)    !< array with z2 values at the end of iteration i
+!
+!  Local parameters
+!
+   integer :: iunit  ! logical unit for log file
+   integer :: k      ! index with lowest residu
+   
+! ==========================================================================================================
 
    k = findSmallestResidu(z2_start, z2_end)
    z2_end(z2_iter_max2) = (z2_end(k) + z2_start(k)) * 0.5_wp
