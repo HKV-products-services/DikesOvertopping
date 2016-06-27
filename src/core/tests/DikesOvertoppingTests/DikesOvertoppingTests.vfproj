@@ -27,12 +27,12 @@
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
-		<File RelativePath=".\crossSectionsRTOTests.f90"/>
+		<File RelativePath=".\crossSectionsTests.f90"/>
 		<File RelativePath=".\dllTests.f90"/>
-		<File RelativePath=".\loadRTOTests.f90"/>
+		<File RelativePath=".\loadTests.f90"/>
 		<File RelativePath=".\omkeerVariantTests.f90"/>
-		<File RelativePath=".\overtoppingRTOTests.f90"/>
+		<File RelativePath=".\overtoppingTests.f90"/>
 		<File RelativePath=".\readCrossSectionForTests.f90"/>
-		<File RelativePath=".\roughnessRTOTests.f90"/>
+		<File RelativePath=".\roughnessTests.f90"/>
 		<File RelativePath=".\testHelper.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>

@@ -10,7 +10,7 @@
 !! @ingroup DikeOvertoppingTests
 module testHelper
 use precision, only : wp
-use typeDefinitionsRTOovertopping
+use typeDefinitionsOvertopping
 use waveParametersUtilities
 use ftnunit
 

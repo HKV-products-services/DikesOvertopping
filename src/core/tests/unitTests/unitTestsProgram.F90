@@ -10,7 +10,7 @@ program unitTestsProgram
 
     use ftnunit
     use utilities
-    use overtoppingRTOTests
+    use overtoppingTests
 
     use, intrinsic :: ieee_exceptions
 
@@ -24,7 +24,7 @@ program unitTestsProgram
     call runtests_init
     call setRunTestLevel(3) ! should be 3
 
-    call runtests(allovertoppingRTOTests)
+    call runtests(allOvertoppingTests)
 
     call runtests_final
     call showResult

@@ -11,10 +11,10 @@
 module dllTests
 use precision, only : wp
 use overtoppingInterface, only : OvertoppingGeometryTypeF
-use typeDefinitionsRTOovertopping
+use typeDefinitionsOvertopping
 use ModuleLogging
 use waveParametersUtilities, only : computeWavePeriod
-use zFunctionsWTIOvertopping, only : profileInStructure
+use zFunctionsOvertopping, only : profileInStructure
 use testHelper, only : init_modelfactors_and_load
 use ftnunit
 use errorMessages

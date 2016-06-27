@@ -18,11 +18,11 @@
 !> Main entry for the dll DikesOvertopping
 !
 module dllOvertopping
-    use zFunctionsWTIOvertopping,      only : calculateQoRTO, zFuncLogRatios
-    use geometryModuleRTOovertopping,  only : deallocateGeometry
-    use precision,                     only : wp
-    use typeDefinitionsRTOovertopping, only : tpGeometry, tpLoad, tpOvertoppingInput
-    use overtoppingInterface,          only : OvertoppingGeometryType, OvertoppingGeometryTypeF
+    use zFunctionsOvertopping,      only : calculateQoRTO, zFuncLogRatios
+    use geometryModuleOvertopping,  only : deallocateGeometry
+    use precision,                  only : wp
+    use typeDefinitionsOvertopping, only : tpGeometry, tpLoad, tpOvertoppingInput
+    use overtoppingInterface,       only : OvertoppingGeometryType, OvertoppingGeometryTypeF
     use, intrinsic :: iso_c_binding
 
     implicit none
@@ -42,8 +42,8 @@ contains
 !! @ingroup dllDikesOvertopping
 subroutine calculateQo(load, geometryInput, dikeHeight, modelFactors, overtopping, success, errorText, verbosity, logFile)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"calculateQo" :: calculateQo
-    use geometryModuleRTOovertopping
-    use typeDefinitionsRTOovertopping
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
     use ModuleLogging
     type(OvertoppingGeometryType), intent(in) :: geometryInput  !< struct with geometry and roughness as c-pointers
     type(tpLoad), intent(in)                  :: load           !< struct with waterlevel and wave parameters
@@ -73,8 +73,8 @@ end subroutine calculateQo
 !! @ingroup dllDikesOvertopping
 subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, success, errorText, logging)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"calculateQoF" :: calculateQoF
-    use geometryModuleRTOovertopping
-    use typeDefinitionsRTOovertopping
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
     use ModuleLogging
     type(OvertoppingGeometryTypeF), intent(in) :: geometryF      !< struct with geometry and roughness
     type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
@@ -126,8 +126,8 @@ end subroutine calcZValue
 !! @ingroup dllDikesOvertopping
 subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, errorText)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputC" :: ValidateInputC
-    use geometryModuleRTOovertopping
-    use typeDefinitionsRTOovertopping
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
     use errorMessages
     use OvertoppingMessages
     type(OvertoppingGeometryType), intent(in) :: geometryInput                 !< struct with geometry and roughness as c-pointers
@@ -177,10 +177,10 @@ end subroutine ValidateInputC
 !! @ingroup dllDikesOvertopping
 subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputF" :: ValidateInputF
-    use geometryModuleRTOovertopping
-    use typeDefinitionsRTOovertopping
-    use zFunctionsWTIOvertopping
-    use mainModuleRTOovertopping, only : checkModelFactors
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
+    use zFunctionsOvertopping
+    use mainModuleOvertopping, only : checkModelFactors
     use errorMessages
     type(OvertoppingGeometryTypeF), intent(in) :: geometryF           !< struct with geometry and roughness
     real(kind=wp), intent(in)                  :: dikeHeight          !< dike height
@@ -257,8 +257,8 @@ end subroutine ValidateInputF
 !! @ingroup dllDikesOvertopping
 subroutine omkeerVariantF(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"omkeerVariantF" :: omkeerVariantF
-    use geometryModuleRTOovertopping
-    use typeDefinitionsRTOovertopping
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
     use ModuleLogging
     use omkeerVariantModule
     type(OvertoppingGeometryTypeF), intent(in) :: geometryF      !< struct with geometry and roughness
@@ -326,8 +326,8 @@ end subroutine versionNumber
 !!
 !! @ingroup dllDikesOvertopping
 function geometry_c_f(geometryInput) result(geometry)
-    use geometryModuleRTOovertopping
-    use typeDefinitionsRTOovertopping
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
 
     type(OvertoppingGeometryType), intent(in) :: geometryInput  !< struct with geometry and roughness as c-pointers
     type(OvertoppingGeometryTypeF)            :: geometry       !< fortran struct with geometry and roughness

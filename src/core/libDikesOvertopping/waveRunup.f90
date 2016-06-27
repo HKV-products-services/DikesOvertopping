@@ -14,10 +14,10 @@
 module waveRunup
 !***********************************************************************************************************
 
-   use factorModuleRTOovertopping
-   use typeDefinitionsRTOovertopping
-   use formulaModuleRTOovertopping
-   use geometryModuleRTOovertopping
+   use factorModuleOvertopping
+   use typeDefinitionsOvertopping
+   use formulaModuleOvertopping
+   use geometryModuleOvertopping
    use OvertoppingMessages
    use utilities
    use ModuleLogging

@@ -10,7 +10,7 @@
 !! @ingroup DikeOvertoppingTests
 module omkeerVariantTests
 use precision, only : wp
-use typeDefinitionsRTOovertopping
+use typeDefinitionsOvertopping
 use overtoppingInterface
 use ModuleLogging
 use ftnunit

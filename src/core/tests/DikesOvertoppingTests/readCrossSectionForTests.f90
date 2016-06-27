@@ -1,21 +1,20 @@
 !> @file
-!! Contains the module readCrossSectionForTests. This module is used in the tests of the RTO overtopping dll
-!! RTO stands for Risk, Assessment and Design instruments (in dutch: Risico, Toets en Ontwerpinstrumentarium)
+!! Contains the module readCrossSectionForTests. This module is used in the tests of the Overtopping dll
 !
 !
 ! Copyright (c) 2010, Deltares, HKV lijn in water, TNO
 ! $Id$
 !
 !> 
-!!Module for reading the cross section file for testing the RTO overtopping
+!!Module for reading the cross section file for testing the Overtopping kernel
 !!
 !! @ingroup DikeOvertoppingTests
 module readCrossSectionForTests
 
     use utilities
     use precision
-    use geometryModuleRTOovertopping
-    use typeDefinitionsRTOovertopping
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
     use ftnunit
 
     implicit none
@@ -94,7 +93,7 @@ subroutine readCrossSection(crossSectionFile, geometry, succes, errorMessage)
 
 end subroutine readCrossSection
 
-!> Read the number of relevant lines in a cross section file for testing the RTO overtopping dll
+!> Read the number of relevant lines in a cross section file for testing the Overtopping dll
 !!
 !! @ingroup DikesOvertoppingTests
 subroutine readNumberOfRelevantLines (fileName, NumberOfRelevantLines)

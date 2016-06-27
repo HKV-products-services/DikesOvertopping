@@ -22,11 +22,11 @@ contains
 !!
 !! @ingroup dllDikesOvertopping
 subroutine iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
-    use geometryModuleRTOovertopping
-    use typeDefinitionsRTOovertopping
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
     use overtoppingInterface
     use ModuleLogging
-    use zFunctionsWTIOvertopping
+    use zFunctionsOvertopping
     type(OvertoppingGeometryTypeF), intent(in) :: geometryF      !< struct with geometry and roughness
     type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
     real(kind=wp), intent(in)                  :: givenDischarge !< discharge to iterate to
@@ -68,11 +68,11 @@ end subroutine iterateToGivenDischarge
 !!
 !! @ingroup dllDikesOvertopping
 subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText )
-    use geometryModuleRTOovertopping
-    use typeDefinitionsRTOovertopping
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
     use overtoppingInterface
     use ModuleLogging
-    use zFunctionsWTIOvertopping
+    use zFunctionsOvertopping
     type (tpGeometry), intent(in)              :: geometry       !< internal structure with geometry data
     type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
     real(kind=wp), intent(in)                  :: givenDischarge !< discharge to iterate to
