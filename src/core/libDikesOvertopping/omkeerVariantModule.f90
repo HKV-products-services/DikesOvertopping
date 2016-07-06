@@ -133,9 +133,14 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
             isValidZ(i) = isValidZ(i) .and. .not. isBerm(i-1)
         endif
         if (isValidZ(i)) then
-            call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
-            ZProfile(i) = nextDikeHeight
-            dischargeProfile(i) = overtopping%Qo
+            do
+                call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+                if (.not. success) return ! only in very exceptional cases
+                ZProfile(i) = nextDikeHeight
+                dischargeProfile(i) = overtopping%Qo
+                if (i == 1 .or. overtopping%Qo > 0.0_wp) exit
+                nextDikeHeight = 0.5_wp * ( max(geometry%yCoordinates(i-1), load%H) + nextDikeHeight)
+            enddo
             if (overtopping%Qo < givenDischarge ) then
                 exit
             endif
@@ -173,6 +178,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
             if (.not. isBerm(i) ) then
                 nextDikeHeight = geometry%yCoordinates(i) + xDiff_min * geometry%segmentSlopes(i)
                 call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+                if (.not. success) return ! only in very exceptional cases
                 ZProfile(i) = nextDikeHeight
                 dischargeProfile(i) = overtopping%Qo
                 isValidZ(i) = .true.
@@ -183,6 +189,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
                     else
                         nextDikeHeight = ZProfile(i) - minZberm
                         call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+                        if (.not. success) return ! only in very exceptional cases
                         X = (/ overtopping%Qo, dischargeProfile(i) /)
                         Y = (/ nextDikeHeight, ZProfile(i) /)
                     endif
@@ -203,20 +210,28 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
         dis2 = dischargeProfile(iUp)
     else if (iLow == nPoints + 1 ) then
         minDikeHeight = load%h
-        call calculateQoRTO(minDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+        call calculateQoRTO(minDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
+        if (.not. success) return ! only in very exceptional cases
         dis1 = overtopping%Qo
         if (dis1 < givenDischarge) then
             dikeHeight = minDikeHeight
             return
         endif
-        maxDikeHeight = ZProfile(iUp)
-        dis2 = dischargeProfile(iUp)
+        if (iUp /= 0) then
+            maxDikeHeight = ZProfile(iUp)
+            dis2 = dischargeProfile(iUp)
+        else
+            maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
+            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
+            if (.not. success) return ! only in very exceptional cases
+            dis2 = overtopping%Qo
+        endif
     else
         minDikeHeight = ZProfile(iLow)
         dis1 = dischargeProfile(iLow)
         maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
         do
-            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
             dis2 = overtopping%Qo
             
             if (.not. success) return ! only in very exceptional cases
