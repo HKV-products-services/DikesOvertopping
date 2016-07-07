@@ -10,10 +10,25 @@
 !! @ingroup LibOvertopping
 !<
 module omkeerVariantModule
+use geometryModuleOvertopping
+use typeDefinitionsOvertopping
+use overtoppingInterface
+use ModuleLogging
+use zFunctionsOvertopping
 use OvertoppingMessages
 use equalReals
 use vectorUtilities
 implicit none
+
+real(kind=wp), parameter                   :: tolDischarge = 1d-3   ! relative tolerance
+real(kind=wp), parameter                   :: tolDikeHeight = 1d-3  ! absolute tolerance in m
+real(kind=wp), parameter                   :: minZberm = 0.1_wp     ! minimal difference in Z before interpolation
+
+logical, allocatable                       :: isBerm(:)             ! is part i a berm or not
+logical, allocatable                       :: isValidZ(:)           ! is z in profile valid (above water level)
+real(kind=wp), allocatable                 :: dischargeProfile(:)   ! discharge at profile points
+real(kind=wp), allocatable                 :: ZProfile(:)           ! dikeheight at profile points
+
 private
 public :: iterateToGivenDischarge
 contains
@@ -22,11 +37,6 @@ contains
 !!
 !! @ingroup dllDikesOvertopping
 subroutine iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
-    use geometryModuleOvertopping
-    use typeDefinitionsOvertopping
-    use overtoppingInterface
-    use ModuleLogging
-    use zFunctionsOvertopping
     type(OvertoppingGeometryTypeF), intent(in) :: geometryF      !< struct with geometry and roughness
     type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
     real(kind=wp), intent(in)                  :: givenDischarge !< discharge to iterate to
@@ -73,7 +83,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     use overtoppingInterface
     use ModuleLogging
     use zFunctionsOvertopping
-    type (tpGeometry), intent(in)              :: geometry       !< internal structure with geometry data
+    type(tpGeometry), intent(in)               :: geometry       !< internal structure with geometry data
     type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
     real(kind=wp), intent(in)                  :: givenDischarge !< discharge to iterate to
     real(kind=wp), intent(out)                 :: dikeHeight     !< dike height
@@ -90,20 +100,15 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     real(kind=wp)                              :: nextDikeHeight        ! dike heigth for next calculation
     integer                                    :: i                     ! loop counter
     integer                                    :: j                     ! loop counter
-    integer, parameter                         :: maxIt = 5             ! maximum number of iterations
-    real(kind=wp), parameter                   :: tolDischarge = 1d-3   ! relative tolerance
-    real(kind=wp), parameter                   :: tolDikeHeight = 1d-3  ! absolute tolerance in m
+    integer, parameter                         :: maxItA = 20           ! maximum number of iterations in first loop
+    integer, parameter                         :: maxItB = 5            ! maximum number of iterations in second loop
     
-    logical, allocatable                       :: isBerm(:)             ! is part i a berm or not
-    logical, allocatable                       :: isValidZ(:)           ! is z in profile valid (above water level)
-    real(kind=wp), allocatable                 :: dischargeProfile(:)   ! discharge at profile points
-    real(kind=wp), allocatable                 :: ZProfile(:)           ! dikeheight at profile points
     integer                                    :: nPoints               ! number of profile points
     integer                                    :: ierr                  ! error code
     integer                                    :: iUp                   ! upper bound on profile
     integer                                    :: iLow                  ! lower bound on profile
-    real(kind=wp)                              :: X(2), Y(2)            ! arguments for logInterpolate
-    real(kind=wp), parameter                   :: minZberm = 0.1_wp     ! minimal difference in Z before interpolation
+    real(kind=wp)                              :: X(2)                  ! argument for logInterpolate
+    real(kind=wp)                              :: Y(2)                  ! argument for logInterpolate
     logical                                    :: foundValue            ! flag for early succesfull return
     
     foundValue = .false.
@@ -134,7 +139,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
             isValidZ(i) = isValidZ(i) .and. .not. isBerm(i-1)
         endif
         if (isValidZ(i)) then
-            do j = 1, 20
+            do j = 1, MaxItA
                 call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
                 if (.not. success) return ! only in very exceptional cases
                 ZProfile(i) = nextDikeHeight
@@ -165,98 +170,13 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
         endif
     enddo
     
-    !
-    ! check: possibly on berm
-    !
-    if (foundValue ) then
-        continue
-    elseif (iUp > iLow + 1 ) then
-        minDikeHeight = ZProfile(iLow)
-        dis1 = dischargeProfile(iLow)
-        maxDikeHeight = ZProfile(iUp)
-        dis2 = dischargeProfile(iUp)
-        do i = iLow + 1, iUp - 1
-            if (.not. isBerm(i) ) then
-                nextDikeHeight = geometry%yCoordinates(i) + xDiff_min * geometry%segmentSlopes(i)
-                call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
-                if (.not. success) return ! only in very exceptional cases
-                ZProfile(i) = nextDikeHeight
-                dischargeProfile(i) = overtopping%Qo
-                isValidZ(i) = .true.
-                if (dischargeProfile(i) < givenDischarge) then
-                    if (ZProfile(i) - ZProfile(iLow) > minZberm ) then
-                        X = (/ dischargeProfile(iLow), dischargeProfile(i) /)
-                        Y = (/ ZProfile(iLow), ZProfile(i) /)
-                    else
-                        nextDikeHeight = ZProfile(i) - minZberm
-                        call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
-                        if (.not. success) return ! only in very exceptional cases
-                        X = (/ overtopping%Qo, dischargeProfile(i) /)
-                        Y = (/ nextDikeHeight, ZProfile(i) /)
-                    endif
-                    dikeHeight = LogLinearInterpolate(X , Y , givenDischarge, ierr, errorText)
-                    overtopping%Qo = givenDischarge
-                    success = ierr == 0
-                    foundValue = .true.
-                else
-                    minDikeHeight = ZProfile(i)
-                    dis1 = dischargeProfile(i)
-                endif
-            endif
-        enddo
-    else if (iUp == iLow + 1 ) then
-        minDikeHeight = ZProfile(iLow)
-        dis1 = dischargeProfile(iLow)
-        maxDikeHeight = ZProfile(iUp)
-        dis2 = dischargeProfile(iUp)
-    else if (iLow == nPoints + 1 ) then
-        minDikeHeight = load%h
-        call calculateQoRTO(minDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
-        if (.not. success) return ! only in very exceptional cases
-        dis1 = overtopping%Qo
-        if (dis1 < givenDischarge) then
-            dikeHeight = minDikeHeight
-            return
-        endif
-        if (iUp /= 0) then
-            maxDikeHeight = ZProfile(iUp)
-            dis2 = dischargeProfile(iUp)
-        else
-            maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
-            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
-            if (.not. success) return ! only in very exceptional cases
-            dis2 = overtopping%Qo
-        endif
-    else
-        minDikeHeight = ZProfile(iLow)
-        dis1 = dischargeProfile(iLow)
-        maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
-        do
-            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
-            dis2 = overtopping%Qo
-            
-            if (.not. success) return ! only in very exceptional cases
-            
-            if (abs(dis2 - givenDischarge ) < givenDischarge * tolDischarge) then
-                dikeHeight = maxDikeHeight
-                foundValue = .true.
-                exit
-            else if (dis2 > givenDischarge) then
-                X = (/ dis1 , dis2 /)
-                Y = (/ minDikeHeight , maxDikeHeight /)
-                minDikeHeight = maxDikeHeight
-                dis1 = dis2
-                maxDikeHeight = LogLinearInterpolate(X , Y , givenDischarge, ierr, errorText)
-            else
-                exit
-            endif
-        enddo
-    endif
+    call checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischarge, dikeHeight, iUp, iLow, dis1, dis2, minDikeHeight, maxDikeHeight, foundValue, success, errorText)
+    if ( .not. success) return
     !
     ! use logarithmic relation between discharge and dike height
     !
     if (.not. foundValue) then
-        do i = 1, maxIt
+        do i = 1, maxItB
             X = (/ dis1 , dis2 /)
             Y = (/ minDikeHeight , maxDikeHeight /)
             nextDikeHeight = LogLinearInterpolate(X , Y , givenDischarge, ierr, errorText)
@@ -299,5 +219,123 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     deallocate(isBerm, dischargeProfile, isValidZ, ZProfile)
 
 end subroutine iterateToGivenDischargeValidProfile
+
+subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischarge, dikeHeight, iUp, iLow, dis1, dis2, minDikeHeight, maxDikeHeight, foundValue, success, errorText)
+    type(tpGeometry), intent(in)               :: geometry       !< internal structure with geometry data
+    type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
+    type(tpOvertoppingInput), intent(inout)    :: modelFactors   !< struct with modelFactors
+    type(tpOvertopping), intent(inout)         :: overtopping    !< structure with overtopping results
+    integer, intent(in)                        :: iUp            !< upper bound on profile
+    integer, intent(in)                        :: iLow           !< lower bound on profile
+    real(kind=wp), intent(in)                  :: givenDischarge !< discharge to iterate to
+    real(kind=wp), intent(inout)               :: dis1           !< discharge at minDikeHeight
+    real(kind=wp), intent(inout)               :: dis2           !< discharge at maxDikeHeight
+    real(kind=wp), intent(inout)               :: minDikeHeight  !< lower bound dike heigth
+    real(kind=wp), intent(inout)               :: maxDikeHeight  !< upper bound dike heigth
+    real(kind=wp), intent(inout)               :: dikeHeight     !< dike height
+    logical, intent(inout)                     :: foundValue     !< flag for early succesfull return
+    logical, intent(inout)                     :: success        !< flag for success
+    character(len=*), intent(inout)            :: errorText      !< error message (only set if not successful)
+    !
+    ! locals
+    !
+    integer        :: i               ! loop counter
+    integer        :: ierr            ! error code
+    integer        :: nPoints         ! number of profile points
+    real(kind=wp)  :: nextDikeheight  ! dike heigth for next calculation
+    real(kind=wp)  :: X(2)            ! argument for logInterpolate
+    real(kind=wp)  :: Y(2)            ! argument for logInterpolate
+    !
+    ! check: possibly on berm
+    !
+    nPoints = geometry%nCoordinates
+    if (foundValue ) then
+        continue
+    elseif (iUp > iLow + 1 ) then
+        minDikeHeight = ZProfile(iLow)
+        dis1 = dischargeProfile(iLow)
+        maxDikeHeight = ZProfile(iUp)
+        dis2 = dischargeProfile(iUp)
+        do i = iLow + 1, iUp - 1
+            if (.not. isBerm(i) ) then
+                nextDikeHeight = geometry%yCoordinates(i) + xDiff_min * geometry%segmentSlopes(i)
+                call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+                if (.not. success) return ! only in very exceptional cases
+                ZProfile(i) = nextDikeHeight
+                dischargeProfile(i) = overtopping%Qo
+                isValidZ(i) = .true.
+                if (dischargeProfile(i) < givenDischarge) then
+                    if (ZProfile(i) - ZProfile(iLow) > minZberm ) then
+                        X = (/ dischargeProfile(iLow), dischargeProfile(i) /)
+                        Y = (/ ZProfile(iLow), ZProfile(i) /)
+                    else
+                        nextDikeHeight = ZProfile(i) - minZberm
+                        call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+                        if (.not. success) return ! only in very exceptional cases
+                        X = (/ overtopping%Qo, dischargeProfile(i) /)
+                        Y = (/ nextDikeHeight, ZProfile(i) /)
+                    endif
+                    dikeHeight = LogLinearInterpolate(X, Y, givenDischarge, ierr, errorText)
+                    overtopping%Qo = givenDischarge
+                    success = ierr == 0
+                    foundValue = .true.
+                else
+                    minDikeHeight = ZProfile(i)
+                    dis1 = dischargeProfile(i)
+                endif
+            endif
+        enddo
+    else if (iUp == iLow + 1 ) then
+        minDikeHeight = ZProfile(iLow)
+        dis1 = dischargeProfile(iLow)
+        maxDikeHeight = ZProfile(iUp)
+        dis2 = dischargeProfile(iUp)
+    else if (iLow == nPoints + 1 ) then
+        minDikeHeight = load%h
+        call calculateQoRTO(minDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
+        if (.not. success) return ! only in very exceptional cases
+        dis1 = overtopping%Qo
+        if (dis1 < givenDischarge) then
+            dikeHeight = minDikeHeight
+            foundValue = .true.
+            return
+        endif
+        if (iUp /= 0) then
+            maxDikeHeight = ZProfile(iUp)
+            dis2 = dischargeProfile(iUp)
+        else
+            maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
+            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
+            if (.not. success) return ! only in very exceptional cases
+            dis2 = overtopping%Qo
+        endif
+    else
+        minDikeHeight = ZProfile(iLow)
+        dis1 = dischargeProfile(iLow)
+        maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
+        do
+            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
+            dis2 = overtopping%Qo
+            
+            if (.not. success) return ! only in very exceptional cases
+            
+            if (abs(dis2 - givenDischarge ) < givenDischarge * tolDischarge) then
+                dikeHeight = maxDikeHeight
+                foundValue = .true.
+                exit
+            else if (dis2 > givenDischarge) then
+                X = (/ dis1 , dis2 /)
+                Y = (/ minDikeHeight , maxDikeHeight /)
+                minDikeHeight = maxDikeHeight
+                dis1 = dis2
+                maxDikeHeight = LogLinearInterpolate(X , Y , givenDischarge, ierr, errorText)
+                success = (ierr == 0)
+            else
+                exit
+            endif
+        enddo
+    endif
+
+end subroutine checkIfOnBerm
 
 end module omkeerVariantModule
