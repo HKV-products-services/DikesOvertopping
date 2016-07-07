@@ -89,6 +89,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     real(kind=wp)                              :: maxDikeHeight         ! upper bound dike heigth
     real(kind=wp)                              :: nextDikeHeight        ! dike heigth for next calculation
     integer                                    :: i                     ! loop counter
+    integer                                    :: j                     ! loop counter
     integer, parameter                         :: maxIt = 5             ! maximum number of iterations
     real(kind=wp), parameter                   :: tolDischarge = 1d-3   ! relative tolerance
     real(kind=wp), parameter                   :: tolDikeHeight = 1d-3  ! absolute tolerance in m
@@ -133,7 +134,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
             isValidZ(i) = isValidZ(i) .and. .not. isBerm(i-1)
         endif
         if (isValidZ(i)) then
-            do
+            do j = 1, 20
                 call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
                 if (.not. success) return ! only in very exceptional cases
                 ZProfile(i) = nextDikeHeight

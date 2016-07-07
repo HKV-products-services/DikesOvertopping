@@ -42,6 +42,9 @@ subroutine allOmkeerVariantTests
     call testWithLevel(omkeerVariantIssue34A,                                 "omkeerVariantTest: 1st test related to issue 34", 1)
     call testWithLevel(omkeerVariantIssue34B,                                 "omkeerVariantTest: 2nd test related to issue 34", 1)
     call testWithLevel(omkeerVariantIssue34C,                                 "omkeerVariantTest: 3rd test related to issue 34", 1)
+    call testWithLevel(omkeerVariantIssue35A,                                 "omkeerVariantTest: 1st test related to issue 35", 1)
+    call testWithLevel(omkeerVariantIssue35B,                                 "omkeerVariantTest: 2nd test related to issue 35", 1)
+    call testWithLevel(omkeerVariantIssue35C,                                 "omkeerVariantTest: 3rd test related to issue 35", 1)
 end subroutine allOmkeerVariantTests
 
 !> inverse of overtoppingDllTest test:
@@ -661,5 +664,99 @@ subroutine omkeerVariantIssue34C
 
 end subroutine omkeerVariantIssue34C
 
+!> test for issue Overs-35: no waves
+!! @ingroup DikeOvertoppingTests
+subroutine omkeerVariantIssue35A
+    type (tpLoad)                  :: load              !< structure with load data
+
+    !
+    ! initializations
+    !
+    load%h        =  0.50_wp
+    load%phi      = 110.00_wp
+    load%Hm0      =  0.16_wp
+    load%Tm_10    =  1.20_wp
+
+    call omkeerVariantIssue35(load, 0.0_wp)
+
+end subroutine omkeerVariantIssue35A
+
+!> test for issue Overs-35: no waves
+!! @ingroup DikeOvertoppingTests
+subroutine omkeerVariantIssue35B
+    type (tpLoad)                  :: load              !< structure with load data
+
+    !
+    ! initializations
+    !
+    load%h        =  0.50_wp
+    load%phi      = 90.00_wp
+    load%Hm0      =  0.0_wp
+    load%Tm_10    =  1.20_wp
+
+    call omkeerVariantIssue35(load, 90.0_wp)
+
+end subroutine omkeerVariantIssue35B
+
+!> test for issue Overs-35: no waves
+!! @ingroup DikeOvertoppingTests
+subroutine omkeerVariantIssue35C
+    type (tpLoad)                  :: load              !< structure with load data
+
+    !
+    ! initializations
+    !
+    load%h        =  0.50_wp
+    load%phi      = 90.00_wp
+    load%Hm0      =  0.0_wp
+    load%Tm_10    =  1.20_wp
+
+    call omkeerVariantIssue35(load, 90.0_wp)
+
+end subroutine omkeerVariantIssue35C
+
+!> test for issue Overs-35: no waves
+!! @ingroup DikeOvertoppingTests
+subroutine omkeerVariantIssue35(load, normal)
+    type (tpLoad), intent(in)      :: load              !< structure with load data
+    real(kind=wp), intent(in)      :: normal
+
+    integer                        :: i
+    logical                        :: succes
+    integer, parameter             :: npoints = 2
+    type (tpOvertopping)           :: overtopping
+    character(len=128)             :: errorMessage      !< error message
+    type(OvertoppingGeometryTypeF) :: geometryF
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    type(tLogging)                 :: logging
+    real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
+
+    !
+    ! initializations
+    !
+    call init_modelfactors_and_load(modelFactors)
+
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    do i = 1, npoints
+        geometryF%xcoords(i)   = 18.6_wp * real(i-1,wp)
+        geometryF%ycoords(i)   = geometryF%xcoords(i) / 3.0_wp
+        if (i < npoints) geometryF%roughness(i) = 1.0_wp
+    enddo
+    geometryF%normal = normal ! degrees
+    geometryF%npoints = npoints
+    !
+    ! test actual computations in iterateToGivenDischarge; no waves
+    !
+    givenDischarge = 1D-3
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(dikeHeight, load%h, 1d-4, 'dikeHeight from omkeer variant')
+    call assert_comparable(overtopping%z2, 0.0_wp, 0.0001_wp, 'z2 from omkeer variant')
+
+    ! clean up
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
+end subroutine omkeerVariantIssue35
 
 end module omkeerVariantTests
