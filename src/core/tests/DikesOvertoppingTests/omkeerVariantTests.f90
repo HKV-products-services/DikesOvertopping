@@ -45,6 +45,8 @@ subroutine allOmkeerVariantTests
     call testWithLevel(omkeerVariantIssue35A,                                 "omkeerVariantTest: 1st test related to issue 35", 1)
     call testWithLevel(omkeerVariantIssue35B,                                 "omkeerVariantTest: 2nd test related to issue 35", 1)
     call testWithLevel(omkeerVariantIssue35C,                                 "omkeerVariantTest: 3rd test related to issue 35", 1)
+    call testWithLevel(omkeerVariantIssue36A,                                 "omkeerVariantTest: 1st test related to issue 36: wl at toe; 1:4; long dike", 1)
+    call testWithLevel(omkeerVariantIssue36B,                                 "omkeerVariantTest: 2nd test related to issue 36: wl at toe; 1:4; short dike", 1)
 end subroutine allOmkeerVariantTests
 
 !> inverse of overtoppingDllTest test:
@@ -758,5 +760,97 @@ subroutine omkeerVariantIssue35(load, normal)
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine omkeerVariantIssue35
+
+!> test for issue Overs-36: ...
+!! @ingroup DikeOvertoppingTests
+subroutine omkeerVariantIssue36A
+    type (tpLoad)                  :: load              !< structure with load data
+    logical                        :: succes
+    integer, parameter             :: npoints = 2
+    type (tpOvertopping)           :: overtopping
+    character(len=128)             :: errorMessage      !< error message
+    type(OvertoppingGeometryTypeF) :: geometryF
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    type(tLogging)                 :: logging
+    real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
+
+    !
+    ! initializations
+    !
+    call init_modelfactors_and_load(modelFactors)
+
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    !Teen op (0; 8)
+    !Kruin op (368; 100)
+    geometryF%xcoords      = [0.0_wp, 368.0_wp]
+    geometryF%ycoords      = [8.0_wp, 100.0_wp]
+    geometryF%roughness(1) = 1.0_wp
+    geometryF%normal = 130.0_wp ! degrees
+    geometryF%npoints = npoints
+    !
+    load%h        =  8.55_wp
+    load%phi      = 45.00_wp
+    load%Hm0      =  1.0_wp
+    load%Tm_10    =  3.50_wp
+    !
+    ! test actual computations in iterateToGivenDischarge; ...
+    !
+    givenDischarge = 5d-3
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(dikeHeight, 8.97_wp, 0.01_wp, 'dikeHeight from omkeer variant')
+    call assert_comparable(overtopping%z2, 0.92_wp, 0.01_wp, 'z2 from omkeer variant')
+
+    ! clean up
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
+end subroutine omkeerVariantIssue36A
+
+!> test for issue Overs-36: ...
+!! @ingroup DikeOvertoppingTests
+subroutine omkeerVariantIssue36B
+    type (tpLoad)                  :: load              !< structure with load data
+    logical                        :: succes
+    integer, parameter             :: npoints = 2
+    type (tpOvertopping)           :: overtopping
+    character(len=128)             :: errorMessage      !< error message
+    type(OvertoppingGeometryTypeF) :: geometryF
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    type(tLogging)                 :: logging
+    real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
+
+    !
+    ! initializations
+    !
+    call init_modelfactors_and_load(modelFactors)
+
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    !Teen op (0; 8)
+    !Kruin op (368; 100)
+    geometryF%xcoords      = [0.0_wp, 2.0_wp]
+    geometryF%ycoords      = [8.0_wp, 8.5_wp]
+    geometryF%roughness(1) = 1.0_wp
+    geometryF%normal = 130.0_wp ! degrees
+    geometryF%npoints = npoints
+    !
+    load%h        =  8.55_wp
+    load%phi      = 45.00_wp
+    load%Hm0      =  1.0_wp
+    load%Tm_10    =  3.50_wp
+    !
+    ! test actual computations in iterateToGivenDischarge; ...
+    !
+    givenDischarge = 5d-3
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(dikeHeight, 8.97_wp, 0.01_wp, 'dikeHeight from omkeer variant')
+    call assert_comparable(overtopping%z2, 0.92_wp, 0.01_wp, 'z2 from omkeer variant')
+
+    ! clean up
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
+end subroutine omkeerVariantIssue36B
 
 end module omkeerVariantTests
