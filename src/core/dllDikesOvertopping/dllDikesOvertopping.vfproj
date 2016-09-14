@@ -8,20 +8,20 @@
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
-				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFCustomBuildTool" CommandLine="copy ..\..\licenses\LicenseAGPL.txt ..\bin\$(ConfigurationName)\LicenseAGPL.txt" Outputs="..\bin\$(ConfigurationName)\LicenseAGPL.txt"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool" CommandLine="&quot;$(ProjectDir)..\..\..\extern\utils\svn_insert_version.cmd&quot; &quot;$(ProjectDir)&quot; &quot;dll_overtopping_version_number.rc.svn&quot; &quot;dll_overtopping_version_number.rc&quot;"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="if exist ..\..\..\..\lib\OvertoppingPco copy $(SolutionDir)\bin\$(ProjectName).??? ..\..\..\..\lib\OvertoppingPco\ " Description="copying to lib\OvertoppingPco"/>
+				<Tool Name="VFPostBuildEventTool"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|Win32" OutputDirectory="..\bin\$(ConfigurationName)" IntermediateDirectory="..\bin\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" OmitFramePointers="false" LocalVariableStorage="localStorageAutomatic" Traceback="true"/>
 				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" SubSystem="subSystemWindows" LinkDLL="true"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
-				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFCustomBuildTool" CommandLine="copy ..\..\licenses\LicenseAGPL.txt ..\bin\$(ConfigurationName)\LicenseAGPL.txt" Outputs="..\bin\$(ConfigurationName)\LicenseAGPL.txt"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool" CommandLine="&quot;$(ProjectDir)..\..\..\extern\utils\svn_insert_version.cmd&quot; &quot;$(ProjectDir)&quot; &quot;dll_overtopping_version_number.rc.svn&quot; &quot;dll_overtopping_version_number.rc&quot;"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="if exist ..\..\..\..\lib\OvertoppingPco copy $(SolutionDir)\bin\$(ProjectName).??? ..\..\..\..\lib\OvertoppingPco\ " Description="copying to lib\OvertoppingPco"/>
+				<Tool Name="VFPostBuildEventTool"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
 	<Files>
 		<Filter Name="Header Files" Filter="fi;fd"/>

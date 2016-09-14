@@ -30,6 +30,7 @@ extern/Utils/svn_insert_version.cmd -text
 release/dllDikesOvertopping.dll -text
 src/core/teamcity.bat -text
 src/core/tests/unitTests/runtests.bat -text
+src/licenses/LicenseAGPL.txt -text
 src/wrappers/TestRunner/App.config -text
 src/wrappers/TestRunner/Properties/AssemblyInfo.cs -text
 src/wrappers/TestRunner/TestRunner.csproj -text
