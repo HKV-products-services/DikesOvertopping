@@ -297,6 +297,7 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
                         X = (/ overtopping%Qo, dischargeProfile(i) /)
                         Y = (/ nextDikeHeight, ZProfile(i) /)
                     endif
+                    X = max(X, tiny(X))
                     dikeHeight = LogLinearInterpolate(X, Y, givenDischarge, ierr, errorText)
                     overtopping%Qo = givenDischarge
                     success = ierr == 0
