@@ -27,7 +27,9 @@ doc/doxygen/DikesOvertoppingFortran.doxyfile -text
 doc/doxygen/DoxygenLayout.xml -text
 doc/doxygen/RunDoxygen.bat -text
 extern/Utils/svn_insert_version.cmd -text
+release/LicenseAGPL.txt -text
 release/dllDikesOvertopping.dll -text
+release/dllDikesOvertopping.lib -text
 src/core/teamcity.bat -text
 src/core/tests/unitTests/runtests.bat -text
 src/licenses/LicenseAGPL.txt -text
