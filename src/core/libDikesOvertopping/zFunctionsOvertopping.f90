@@ -155,7 +155,8 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
     ! the minimal distance between two x-coordinates of the cross section is xDiff_min 
     ! compute the height of the cross section on the point xDiff_min meters after the toe
 
-    auxiliaryHeightToe = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate + xDiff_min)
+    auxiliaryHeightToe = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate + xDiff_min, ierr, errorMessage)
+    if (ierr /= 0) return
 
     ! First the situation where the new dike height is close to the dike toe
     if (dikeHeight <= auxiliaryHeightToe) then
@@ -166,9 +167,11 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
             succes = .false.
         else
             zCoordsAdjusted(2) = dikeHeight
-            xCoordsAdjusted(2) = interpolateLine(coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, dikeHeight)
+            xCoordsAdjusted(2) = interpolateLine(coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, dikeHeight, ierr, errorMessage)
+            if (ierr /= 0) return
             xCoordsAdjusted(1) = xCoordsAdjusted(2) - xDiff_min
-            zCoordsAdjusted(1) = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, xCoordsAdjusted(1))
+            zCoordsAdjusted(1) = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, xCoordsAdjusted(1), ierr, errorMessage)
+            if (ierr /= 0) return
         endif
     else
         nrCoordsAdjusted = nrCoordinates
@@ -177,13 +180,15 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
             if (slope < slope_min .and. i < nrCoordinates - 1) then
                 !
                 ! the next segment of the cross section is a berm segment
-                auxiliaryHeightBerm = interpolateLine(coordinates(i+1)%xCoordinate, coordinates(i+2)%xCoordinate, coordinates(i+1)%zCoordinate, coordinates(i+2)%zCoordinate, coordinates(i+1)%xCoordinate + xDiff_min)
+                auxiliaryHeightBerm = interpolateLine(coordinates(i+1)%xCoordinate, coordinates(i+2)%xCoordinate, coordinates(i+1)%zCoordinate, coordinates(i+2)%zCoordinate, coordinates(i+1)%xCoordinate + xDiff_min, ierr, errorMessage)
+                if (ierr /= 0) return
                 if (dikeHeight < auxiliaryHeightBerm) then 
                     nrCoordsAdjusted = i
                     exit
                 endif
             else
-                auxiliaryHeight = interpolateLine(coordinates(i-1)%xCoordinate, coordinates(i)%xCoordinate, coordinates(i-1)%zCoordinate, coordinates(i)%zCoordinate, coordinates(i-1)%xCoordinate + xDiff_min)
+                auxiliaryHeight = interpolateLine(coordinates(i-1)%xCoordinate, coordinates(i)%xCoordinate, coordinates(i-1)%zCoordinate, coordinates(i)%zCoordinate, coordinates(i-1)%xCoordinate + xDiff_min, ierr, errorMessage)
+                if (ierr /= 0) return
                 if (dikeHeight < auxiliaryHeight) then
                     nrCoordsAdjusted = i - 1
                     exit
@@ -215,7 +220,8 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
             ! last segment of the profile
             zCoordsAdjusted(nrCoordsAdjusted) = dikeHeight
             xCoordsAdjusted(nrCoordsAdjusted) = interpolateLine(coordinates(nrCoordsAdjusted-1)%zCoordinate, coordinates(nrCoordsAdjusted)%zCoordinate, &
-                coordinates(nrCoordsAdjusted-1)%xCoordinate, coordinates(nrCoordsAdjusted)%xCoordinate, dikeHeight)
+                coordinates(nrCoordsAdjusted-1)%xCoordinate, coordinates(nrCoordsAdjusted)%xCoordinate, dikeHeight, ierr, errorMessage)
+            if (ierr /= 0) return
 
             if (xCoordsAdjusted(nrCoordsAdjusted) < xCoordsAdjusted(nrCoordsAdjusted-1)) then
                 succes = .false.

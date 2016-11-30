@@ -44,14 +44,14 @@ BEGIN
             VALUE "Comments", "-"
             VALUE "CompanyName", "Deltares"
             VALUE "FileDescription", "VTV Dikes Overtopping"
-            VALUE "FileVersion", "16.1.1.SVNREV"
+            VALUE "FileVersion", "16.2.1.SVNREV"
             VALUE "InternalName", "DikesOvertopping"
             VALUE "LegalCopyright", "Copyright (c) 2014-2016"
             VALUE "LegalTrademarks", "Copyright Deltares"
             VALUE "OriginalFilename", "dllOvertopping.dll"
             VALUE "PrivateBuild", "-"
             VALUE "ProductName", "VTV Dikes Overtopping"
-            VALUE "ProductVersion", "16.1.1.SVNREV"
+            VALUE "ProductVersion", "16.2.1.SVNREV"
             VALUE "SpecialBuild", "-"
         END
     END
