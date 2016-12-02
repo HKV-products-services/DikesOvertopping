@@ -204,6 +204,8 @@
    real(kind=wp), parameter   :: one = 1.0_wp    !< constant in comparision with breaker parameters
    real(kind=wp), parameter   :: ten = 10.0_wp   !< constant in comparision with breaker parameters
    integer                    :: ierr            !< error code of allocate
+   real(kind=wp)              :: dy1             !< delta y in calculation yLower
+   real(kind=wp)              :: dy2             !< delta y in calculation yUpper
 
 ! ==========================================================================================================
 
@@ -233,8 +235,10 @@
 
    if (succes) then
       ! determine y-coordinates lower and upper bound segments with influence
-      yLower = max(h-0.25d0*z2, geometry%yCoordinates(1))
-      yUpper = min(h+0.50d0*z2, geometry%yCoordinates(geometry%nCoordinates))
+      dy1 = max(1d-5, 0.25d0*z2)
+      dy2 = max(1d-5, 0.50d0*z2)
+      yLower = max(h-dy1, geometry%yCoordinates(1))
+      yUpper = min(h+dy2, geometry%yCoordinates(geometry%nCoordinates))
 
       ! --------------------------------------------------
       ! determine roughness factors and horizontal lengths
@@ -272,10 +276,11 @@
           call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, succes, errorMessage)
           if (succes) then
               sum_horzLengths = sum(horzLengths)
-              succes = (sum_horzLengths > 0.0d0)
-          endif
-          if (succes) then
-              gammaF = dot_product (horzLengths, rFactors) / sum_horzLengths
+              if (sum_horzLengths > 0.0d0) then
+                  gammaF = dot_product (horzLengths, rFactors) / sum_horzLengths
+              else
+                  gammaF = rFactors(iLower)
+              endif
           endif
       endif
 

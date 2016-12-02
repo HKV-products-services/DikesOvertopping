@@ -61,8 +61,10 @@ subroutine allOvertoppingDllTests
     call testWithLevel(overtoppingZ2Test, 'Test h+z2 > dikeheight', 1)
     call testWithLevel(LoadNaNTest, 'Test error handling in case of NaN in load', 1)
     call testWithLevel(TestProfileAdjustment, "Test whether the profile is adapted correctly", 1)
+    call testWithLevel(TestRoughnessIssue44A, "First test for calculateGammaF related to issue 44", 1)
+    call testWithLevel(TestRoughnessIssue44B, "Second test for calculateGammaF related to issue 44", 1)
 end subroutine allOvertoppingDllTests
-    
+
 !> Test the functions in DikesOvertopping.dll.
 !!     these functions are:
 !!     - calcZValue
@@ -654,5 +656,82 @@ subroutine TestProfileAdjustment
     deallocate(zCoordsAdjusted)
 
 end subroutine TestProfileAdjustment
+
+!> basic test related to issue 44 (this situation went wrong)
+!! @ingroup DikeOvertoppingTests
+subroutine TestRoughnessIssue44A
+!
+!   Local parameters
+!
+    use dllOvertopping
+    integer                        :: npoints        ! number of coordinates
+    logical                        :: succes         ! flag for succes
+    character(len=255)             :: errorMessage   ! error message
+    real(kind=wp)                  :: dikeHeight     ! vector with x-coordinates of the adjusted profile
+    type (tpLoad)                  :: load           !< structure with load data
+    type(OvertoppingGeometryTypeF) :: geometryF
+    type(tpOvertoppingInput)       :: modelFactors
+    type(tLogging)                 :: logging        !< logging struct
+    type (tpOvertopping)           :: overtopping    !< structure with overtopping results
+
+    npoints = 4
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    geometryF%npoints = npoints
+    geometryF%roughness = 1.0_wp
+    geometryF%xcoords = [ -1.73_wp, 33.82_wp, 38.16_wp, 47.34_wp ]
+    geometryF%ycoords = [ -2.89_wp, 6.03_wp, 6.31_wp, 8.64_wp ]
+    
+    load%h     =     1.61308120110_wp
+    load%Hm0   =     0.204602978227d-06
+    load%Tm_10 =     0.109818132516d-10
+    load%phi   =    60.0000225877_wp
+    dikeHeight =     7.10654257734_wp
+
+    call init_modelfactors_and_load(modelFactors)
+    modelFactors%fshallow = 0.6778_wp
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(overtopping%Qo, 0.0_wp, 1d-15, "expect Q0 = 0")
+
+end subroutine TestRoughnessIssue44A
+
+!> 2nd test related to issue 44
+!! (more complex profile; manual check in debugger that right roughness is used)
+!! @ingroup DikeOvertoppingTests
+subroutine TestRoughnessIssue44B
+!
+!   Local parameters
+!
+    use dllOvertopping
+    integer                        :: npoints        ! number of coordinates
+    logical                        :: succes         ! flag for succes
+    character(len=255)             :: errorMessage   ! error message
+    real(kind=wp)                  :: dikeHeight     ! vector with x-coordinates of the adjusted profile
+    type (tpLoad)                  :: load           !< structure with load data
+    type(OvertoppingGeometryTypeF) :: geometryF
+    type(tpOvertoppingInput)       :: modelFactors
+    type(tLogging)                 :: logging        !< logging struct
+    type (tpOvertopping)           :: overtopping    !< structure with overtopping results
+
+    npoints = 5
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    geometryF%npoints = npoints
+    geometryF%roughness = [1.0_wp, 0.9_wp, 0.8_wp, 0.7_wp]
+    geometryF%xcoords = [ -5.0_wp, -1.73_wp, 33.82_wp, 38.16_wp, 47.34_wp ]
+    geometryF%ycoords = [ -4.0_wp, -2.89_wp, 6.03_wp, 6.31_wp, 8.64_wp ]
+
+    load%h     =     1.61308120110_wp
+    load%Hm0   =     0.204602978227d-06
+    load%Tm_10 =     0.109818132516d-10
+    load%phi   =    60.0000225877_wp
+    dikeHeight =     7.10654257734_wp
+
+    call init_modelfactors_and_load(modelFactors)
+    modelFactors%fshallow = 0.6778_wp
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(overtopping%Qo, 0.0_wp, 1d-15, "expect Q0 = 0")
+
+end subroutine TestRoughnessIssue44B
 
 end module dllTests

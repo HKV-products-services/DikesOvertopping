@@ -330,7 +330,7 @@ subroutine versionNumber(version)
     !
     ! locals
     !
-    character(len=*), parameter :: cversion = "16.2.1.4406"
+    character(len=*), parameter :: cversion = "16.2.2.4443"
     !
     !==============================================================================
     !
