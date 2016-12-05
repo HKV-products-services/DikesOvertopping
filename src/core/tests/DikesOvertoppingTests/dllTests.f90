@@ -693,6 +693,8 @@ subroutine TestRoughnessIssue44A
     call assert_true(succes, errorMessage)
     call assert_comparable(overtopping%Qo, 0.0_wp, 1d-15, "expect Q0 = 0")
 
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
 end subroutine TestRoughnessIssue44A
 
 !> 2nd test related to issue 44
@@ -731,6 +733,8 @@ subroutine TestRoughnessIssue44B
     call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
     call assert_true(succes, errorMessage)
     call assert_comparable(overtopping%Qo, 0.0_wp, 1d-15, "expect Q0 = 0")
+
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine TestRoughnessIssue44B
 

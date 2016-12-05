@@ -216,11 +216,13 @@
    ! local water level not lower than dike toe (first y-coordinate)
    if (h < geometry%yCoordinates(1)) then
       succes = .false.
+      call GetMSG_calculateGammaFtoLow(errorMessage)
    endif
 
    ! local water level not higher than crest level (last y-coordinate)
    if (h > geometry%yCoordinates(geometry%nCoordinates)) then
       succes = .false.
+      call GetMSG_calculateGammaFtoHigh(errorMessage)
    endif
 
    if (succes) then
@@ -301,7 +303,7 @@
    ! determine possible error message
    if (.not. succes) then
        if (errorMessage == ' ') then
-           errorMessage = GetOvertoppingMessage(calc_influence_roughness)
+           call GetMSG_calc_influence_roughness(errorMessage)
        endif
    endif
 

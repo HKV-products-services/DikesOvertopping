@@ -54,7 +54,6 @@ enum, bind(c)
     enumerator :: calc_horizontal_distance
     enumerator :: remove_dike_segments_index
     enumerator :: calc_representative_slope_angle
-    enumerator :: calc_influence_roughness
     enumerator :: calc_influence_berms
     enumerator :: calc_influence_factors
     enumerator :: calc_wave_overtopping_discharge
@@ -157,8 +156,6 @@ select case(language)
                 GetOvertoppingMessage = 'Error removing dike segments: incorrect index'
             case (calc_representative_slope_angle)
                 GetOvertoppingMessage = 'Error in calculation representative slope angle'
-            case (calc_influence_roughness)
-                GetOvertoppingMessage = 'Error in calculation influence roughness'
             case (calc_influence_berms)
                 GetOvertoppingMessage = 'Error in calculation influence berms'
             case (calc_influence_factors)
@@ -226,8 +223,6 @@ select case(language)
                 GetOvertoppingMessage = 'Fout bij verwijderen dijk secties: foute index'
             case (calc_representative_slope_angle)
                 GetOvertoppingMessage = 'Fout in berekening representatieve hellingshoek'
-            case (calc_influence_roughness)
-                GetOvertoppingMessage = 'Fout in berekening invloed ruwheid'
             case (calc_influence_berms)
                 GetOvertoppingMessage = 'Fout in berekening invloed bermen'
             case (calc_influence_factors)
@@ -371,5 +366,34 @@ select case(language)
         end select
  end select
 end function GetOvertoppingParameter
+
+! new implementation: one subroutine for each message (avoids internal error)
+
+subroutine GetMSG_calculateGammaFtoLow(message)
+character(len=*), intent(out) :: message
+if (language == 'UK') then
+    message = 'calculateGammaF: local water level lower than dike toe'
+else
+    message = 'calculateGammaF: waterstand lager dan teen'
+endif
+end subroutine GetMSG_calculateGammaFtoLow
+
+subroutine GetMSG_calculateGammaFtoHigh(message)
+character(len=*), intent(out) :: message
+if (language == 'UK') then
+    message = 'calculateGammaF: local water level higher than crest level'
+else
+    message = 'calculateGammaF: waterstand hoger dan kruin'
+endif
+end subroutine GetMSG_calculateGammaFtoHigh
+
+subroutine GetMSG_calc_influence_roughness(message)
+character(len=*), intent(out) :: message
+if (language == 'UK') then
+    message = 'Error in calculation influence roughness'
+else
+    message = 'Fout in berekening invloed ruwheid'
+endif
+end subroutine GetMSG_calc_influence_roughness
 
 end module OvertoppingMessages

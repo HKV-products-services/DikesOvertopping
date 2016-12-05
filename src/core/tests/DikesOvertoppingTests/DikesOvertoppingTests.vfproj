@@ -32,6 +32,7 @@
 		<File RelativePath=".\loadTests.f90"/>
 		<File RelativePath=".\omkeerVariantTests.f90"/>
 		<File RelativePath=".\overtoppingTests.f90"/>
+		<File RelativePath=".\overtoppingUnitTests.f90"/>
 		<File RelativePath=".\readCrossSectionForTests.f90"/>
 		<File RelativePath=".\roughnessTests.f90"/>
 		<File RelativePath=".\testHelper.f90"/></Filter></Files>

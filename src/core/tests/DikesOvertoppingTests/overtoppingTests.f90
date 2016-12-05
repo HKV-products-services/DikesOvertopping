@@ -36,6 +36,7 @@ module overtoppingTests
     use crossSectionRoughnessTests
     use dllTests
     use omkeerVariantTests
+    use overtoppingUnitTests
 
     implicit none
     private
@@ -70,6 +71,10 @@ subroutine allovertoppingTests
     !
     ! All test series with adapting the roughness of one or more segments of the cross sections
     call allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
+
+    !
+    ! All tests for some specific low level kernel functions
+    call allOvertoppingUnitTests
 
 end subroutine allovertoppingTests
 
