@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Deltares")]
 [assembly: AssemblyProduct("TestWrapper")]
-[assembly: AssemblyCopyright("Copyright © Deltares 2015")]
+[assembly: AssemblyCopyright("Copyright © Deltares 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Deltares")]
 [assembly: AssemblyProduct("TestRunner")]
-[assembly: AssemblyCopyright("Copyright © Deltares 2016")]
+[assembly: AssemblyCopyright("Copyright © Deltares 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
