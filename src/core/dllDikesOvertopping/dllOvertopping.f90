@@ -54,6 +54,8 @@ module dllOvertopping
     public :: calculateQo, calculateQoF, calcZValue, versionNumber, ValidateInputC, ValidateInputF, &
               omkeerVariantF, setLanguage, getLanguage
 
+    character, parameter :: separationChar = char(9)      !< use horizontal tab for separation
+
 contains
 
 !>
@@ -142,7 +144,7 @@ end subroutine calcZValue
 
 !>
 !! Subroutine that validates the geometry
-!! Wrapper for ValidateInputFold: convert C-like input structures to Fortran input structures
+!! Wrapper for ValidateInputF: convert C-like input structures to Fortran input structures
 !!
 !! @ingroup dllDikesOvertopping
 subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, errorText)
@@ -162,7 +164,6 @@ subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, erro
     integer                                   :: i
     integer                                   :: nMessages
     character(len=8)                          :: msgtype
-    character, parameter                      :: separationChar = char(9)      !< use horizontal tab for separation
 
     geometry = geometry_c_f(geometryInput)
 
@@ -191,6 +192,83 @@ subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, erro
     endif
 
 end subroutine ValidateInputC
+
+!>
+!! Subroutine that validates the geometry
+!! Wrapper for ValidateInputF: convert basic types to Fortran input structures
+!!
+!! @ingroup dllDikesOvertopping
+subroutine ValidateInputJ(x, y, roughness, normal, nPoints, dikeHeight, modelFactorsArray, success, errorText)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputJ" :: ValidateInputJ
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
+    use errorMessages
+    use OvertoppingMessages
+    integer, intent(in)                       :: nPoints                       !< number of profile points
+    real(kind=wp), intent(in)                 :: x(nPoints)                    !< x coordinates of profile
+    real(kind=wp), intent(in)                 :: y(nPoints)                    !< y coordinates of profile
+    real(kind=wp), intent(in)                 :: roughness(nPoints-1)          !< roughness of profile sections
+    real(kind=wp), intent(in)                 :: normal                        !< dike normal
+    real(kind=wp), intent(in)                 :: dikeHeight                    !< dike height
+    real(kind=wp), intent(in)                 :: modelFactorsArray(8)          !< array with modelfactors
+    logical, intent(out)                      :: success                       !< flag for success
+    character(len=256), intent(out)           :: errorText                     !< error message (only set if not successful)
+
+    type(tpOvertoppingInput)                  :: modelFactors                  !< struct with modelfactors
+    type(OvertoppingGeometryTypeF)            :: geometry                      !< fortran struct with geometry and roughness
+    type(TErrorMessages)                      :: errorStruct
+    integer                                   :: i
+    integer                                   :: ierr
+    integer                                   :: nMessages
+    character(len=8)                          :: msgtype
+
+    allocate(geometry%xCoords(nPoints), geometry%yCoords(nPoints), geometry%roughness(nPoints-1), stat=ierr)
+    if (ierr /= 0) then
+        write(errorText,*) 'memory allocation error in ValidateInputJ with size: ', nPoints
+        success = .false.
+    else
+        geometry%nPoints = nPoints
+        geometry%xCoords = x
+        geometry%yCoords = y
+        geometry%roughness = roughness
+        geometry%normal = normal
+
+        modelFactors%factorDeterminationQ_b_f_n = modelFactorsArray(1)
+        modelFactors%factorDeterminationQ_b_f_b = modelFactorsArray(2)
+        modelFactors%m_z2                       = modelFactorsArray(3)
+        modelFactors%fshallow                   = modelFactorsArray(4)
+        modelFactors%ComputedOvertopping        = modelFactorsArray(5)
+        modelFactors%CriticalOvertopping        = modelFactorsArray(6)
+        modelFactors%relaxationFactor           = modelFactorsArray(7)
+        modelFactors%reductionFactorForeshore   = modelFactorsArray(8)
+
+        call initErrorMessages(errorStruct)
+
+        call ValidateInputF(geometry, dikeHeight, modelFactors, errorStruct)
+
+        nMessages = errorStruct%nErrors + errorStruct%nWarnings
+        success = nMessages == 0
+        if (success) then
+            errorText = ' '
+        else
+            do i = 1, nMessages
+                if (errorStruct%messages(i)%severity == severityError) then
+                    msgtype = GetOvertoppingMessage(errorIndicator)
+                else
+                    msgtype = GetOvertoppingMessage(warningIndicator)
+                endif
+
+                if (i == 1) then
+                    errorText = trim(msgtype) // ':' // errorStruct%messages(i)%message
+                else
+                    errorText = trim(errorText) // separationChar // trim(msgtype) // ':' // errorStruct%messages(i)%message
+                endif
+            enddo
+        endif
+        deallocate(geometry%xCoords, geometry%yCoords, geometry%roughness)
+    endif
+
+end subroutine ValidateInputJ
 
 !>
 !! Subroutine that validates the geometry

@@ -56,6 +56,7 @@ subroutine allOvertoppingDllTests
     call testWithLevel(influenceRoughnessTest, 'Test influence roughness', 1)
     call testWithLevel(overtoppingValidationTest, 'Test validation of incorrect profile and negative model factor', 1)
     call testWithLevel(overtoppingValidationRoughnessTest, 'Test validation of invalid roughness', 1)
+    call testWithLevel(overtoppingValidationFewsTest, 'Test validation for Fews (Java)', 1)
     call testWithLevel(overtoppingMultipleValidationTest, 'Test validation of incorrect profile and negative model factor in one call', 1)
     call testWithLevel(overtoppingValidationTestZPoints, 'Test message of incorrect profile (z-value)', 1)
     call testWithLevel(overtoppingZ2Test, 'Test h+z2 > dikeheight', 1)
@@ -372,14 +373,7 @@ subroutine LoadNaNTest
 
 end subroutine LoadNaNTest
 
-!> Test the functions in dllOvertopping.dll.
-!!     these functions are:
-!!     - calcZValue
-!!     - calculateQoF
-!!     - versionNumber
-!!
-!!     - test overflow (waterlevel > dike height)
-!!     - test with and without waves
+!> Test the validation functions in dllOvertopping.dll.
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingValidationTest
@@ -443,6 +437,85 @@ subroutine overtoppingValidationTest
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine overtoppingValidationTest
+
+!> Test the validation functions for FEWS in dllOvertopping.dll.
+!!
+!! @ingroup DikeOvertoppingTests
+subroutine overtoppingValidationFewsTest
+    integer                        :: p
+    external                       :: ValidateInputJ, SetLanguage
+    integer, parameter             :: npoints = 5
+    real(kind=wp)                  :: xcoords(nPoints)
+    real(kind=wp)                  :: ycoords(nPoints)
+    real(kind=wp)                  :: roughness(nPoints-1)
+    real(kind=wp)                  :: normal
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    real(kind=wp)                  :: modelFactorsArray(8)
+    real(kind=wp)                  :: criticalOvertoppingRate
+    integer                        :: loc
+    logical                        :: success
+    character(len=256)             :: errorMsg
+
+    pointer            (qvalidate, ValidateInputJ)
+    pointer            (qsl, SetLanguage)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qvalidate = getprocaddress (p, "ValidateInputJ"C)
+    qsl = getprocaddress (p, "SetLanguage"C)
+    !
+    ! initializations
+    !
+    dikeHeight  = 9.1_wp
+    call init_modelfactors_and_load(modelFactors)
+    criticalOvertoppingRate        = 1.0d-3
+
+    modelFactorsArray(1) = modelFactors%factorDeterminationQ_b_f_n
+    modelFactorsArray(2) = modelFactors%factorDeterminationQ_b_f_b
+    modelFactorsArray(3) = modelFactors%m_z2
+    modelFactorsArray(4) = modelFactors%fshallow
+    modelFactorsArray(5) = modelFactors%ComputedOvertopping
+    modelFactorsArray(6) = modelFactors%CriticalOvertopping
+    modelFactorsArray(7) = modelFactors%relaxationFactor
+    modelFactorsArray(8) = modelFactors%reductionFactorForeshore
+
+    xcoords = [ 0, 10, 20, 30, 40 ]
+    ycoords = [-5, 0, -1, 4, 0]
+    roughness = [ 0.5, 0.5, 0.5, 0.5 ]
+
+    normal = 60.0_wp ! degrees
+    !
+    ! do validation of input (geometry not correct) :
+    !
+    call ValidateInputJ(xcoords, ycoords, roughness, normal, nPoints, dikeHeight, modelFactorsArray, success, errorMsg)
+    call assert_false(success, "expect failure")
+    loc = index(errorMsg, 'Verticale coordinaten mogen niet afnemen.   0.00 en   -1.00 doen dat wel.')
+    call assert_equal(loc, 6, "error message validate 1")
+    loc = index(errorMsg, 'Verticale coordinaten mogen niet afnemen.   4.00 en    0.00 doen dat wel.')
+    call assert_equal(loc, 85, 'error message validate 2')
+
+    !
+    ! do validation of input (modelfactor m_z2 < 0) :
+    !
+    ycoords = [-5, 0, 5, 6, 7]
+    modelFactorsArray(3)     = -1.00_wp
+    call SetLanguage('UK')
+    call ValidateInputJ(xcoords, ycoords, roughness, normal, nPoints, dikeHeight, modelFactorsArray, success, errorMsg)
+    call assert_false(success, "expect failure")
+    loc = index(errorMsg, 'Model factor 2% wave runup smaller than  0.000')
+    call assert_equal(loc, 7, 'error message validate 3')
+
+    !
+    ! do validation of input (modelfactor foreshore < 0.3) :
+    !
+    modelFactorsArray(3)  = 1.00_wp
+    modelFactorsArray(8)  = 0.25_wp
+    call ValidateInputJ(xcoords, ycoords, roughness, normal, nPoints, dikeHeight, modelFactorsArray, success, errorMsg)
+    call assert_false(success, "expect failure")
+    loc = index(errorMsg, 'Model factor reduction factor foreshore not between  0.300 and  1.000')
+    call assert_equal(loc, 7, 'error message validate 4')
+
+end subroutine overtoppingValidationFewsTest
 
 subroutine overtoppingValidationRoughnessTest
     integer                        :: p
