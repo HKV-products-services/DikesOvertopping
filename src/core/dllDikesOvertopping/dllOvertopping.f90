@@ -91,6 +91,46 @@ subroutine calculateQo(load, geometryInput, dikeHeight, modelFactors, overtoppin
 end subroutine calculateQo
 
 !>
+!! Subroutine that calculates the discharge
+!! Wrapper for calculateQoF: convert basic types to Fortran input structures
+!!
+!! @ingroup dllDikesOvertopping
+subroutine calculateQoJ(load, xcoords, ycoords, roughness, normal, npoints, dikeHeight, modelFactors, output, succes, errorMessage)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"calculateQoJ" :: calculateQoJ
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
+    use ModuleLogging
+    integer, intent(in)                        :: npoints
+    real(kind=wp), intent(in)                  :: dikeHeight     !< dike height
+    real(kind=wp), intent(in)                  :: normal         !< dike normal
+    logical, intent(out)                       :: succes         !< flag for success
+    character(len=*), intent(out)              :: errorMessage      !< error message (only set if not successful)
+    real(kind=wp), intent(in)                  :: load(4)
+    real(kind=wp), intent(in)                  :: xcoords(npoints)
+    real(kind=wp), intent(in)                  :: ycoords(npoints)
+    real(kind=wp), intent(in)                  :: roughness(npoints-1)
+    real(kind=wp), intent(in)                  :: modelFactors(8)
+    real(kind=wp), intent(out)                 :: output(2)       !< output array: 1: Qo; 2: Z2
+
+    type(OvertoppingGeometryTypeF) :: geometryF      !< struct with geometry and roughness
+    type(tpLoad)                   :: loadF          !< struct with waterlevel and wave parameters
+    type(tpOvertoppingInput)       :: modelFactorsF  !< struct with modelFactors
+    type (tpOvertopping)           :: overtopping    !< structure with overtopping results
+    type(tLogging)                 :: logging        !< logging struct
+    integer                        :: ierr           !< error code of allocate
+    
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1), stat=ierr)
+    if (ierr == 0) then
+        call input_j_f(xcoords, ycoords, roughness, normal, geometryF, modelFactors, modelFactorsF, load, loadF)
+        call calculateQoF(loadF, geometryF, dikeHeight, modelFactorsF, overtopping, succes, errorMessage, logging)
+        output(1) = overtopping%Qo
+        output(2) = overtopping%z2
+    else
+        succes = .false.
+        errorMessage = 'Allocation error in calculateQoJ'
+    endif
+end subroutine calculateQoJ
+!>
 !! Subroutine that calculates the discharge needed for the Z-function DikesOvertopping
 !!
 !! @ingroup dllDikesOvertopping
@@ -227,20 +267,7 @@ subroutine ValidateInputJ(x, y, roughness, normal, nPoints, dikeHeight, modelFac
         write(errorText,*) 'memory allocation error in ValidateInputJ with size: ', nPoints
         success = .false.
     else
-        geometry%nPoints = nPoints
-        geometry%xCoords = x
-        geometry%yCoords = y
-        geometry%roughness = roughness
-        geometry%normal = normal
-
-        modelFactors%factorDeterminationQ_b_f_n = modelFactorsArray(1)
-        modelFactors%factorDeterminationQ_b_f_b = modelFactorsArray(2)
-        modelFactors%m_z2                       = modelFactorsArray(3)
-        modelFactors%fshallow                   = modelFactorsArray(4)
-        modelFactors%ComputedOvertopping        = modelFactorsArray(5)
-        modelFactors%CriticalOvertopping        = modelFactorsArray(6)
-        modelFactors%relaxationFactor           = modelFactorsArray(7)
-        modelFactors%reductionFactorForeshore   = modelFactorsArray(8)
+        call input_j_f(x, y, roughness, normal, geometry, modelFactorsArray, modelFactors)
 
         call initErrorMessages(errorStruct)
 
@@ -445,5 +472,36 @@ function geometry_c_f(geometryInput) result(geometry)
     geometry%normal = geometryInput%normal
 
 end function geometry_c_f
+
+!> convert java input to Fortran input
+subroutine input_j_f(x, y, roughness, normal, geometryF, modelFactorsJ, modelFactorsF, loadJ, loadF)
+    real(kind=wp), intent(in) :: x(:), y(:), roughness(:), normal, modelFactorsJ(:)
+    real(kind=wp), intent(in), optional :: loadJ(:)
+    type(tpOvertoppingInput), intent(out) :: modelFactorsF
+    type(OvertoppingGeometryTypeF), intent(out) :: geometryF
+    type(tpLoad), intent(out), optional :: loadF
+
+    geometryF%nPoints = size(x)
+    geometryF%xCoords = x
+    geometryF%yCoords = y
+    geometryF%roughness = roughness
+    geometryF%normal = normal
+
+    modelFactorsF%factorDeterminationQ_b_f_n = modelFactorsJ(1)
+    modelFactorsF%factorDeterminationQ_b_f_b = modelFactorsJ(2)
+    modelFactorsF%m_z2                       = modelFactorsJ(3)
+    modelFactorsF%fshallow                   = modelFactorsJ(4)
+    modelFactorsF%ComputedOvertopping        = modelFactorsJ(5)
+    modelFactorsF%CriticalOvertopping        = modelFactorsJ(6)
+    modelFactorsF%relaxationFactor           = modelFactorsJ(7)
+    modelFactorsF%reductionFactorForeshore   = modelFactorsJ(8)
+
+    if (present(loadJ) .and. present(loadF)) then
+        loadF%h     = loadJ(1)
+        loadF%Hm0   = loadJ(2)
+        loadF%Tm_10 = loadJ(3)
+        loadF%phi   = loadJ(4)
+    endif
+end subroutine input_j_f
 
 end module dllOvertopping

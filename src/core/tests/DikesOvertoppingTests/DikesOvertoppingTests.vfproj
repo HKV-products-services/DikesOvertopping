@@ -28,6 +28,7 @@
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
 		<File RelativePath=".\crossSectionsTests.f90"/>
+		<File RelativePath=".\dllFewsTests.f90"/>
 		<File RelativePath=".\dllTests.f90"/>
 		<File RelativePath=".\loadTests.f90"/>
 		<File RelativePath=".\omkeerVariantTests.f90"/>

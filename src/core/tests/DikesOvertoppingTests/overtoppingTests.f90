@@ -35,6 +35,7 @@ module overtoppingTests
     use crossSectionsAdaptionTests
     use crossSectionRoughnessTests
     use dllTests
+    use dllFewsTests
     use omkeerVariantTests
     use overtoppingUnitTests
 
@@ -55,6 +56,10 @@ subroutine allovertoppingTests
     !
     ! Test using external dll
     call allOvertoppingDllTests
+
+    !
+    ! Test using external dll, Java/FEWS interface
+    call allOvertoppingDllFewsTests
 
     !    
     ! test for 'omkeerVariant'
