@@ -26,9 +26,12 @@
 !!  - calcZValue
 !!  - calculateQo
 !!  - calculateQoF
+!!  - calculateQoJ
 !!  - ValidateInputC
 !!  - ValidateInputF
+!!  - ValidateInputJ
 !!  - omkeerVariantF
+!!  - omkeerVariantJ
 !!  - SetLanguage
 !!  - GetLanguage
 !!  - versionNumber
@@ -52,7 +55,8 @@ module dllOvertopping
 
     !  FUNCTIONS/SUBROUTINES exported from dllOvertoppping.dll:
     public :: calculateQo, calculateQoF, calcZValue, versionNumber, ValidateInputC, ValidateInputF, &
-              omkeerVariantF, setLanguage, getLanguage
+              omkeerVariantF, setLanguage, getLanguage, &
+              calculateQoJ, ValidateInputJ, omkeerVariantJ
 
     character, parameter :: separationChar = char(9)      !< use horizontal tab for separation
 
@@ -100,17 +104,17 @@ subroutine calculateQoJ(load, xcoords, ycoords, roughness, normal, npoints, dike
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
     use ModuleLogging
-    integer, intent(in)                        :: npoints
-    real(kind=wp), intent(in)                  :: dikeHeight     !< dike height
-    real(kind=wp), intent(in)                  :: normal         !< dike normal
-    logical, intent(out)                       :: succes         !< flag for success
-    character(len=*), intent(out)              :: errorMessage      !< error message (only set if not successful)
-    real(kind=wp), intent(in)                  :: load(4)
-    real(kind=wp), intent(in)                  :: xcoords(npoints)
-    real(kind=wp), intent(in)                  :: ycoords(npoints)
-    real(kind=wp), intent(in)                  :: roughness(npoints-1)
-    real(kind=wp), intent(in)                  :: modelFactors(8)
-    real(kind=wp), intent(out)                 :: output(2)       !< output array: 1: Qo; 2: Z2
+    integer, intent(in)                        :: npoints               !< the number of coordinates
+    real(kind=wp), intent(in)                  :: dikeHeight            !< dike height
+    real(kind=wp), intent(in)                  :: normal                !< dike normal
+    logical, intent(out)                       :: succes                !< flag for success
+    character(len=*), intent(out)              :: errorMessage          !< error message (only set if not successful)
+    real(kind=wp), intent(in)                  :: load(4)               !< input load (wl and 3 wave numbers)
+    real(kind=wp), intent(in)                  :: xcoords(npoints)      !< the x coordinates
+    real(kind=wp), intent(in)                  :: ycoords(npoints)      !< the y coordinates
+    real(kind=wp), intent(in)                  :: roughness(npoints-1)  !< the roughness at sections
+    real(kind=wp), intent(in)                  :: modelFactors(8)       !< the overtopping modelfactors
+    real(kind=wp), intent(out)                 :: output(2)             !< output array: 1: Qo; 2: Z2
 
     type(OvertoppingGeometryTypeF) :: geometryF      !< struct with geometry and roughness
     type(tpLoad)                   :: loadF          !< struct with waterlevel and wave parameters
@@ -127,6 +131,8 @@ subroutine calculateQoJ(load, xcoords, ycoords, roughness, normal, npoints, dike
         output(2) = overtopping%z2
     else
         succes = .false.
+        call set_nan(output(1))
+        call set_nan(output(2))
         errorMessage = 'Allocation error in calculateQoJ'
     endif
 end subroutine calculateQoJ
@@ -268,7 +274,6 @@ subroutine ValidateInputJ(x, y, roughness, normal, nPoints, dikeHeight, modelFac
         success = .false.
     else
         call input_j_f(x, y, roughness, normal, geometry, modelFactorsArray, modelFactors)
-
         call initErrorMessages(errorStruct)
 
         call ValidateInputF(geometry, dikeHeight, modelFactors, errorStruct)
@@ -378,7 +383,50 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 end subroutine ValidateInputF
 
 !>
-!! Subroutine with omkeerVariant
+!! Wrapper for omkeerVariantF: get dikeHeight by given discharge
+!!
+!! @ingroup dllDikesOvertopping
+subroutine omkeerVariantJ(load, xcoords, ycoords, roughness, normal, npoints, givenDischarge, dikeHeight, modelFactors, output, succes, errorMessage)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"omkeerVariantJ" :: omkeerVariantJ
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
+    use ModuleLogging
+    integer, intent(in)                        :: npoints              !< number of coordinates
+    real(kind=wp), intent(in)                  :: givenDischarge       !< input discharge
+    real(kind=wp), intent(out)                 :: dikeHeight           !< dike height
+    real(kind=wp), intent(in)                  :: normal               !< dike normal
+    logical, intent(out)                       :: succes               !< flag for success
+    character(len=*), intent(out)              :: errorMessage         !< error message (only set if not successful)
+    real(kind=wp), intent(in)                  :: load(4)              !< input load (wl, and 3 wave parameters)
+    real(kind=wp), intent(in)                  :: xcoords(npoints)     !< the x-coordinates
+    real(kind=wp), intent(in)                  :: ycoords(npoints)     !< the y-coordinates
+    real(kind=wp), intent(in)                  :: roughness(npoints-1) !< the roughness at sections
+    real(kind=wp), intent(in)                  :: modelFactors(8)      !< the overtopping modelfactors
+    real(kind=wp), intent(out)                 :: output(2)            !< output array: 1: Qo; 2: Z2
+
+    type(OvertoppingGeometryTypeF) :: geometryF      !< struct with geometry and roughness
+    type(tpLoad)                   :: loadF          !< struct with waterlevel and wave parameters
+    type(tpOvertoppingInput)       :: modelFactorsF  !< struct with modelFactors
+    type (tpOvertopping)           :: overtopping    !< structure with overtopping results
+    type(tLogging)                 :: logging        !< logging struct
+    integer                        :: ierr           !< error code of allocate
+    
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1), stat=ierr)
+    if (ierr == 0) then
+        call input_j_f(xcoords, ycoords, roughness, normal, geometryF, modelFactors, modelFactorsF, load, loadF)
+        call omkeerVariantF(loadF, geometryF, givenDischarge, dikeHeight, modelFactorsF, overtopping, succes, errorMessage, logging)
+        output(1) = overtopping%z2
+        output(2) = overtopping%Qo
+    else
+        succes = .false.
+        call set_nan(output(1))
+        call set_nan(output(2))
+        errorMessage = 'Allocation error in omkeerVariantJ'
+    endif
+end subroutine omkeerVariantJ
+
+!>
+!! Subroutine with omkeerVariant (get dikeHeight by given discharge)
 !!
 !! @ingroup dllDikesOvertopping
 subroutine omkeerVariantF(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
@@ -435,7 +483,7 @@ subroutine versionNumber(version)
     !
     ! locals
     !
-    character(len=*), parameter :: cversion = "16.2.2.4443"
+    character(len=*), parameter :: cversion = "16.2.3.5003"
     !
     !==============================================================================
     !

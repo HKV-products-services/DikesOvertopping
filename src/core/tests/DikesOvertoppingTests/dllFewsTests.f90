@@ -49,16 +49,11 @@ subroutine allOvertoppingDllFewsTests
     call testWithLevel(overtoppingValidationFewsTest, 'Test validation for Fews (Java)', 1)
     call testWithLevel(overtoppingValidationFewsTest2, 'Test validation that passes for Fews (Java)', 1)
     call testWithLevel(TestCalculateQoJ, 'Test CalculateQoJ', 1)
+    call testWithLevel(omkeerVariantTestJ, 'Test omkeerVariantJ', 1)
 end subroutine allOvertoppingDllFewsTests
 
 !! @ingroup DikeOvertoppingTests
 subroutine TestCalculateQoJ
-
-    real(kind=wp), parameter :: zExpected1a =   11.725
-    real(kind=wp), parameter :: zExpected1b =  701.48866_wp
-    real(kind=wp), parameter :: zExpected2 = -6.43985_wp
-    real(kind=wp), parameter :: margin     =  0.0000100_wp
-
     integer                        :: p
     external                       :: calculateQoJ
     integer                        :: i
@@ -67,13 +62,17 @@ subroutine TestCalculateQoJ
     character(len=128)             :: errorMessage      !< error message
     type (tpLoad)                  :: loadStruct        !< structure with load data
     real(kind=wp)                  :: load(4)
-    real(kind=wp)                  :: xcoords(npoints), ycoords(npoints), roughness(npoints)
-    real(kind=wp)                  :: dikeHeight
+    real(kind=wp)                  :: xcoords(npoints)
+    real(kind=wp)                  :: ycoords(npoints)
+    real(kind=wp)                  :: roughness(npoints) = 1.0_wp
+    real(kind=wp), parameter       :: dikeHeight = 9.1_wp
     type(tpOvertoppingInput)       :: modelFactorsStruct
     real(kind=wp)                  :: modelFactors(8)
     real(kind=wp)                  :: criticalOvertoppingRate
-    real(kind=wp)                  :: normal
+    real(kind=wp), parameter       :: normal  = 60.0_wp ! degrees
     real(kind=wp)                  :: output(2)
+    real(kind=wp), parameter       :: margin     =  0.00001_wp
+
 
     pointer            (qc, calculateQoJ)
 
@@ -82,16 +81,13 @@ subroutine TestCalculateQoJ
     !
     ! initializations
     !
-    dikeHeight  = 9.1_wp
     call init_modelfactors_and_load(modelFactorsStruct, loadStruct)
     criticalOvertoppingRate        = 1.0d-3
 
     do i = 1, npoints
         xcoords(i)   = 5 * i
         ycoords(i)   = 3 + 2 * i
-        if (i < npoints) roughness(i) = 1.0_wp
     enddo
-    normal = 60.0_wp ! degrees
     !
     ! test actual computations in calculateQo and zFuncOvertopping for waterlevel < dikeheight
     !
@@ -127,12 +123,12 @@ subroutine overtoppingValidationFewsTest
     integer, parameter             :: npoints = 5
     real(kind=wp)                  :: xcoords(nPoints)
     real(kind=wp)                  :: ycoords(nPoints)
-    real(kind=wp)                  :: roughness(nPoints-1)
-    real(kind=wp)                  :: normal
-    real(kind=wp)                  :: dikeHeight
+    real(kind=wp)                  :: roughness(nPoints-1) = 0.5
+    real(kind=wp), parameter       :: normal = 60.0_wp ! degrees
+    real(kind=wp), parameter       :: dikeHeight = 9.1_wp
     type(tpOvertoppingInput)       :: modelFactors
     real(kind=wp)                  :: modelFactorsArray(8)
-    real(kind=wp)                  :: criticalOvertoppingRate
+    real(kind=wp), parameter       :: criticalOvertoppingRate = 1.0d-3
     integer                        :: loc
     logical                        :: success
     character(len=256)             :: errorMsg
@@ -146,16 +142,11 @@ subroutine overtoppingValidationFewsTest
     !
     ! initializations
     !
-    dikeHeight  = 9.1_wp
     call init_modelfactors_and_load(modelFactors)
     call convertJ(modelFactors, modelFactorsArray)
-    criticalOvertoppingRate        = 1.0d-3
 
     xcoords = [ 0, 10, 20, 30, 40 ]
     ycoords = [-5, 0, -1, 4, 0]
-    roughness = [ 0.5, 0.5, 0.5, 0.5 ]
-
-    normal = 60.0_wp ! degrees
     !
     ! do validation of input (geometry not correct) :
     !
@@ -199,12 +190,12 @@ subroutine overtoppingValidationFewsTest2
     integer, parameter             :: npoints = 2
     real(kind=wp)                  :: xcoords(nPoints)
     real(kind=wp)                  :: ycoords(nPoints)
-    real(kind=wp)                  :: roughness(nPoints-1)
-    real(kind=wp)                  :: normal
-    real(kind=wp)                  :: dikeHeight
+    real(kind=wp)                  :: roughness(nPoints-1) = 0.5
+    real(kind=wp), parameter       :: normal = 60.0_wp ! degrees
+    real(kind=wp), parameter       :: dikeHeight = 9.1_wp
     type(tpOvertoppingInput)       :: modelFactors
     real(kind=wp)                  :: modelFactorsArray(8)
-    real(kind=wp)                  :: criticalOvertoppingRate
+    real(kind=wp), parameter       :: criticalOvertoppingRate  = 1.0d-3
     logical                        :: success
     character(len=256)             :: errorMsg
 
@@ -217,24 +208,12 @@ subroutine overtoppingValidationFewsTest2
     !
     ! initializations
     !
-    dikeHeight  = 9.1_wp
     call init_modelfactors_and_load(modelFactors)
-    criticalOvertoppingRate        = 1.0d-3
-
-    modelFactorsArray(1) = modelFactors%factorDeterminationQ_b_f_n
-    modelFactorsArray(2) = modelFactors%factorDeterminationQ_b_f_b
-    modelFactorsArray(3) = modelFactors%m_z2
-    modelFactorsArray(4) = modelFactors%fshallow
-    modelFactorsArray(5) = modelFactors%ComputedOvertopping
-    modelFactorsArray(6) = modelFactors%CriticalOvertopping
-    modelFactorsArray(7) = modelFactors%relaxationFactor
-    modelFactorsArray(8) = modelFactors%reductionFactorForeshore
+    call convertJ(modelFactors, modelFactorsArray)
 
     xcoords = [ 0, 10 ]
     ycoords = [-5, 0]
-    roughness = [ 0.5 ]
 
-    normal = 60.0_wp ! degrees
     !
     ! do validation of input (geometry not correct) :
     !
@@ -242,6 +221,56 @@ subroutine overtoppingValidationFewsTest2
     call assert_true(success, "expect failure")
 end subroutine overtoppingValidationFewsTest2
 
+!> test for omkeerVariantJ
+!! @ingroup DikeOvertoppingTests
+subroutine omkeerVariantTestJ
+    integer                        :: p
+    external                       :: omkeerVariantJ
+    integer                        :: i
+    logical                        :: succes
+    integer, parameter             :: npoints = 3
+    character(len=128)             :: errorMessage      !< error message
+    type (tpLoad)                  :: loadStruct        !< structure with load data
+    real(kind=wp)                  :: load(8)           !< structure with load data
+    real(kind=wp)                  :: dikeHeight
+    real(kind=wp), parameter       :: normal = 60.0_wp
+    real(kind=wp)                  :: overtopping(2)
+    real(kind=wp)                  :: xcoords(npoints)
+    real(kind=wp)                  :: ycoords(npoints)
+    real(kind=wp)                  :: roughness(npoints-1) = 1.0_wp
+    type(tpOvertoppingInput)       :: modelFactorsStruct
+    real(kind=wp)                  :: modelFactors(8)
+    real(kind=wp), parameter       :: givenDischarge = 0.8d-8  !< discharge to iterate to
+
+    pointer            (q, omkeerVariantJ)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    call assert_true(p /= 0, 'load dllDikesOvertopping.dll')
+    q = getprocaddress (p, "omkeerVariantJ"C)
+    call assert_true(q /= 0, 'get function pointer to omkeerVariantJ')
+    if (q == 0) return
+    !
+    ! initializations
+    !
+    call init_modelfactors_and_load(modelFactorsStruct, loadStruct)
+
+    do i = 1, npoints
+        xcoords(i)   = 5 * i
+        ycoords(i)   = 3 + 2 * i
+    enddo
+    !
+    ! test actual computations in omkeerVariant for waterlevel < dikeheight
+    !
+    call convertJ(modelFactorsStruct, modelFactors, loadStruct, load)
+    call omkeerVariantJ(load, xcoords, ycoords, roughness, normal, nPoints, givenDischarge, dikeHeight, modelFactors, overtopping, succes, errorMessage)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(dikeHeight, 9.1d0, 1d-3, 'dikeHeight from omkeer variant')
+    call assert_comparable(overtopping(1), 1.5_wp, 0.1_wp, 'z2 from omkeer variant')
+    call assert_comparable(overtopping(2), givenDischarge, 1.5d-3, 'discharge last iteration from omkeer variant')
+
+end subroutine omkeerVariantTestJ
+
+!> helper function for conversion from Fortran datastructures to Java datastructures
 subroutine convertJ(modelFactors, modelFactorsArray, load, loadArray)
     type(tpOvertoppingInput), intent(in) :: modelFactors
     real(kind=wp), intent(out) :: modelFactorsArray(:)
