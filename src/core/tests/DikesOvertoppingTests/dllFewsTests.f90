@@ -59,7 +59,7 @@ subroutine TestCalculateQoJ
     integer                        :: i
     logical                        :: succes
     integer, parameter             :: npoints = 3
-    character(len=128)             :: errorMessage      !< error message
+    character(len=256)             :: errorMessage      !< error message
     type (tpLoad)                  :: loadStruct        !< structure with load data
     real(kind=wp)                  :: load(4)
     real(kind=wp)                  :: xcoords(npoints)
@@ -229,7 +229,7 @@ subroutine omkeerVariantTestJ
     integer                        :: i
     logical                        :: succes
     integer, parameter             :: npoints = 3
-    character(len=128)             :: errorMessage      !< error message
+    character(len=256)             :: errorMessage      !< error message
     type (tpLoad)                  :: loadStruct        !< structure with load data
     real(kind=wp)                  :: load(8)           !< structure with load data
     real(kind=wp)                  :: dikeHeight

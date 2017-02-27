@@ -108,7 +108,7 @@ subroutine calculateQoJ(load, xcoords, ycoords, roughness, normal, npoints, dike
     real(kind=wp), intent(in)                  :: dikeHeight            !< dike height
     real(kind=wp), intent(in)                  :: normal                !< dike normal
     logical, intent(out)                       :: succes                !< flag for success
-    character(len=*), intent(out)              :: errorMessage          !< error message (only set if not successful)
+    character(len=256), intent(out)            :: errorMessage          !< error message (only set if not successful)
     real(kind=wp), intent(in)                  :: load(4)               !< input load (wl and 3 wave numbers)
     real(kind=wp), intent(in)                  :: xcoords(npoints)      !< the x coordinates
     real(kind=wp), intent(in)                  :: ycoords(npoints)      !< the y coordinates
@@ -396,21 +396,21 @@ subroutine omkeerVariantJ(load, xcoords, ycoords, roughness, normal, npoints, gi
     real(kind=wp), intent(out)                 :: dikeHeight           !< dike height
     real(kind=wp), intent(in)                  :: normal               !< dike normal
     logical, intent(out)                       :: succes               !< flag for success
-    character(len=*), intent(out)              :: errorMessage         !< error message (only set if not successful)
+    character(len=256), intent(out)            :: errorMessage         !< error message (only set if not successful)
     real(kind=wp), intent(in)                  :: load(4)              !< input load (wl, and 3 wave parameters)
     real(kind=wp), intent(in)                  :: xcoords(npoints)     !< the x-coordinates
     real(kind=wp), intent(in)                  :: ycoords(npoints)     !< the y-coordinates
     real(kind=wp), intent(in)                  :: roughness(npoints-1) !< the roughness at sections
     real(kind=wp), intent(in)                  :: modelFactors(8)      !< the overtopping modelfactors
-    real(kind=wp), intent(out)                 :: output(2)            !< output array: 1: Qo; 2: Z2
+    real(kind=wp), intent(out)                 :: output(2)            !< output array: 1: Z2; 2: Qo
 
     type(OvertoppingGeometryTypeF) :: geometryF      !< struct with geometry and roughness
     type(tpLoad)                   :: loadF          !< struct with waterlevel and wave parameters
     type(tpOvertoppingInput)       :: modelFactorsF  !< struct with modelFactors
-    type (tpOvertopping)           :: overtopping    !< structure with overtopping results
+    type(tpOvertopping)            :: overtopping    !< structure with overtopping results
     type(tLogging)                 :: logging        !< logging struct
     integer                        :: ierr           !< error code of allocate
-    
+
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1), stat=ierr)
     if (ierr == 0) then
         call input_j_f(xcoords, ycoords, roughness, normal, geometryF, modelFactors, modelFactorsF, load, loadF)
