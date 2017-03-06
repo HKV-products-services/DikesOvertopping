@@ -63,6 +63,7 @@ subroutine allOvertoppingDllTests
     call testWithLevel(TestProfileAdjustment, "Test whether the profile is adapted correctly", 1)
     call testWithLevel(TestRoughnessIssue44A, "First test for calculateGammaF related to issue 44", 1)
     call testWithLevel(TestRoughnessIssue44B, "Second test for calculateGammaF related to issue 44", 1)
+    call testWithLevel(TestIssue45, "Test for issue 45", 1)
 end subroutine allOvertoppingDllTests
 
 !> Test the functions in DikesOvertopping.dll.
@@ -730,5 +731,45 @@ subroutine TestRoughnessIssue44B
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine TestRoughnessIssue44B
+
+!> check cause of unclear error message
+subroutine TestIssue45
+    use dllOvertopping
+    integer                        :: npoints        ! number of coordinates
+    logical                        :: succes         ! flag for succes
+    character(len=255)             :: errorMessage   ! error message
+    real(kind=wp)                  :: dikeHeight     ! vector with x-coordinates of the adjusted profile
+    type (tpLoad)                  :: load           !< structure with load data
+    type(OvertoppingGeometryTypeF) :: geometryF
+    type(tpOvertoppingInput)       :: modelFactors
+    type(tLogging)                 :: logging        !< logging struct
+    type (tpOvertopping)           :: overtopping    !< structure with overtopping results
+
+    npoints = 6
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    geometryF%npoints = npoints
+    geometryF%roughness = [0.9_wp, 0.9_wp, 1.0_wp, 1.0_wp, 1.0_wp]
+    geometryF%xcoords = [ -50.0_wp, -5.75_wp, 3.25_wp, 13.25_wp, 17.25_wp, 30.0_wp ]
+    geometryF%ycoords = [ -4.0_wp, -3.0_wp, -0.13_wp, 3.06_wp, 4.33_wp, 6.5_wp ]
+    geometryF%normal = 63.0_wp
+
+    load%h     =     0.0_wp
+    load%Hm0   =     0.17_wp
+    load%Tm_10 =     1.24_wp
+    load%phi   =    68.0_wp
+    dikeHeight =     6.5_wp
+
+    !Input ReductionFactorForeshore = 0.5
+    modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
+    modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
+    modelFactors%m_z2                       = 1.00_wp
+    modelFactors%fshallow                   = 0.677780705266081_wp
+    modelFactors%ComputedOvertopping        = 1.0_wp
+    modelFactors%CriticalOvertopping        = 1.0_wp
+    modelFactors%relaxationFactor           = 1.0_wp
+
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_false(succes, "expect message about berms")
+end subroutine TestIssue45
 
 end module dllTests

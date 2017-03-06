@@ -72,7 +72,7 @@ enum, bind(c)
     enumerator :: wl_above_crest
     enumerator :: wave_height_or_periode_less_zero
     enumerator :: wave_direction_not_in_range
-    enumerator :: RemovingHorizontalBerm
+    enumerator :: RemovingNonHorizontalBerm
 ! formats :
     enumerator :: model_factor_smaller_than
     enumerator :: model_factor_not_between
@@ -192,8 +192,8 @@ select case(language)
                 GetOvertoppingMessage = 'Wave height and/or wave period less than zero'
             case (wave_direction_not_in_range)
                 GetOvertoppingMessage = 'Wave direction not between 0 and 360 degree'
-            case (RemovingHorizontalBerm)
-                GetOvertoppingMessage = 'Try to remove a horizontal berm'
+            case (RemovingNonHorizontalBerm)
+                GetOvertoppingMessage = 'Try to remove a non horizontal berm'
             case default
                 write(GetOvertoppingMessage,*) 'Internal error, ID = ', ID
         end select
@@ -259,8 +259,8 @@ select case(language)
                 GetOvertoppingMessage = 'Golf hoogte en/of golf periode kleiner dan nul'
             case (wave_direction_not_in_range)
                 GetOvertoppingMessage = 'Golf hoek niet tussen 0 and 360 graden'
-            case (RemovingHorizontalBerm)
-                GetOvertoppingMessage = 'Probeer een horizontale berm te verwijderen'
+            case (RemovingNonHorizontalBerm)
+                GetOvertoppingMessage = 'Probeer een niet-horizontale berm te verwijderen'
             case default
                 write(GetOvertoppingMessage,*) 'Interne fout, ID = ', ID
         end select

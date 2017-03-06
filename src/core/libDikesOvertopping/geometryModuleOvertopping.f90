@@ -689,7 +689,7 @@ end subroutine deallocateGeometry
                ! check if the berm segment is a horizontal berm
                if (geometry%segmentSlopes(i) > 0.0d0) then
                   succes = .false.
-                  errorMessage = GetOvertoppingMessage(RemovingHorizontalBerm)
+                  errorMessage = GetOvertoppingMessage(RemovingNonHorizontalBerm)
                endif
 
                ! add the width of the berm segment to the total sum
