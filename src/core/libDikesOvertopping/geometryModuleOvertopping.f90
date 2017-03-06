@@ -214,7 +214,7 @@
 
    ! determine the type of the segments (slope or berm)
    if (succes) then
-      call determineSegmentTypes (geometry)
+      call determineSegmentTypes (geometry, succes, errorMessage)
    endif
    
    if (succes) then
@@ -343,22 +343,29 @@ end subroutine deallocateGeometry
 !! determine the segment types
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine determineSegmentTypes (geometry)
+   subroutine determineSegmentTypes (geometry, succes, errorMessage)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   type (tpGeometry),   intent(inout)  :: geometry !< structure with geometry data
+   type (tpGeometry),   intent(inout)  :: geometry     !< structure with geometry data
+   logical,             intent(out)    :: succes       !< success flag
+   character(len=*),    intent(out)    :: errorMessage !< error message; only set in case of error
 !
 !  Local parameters
 !
    integer  :: i              !< counter dike segments
    logical  :: slopeSegment   !< flag for slope segment
    logical  :: bermSegment    !< flag for berm segment
+   integer  :: nBerms         !< total number of berms found; must be <= 2
+   character(len=100) :: cfmt !< format string for error message
 
 ! ==========================================================================================================
+
+   succes = .true.
+   nBerms = 0
 
    ! loop over dike segments
    do i=1, geometry%nCoordinates - 1
@@ -374,11 +381,25 @@ end subroutine deallocateGeometry
          geometry%segmentTypes(i) = 1 ! slope
       elseif (bermSegment) then
          geometry%segmentTypes(i) = 2 ! berm
+         nBerms = nBerms + 1
+         if (i == 1) then
+             succes = .false.
+             call GetMSG_first_segment_berm(errorMessage)
+         else if (i == geometry%nCoordinates - 1) then
+             succes = .false.
+             call GetMSG_last_segment_berm(errorMessage)
+         endif
       else
          geometry%segmentTypes(i) = 3 ! other
       endif
-         
+
    enddo
+
+   if (nBerms > 2) then
+       succes = .false.
+       call GetFormatTooManyBerms(cfmt)
+       write(errorMessage, cfmt) nBerms
+   endif
 
    end subroutine determineSegmentTypes
 
@@ -714,7 +735,7 @@ end subroutine deallocateGeometry
 
       ! determine the type of the segments (slope or berm)
       if (succes) then
-         call determineSegmentTypes (geometryNoBerms)
+         call determineSegmentTypes (geometryNoBerms, succes, errorMessage)
       endif
 
       ! determine the number of berm segments
@@ -783,7 +804,7 @@ end subroutine deallocateGeometry
 
       ! determine the type of the segments (slope or berm)
       if (succes) then
-         call determineSegmentTypes (geometryAdjusted)
+         call determineSegmentTypes (geometryAdjusted, succes, errorMessage)
       endif
 
       ! determine the number of berm segments for the new cross section

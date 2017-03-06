@@ -744,6 +744,7 @@ subroutine TestIssue45
     type(tpOvertoppingInput)       :: modelFactors
     type(tLogging)                 :: logging        !< logging struct
     type (tpOvertopping)           :: overtopping    !< structure with overtopping results
+    type(TErrorMessages)           :: errorStruct    !< error message (only set if not successful)
 
     npoints = 6
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
@@ -768,8 +769,10 @@ subroutine TestIssue45
     modelFactors%CriticalOvertopping        = 1.0_wp
     modelFactors%relaxationFactor           = 1.0_wp
 
-    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     call assert_false(succes, "expect message about berms")
+    call assert_equal(errorStruct%messages(1)%message, 'Eerste segment is een berm. Dat is niet toegestaan.', 'error in validation message')
+    
 end subroutine TestIssue45
 
 end module dllTests

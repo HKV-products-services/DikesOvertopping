@@ -396,4 +396,31 @@ else
 endif
 end subroutine GetMSG_calc_influence_roughness
 
+subroutine GetMSG_first_segment_berm(message)
+character(len=*), intent(out) :: message
+if (language == 'UK') then
+    message = 'First or last segment is a berm. This is not allowed.'
+else
+    message = 'Eerste segment is een berm. Dat is niet toegestaan.'
+endif
+end subroutine GetMSG_first_segment_berm
+
+subroutine GetMSG_last_segment_berm(message)
+character(len=*), intent(out) :: message
+if (language == 'UK') then
+    message = 'Last segment is a berm. This is not allowed.'
+else
+    message = 'Laatste segment is een berm. Dat is niet toegestaan.'
+endif
+end subroutine GetMSG_last_segment_berm
+
+subroutine GetFormatTooManyBerms(cfmt)
+character(len=*), intent(out) :: cfmt
+if (language == 'UK') then
+    cfmt = '("Found ",i0, " berm segments. Maximum is number of berm segments is 2.")'
+else
+    cfmt = '("Er zijn ",i0, " berm segmenten gevonden. Het maximaal aantal berm segmenten is 2.")'
+endif
+end subroutine GetFormatTooManyBerms
+
 end module OvertoppingMessages
