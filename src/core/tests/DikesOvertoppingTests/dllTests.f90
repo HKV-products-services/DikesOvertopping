@@ -735,16 +735,11 @@ end subroutine TestRoughnessIssue44B
 !> check cause of unclear error message
 subroutine TestIssue45
     use dllOvertopping
-    integer                        :: npoints        ! number of coordinates
-    logical                        :: succes         ! flag for succes
-    character(len=255)             :: errorMessage   ! error message
-    real(kind=wp)                  :: dikeHeight     ! vector with x-coordinates of the adjusted profile
-    type (tpLoad)                  :: load           !< structure with load data
+    integer                        :: npoints             ! number of coordinates
+    real(kind=wp), parameter       :: dikeHeight = 6.5_wp
     type(OvertoppingGeometryTypeF) :: geometryF
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging        !< logging struct
-    type (tpOvertopping)           :: overtopping    !< structure with overtopping results
-    type(TErrorMessages)           :: errorStruct    !< error message (only set if not successful)
+    type(TErrorMessages)           :: errorStruct
 
     npoints = 6
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
@@ -753,12 +748,6 @@ subroutine TestIssue45
     geometryF%xcoords = [ -50.0_wp, -5.75_wp, 3.25_wp, 13.25_wp, 17.25_wp, 30.0_wp ]
     geometryF%ycoords = [ -4.0_wp, -3.0_wp, -0.13_wp, 3.06_wp, 4.33_wp, 6.5_wp ]
     geometryF%normal = 63.0_wp
-
-    load%h     =     0.0_wp
-    load%Hm0   =     0.17_wp
-    load%Tm_10 =     1.24_wp
-    load%phi   =    68.0_wp
-    dikeHeight =     6.5_wp
 
     !Input ReductionFactorForeshore = 0.5
     modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
@@ -770,9 +759,9 @@ subroutine TestIssue45
     modelFactors%relaxationFactor           = 1.0_wp
 
     call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
-    call assert_false(succes, "expect message about berms")
+    call assert_equal(errorStruct%nErrors, 1, "expect 1 error message about berms")
     call assert_equal(errorStruct%messages(1)%message, 'Eerste segment is een berm. Dat is niet toegestaan.', 'error in validation message')
-    
+
 end subroutine TestIssue45
 
 end module dllTests
