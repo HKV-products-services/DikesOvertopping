@@ -65,6 +65,7 @@ IF EXIST %OUTTEXTFILE% (
 
 ECHO "writing new %OUTTEXTFILE%"
 
+REM This command can process version files which contain special character "!"
 call powershell -Command "(gc %INTEXTFILE%) -replace '%SEARCHTEXT%', '%SVN_REV%' | Out-File -encoding ASCII %OUTTEXTFILE%
 
 )
