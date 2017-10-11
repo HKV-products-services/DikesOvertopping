@@ -64,6 +64,7 @@ subroutine allOvertoppingDllTests
     call testWithLevel(TestRoughnessIssue44A, "First test for calculateGammaF related to issue 44", 1)
     call testWithLevel(TestRoughnessIssue44B, "Second test for calculateGammaF related to issue 44", 1)
     call testWithLevel(TestIssue45, "Test for issue 45", 1)
+!    call testWithLevel(overtoppingDllTest2, 'Test the external overtopping dll 2', 0)
 end subroutine allOvertoppingDllTests
 
 !> Test the functions in DikesOvertopping.dll.
@@ -763,5 +764,82 @@ subroutine TestIssue45
     call assert_equal(errorStruct%messages(1)%message, 'Eerste segment is een berm. Dat is niet toegestaan.', 'error in validation message')
 
 end subroutine TestIssue45
+
+!> Test the functions calculateQoF and calcZValue in DikesOvertopping.dll
+!!     simple case, can be computed manually
+!!
+!! @ingroup DikeOvertoppingTests
+subroutine overtoppingDllTest2
+    real(kind=wp)                  :: z                 !< z value
+
+    real(kind=wp), parameter       :: margin = 0.0000100_wp
+
+    integer                        :: p
+    external                       :: calcZValue
+    external                       :: calculateQoF
+    logical                        :: succes
+    integer, parameter             :: npoints = 2
+    type (tpOvertopping)           :: overtopping
+    character(len=128)             :: errorMessage      !< error message
+    type (tpLoad)                  :: load              !< structure with load data
+    type(OvertoppingGeometryTypeF) :: geometryF
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    real(kind=wp)                  :: criticalOvertoppingRate
+    type(tLogging)                 :: logging
+
+    pointer            (qz, calcZValue)
+    pointer            (qc, calculateQoF)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qc = getprocaddress (p, "calculateQoF"C)
+    qz = getprocaddress (p, "calcZValue"C)
+    !
+    ! =====  initializations =====
+    !
+    ! model factors
+    !
+    modelFactors%factorDeterminationQ_b_f_n = 2.6_wp
+    modelFactors%factorDeterminationQ_b_f_b = 4.75_wp
+    modelFactors%m_z2                       = 1.00_wp
+    modelFactors%fshallow                   = 0.92_wp
+    modelFactors%ComputedOvertopping        = 1.0_wp
+    modelFactors%CriticalOvertopping        = 1.0_wp
+    modelFactors%relaxationFactor           = 1.0d0
+    !
+    ! structure parameters
+    !
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    geometryF%xcoords   = [ 0.0_wp, 30.0_wp]
+    geometryF%ycoords   = [-5.0_wp,  5.0_wp]
+    geometryF%roughness = 1.0_wp
+    geometryF%normal    = 60.0_wp ! degrees
+    geometryF%npoints   = npoints
+    dikeHeight          = 5.0_wp
+    criticalOvertoppingRate = 1.0d-3
+    !
+    ! load parameters
+    !
+    load%h     =     2.0_wp
+    load%Hm0   =     1.0_wp
+    load%Tm_10 =     4.0_wp
+    load%phi   =    60.0_wp
+    !
+    ! ===== actual test computations =====
+    !
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(overtopping%Qo, 0.20234d-03, margin, 'Qo from dllOvertopping.dll')
+    call assert_comparable(overtopping%z2, 2.74895_wp, margin, 'z2 from dllOvertopping.dll')
+
+    call calcZValue(criticalOvertoppingRate, modelFactors, overtopping%Qo, z, succes, errorMessage)
+    call assert_true(succes, errorMessage)
+    call assert_comparable(z, 1.338468_wp, margin, "Z value from dllOvertopping.dll")
+    !
+    ! ===== clean up =====
+    !
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
+end subroutine overtoppingDllTest2
 
 end module dllTests
