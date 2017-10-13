@@ -40,6 +40,7 @@ module crossSectionRoughnessTests
     use readCrossSectionForTests
     use typeDefinitionsOvertopping
     use geometryModuleOvertopping
+    use moduleLogging
 !
     implicit none
 
@@ -167,6 +168,7 @@ subroutine TestSeriesRoughness
     type (tpOvertopping) :: overtopping          ! structure with overtopping results
     logical              :: succes               ! flag for succes
     character(len=250)   :: errorMessage         ! error message
+    type(tLogging)       :: logging              ! logging struct
 !
 !   source
 !
@@ -202,7 +204,7 @@ subroutine TestSeriesRoughness
 
         !
         ! compute the wave runup and the wave overtopping discharge with the overtopping module
-        call calculateOvertopping (geometry, load, modelFactors, overtopping, succes, errorMessage)
+        call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, succes, errorMessage)
         if (.not. succes) then
             write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
         else

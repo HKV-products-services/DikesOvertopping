@@ -41,6 +41,7 @@ module loadTests
     use geometryModuleOvertopping
     use readCrossSectionForTests
     use overtoppingMessages
+    use moduleLogging
 
     implicit none
     private
@@ -132,6 +133,7 @@ subroutine testSeriesLoad
     type (tpOvertopping)     :: overtopping          ! structure with overtopping results
     logical                  :: succes               ! flag for succes
     character(len=250)       :: errorMessage         ! error message
+    type(tLogging)           :: logging              ! logging struct
 
     real(kind=wp), parameter :: margin = 1.0d-6      ! relative value for the margin
     integer                  :: ierr                 ! error code
@@ -221,7 +223,7 @@ subroutine testSeriesLoad
         call assert_equal(ierr, 0, errorMessage)
         !
         ! Compute the wave runup and the wave overtopping discharge with the Overtopping module
-        call calculateOvertopping (geometry, load, modelFactors, overtopping, succes, errorMessage)
+        call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, succes, errorMessage)
         if (.not. succes) then
             write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
         else

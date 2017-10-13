@@ -40,7 +40,8 @@ module crossSectionsAdaptionTests
     use mainModuleOvertopping
     use typeDefinitionsOvertopping
     use geometryModuleOvertopping
-    
+    use moduleLogging
+
     implicit none
 
     type (tpOvertoppingInput) :: modelFactors         ! structure with model factors
@@ -198,6 +199,7 @@ subroutine TestSeriesCrossSections
     logical                    :: succes               ! flag for succes
     character(len=250)         :: errorMessage         ! error message
     character(len=5)           :: ratio                ! ratio to be printed
+    type(tLogging)             :: logging              ! logging struct
 !
 !   source
 !
@@ -263,7 +265,7 @@ subroutine TestSeriesCrossSections
         call assert_true (succes, errorMessage)
         !
         ! Compute the wave runup and the wave overtopping discharge with the Overtopping module
-        call calculateOvertopping (geometry, load, modelFactors, overtopping, succes, errorMessage)
+        call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, succes, errorMessage)
         if (.not. succes) then
             write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
         !

@@ -156,13 +156,11 @@ subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, 
 !
     type (tpGeometry)                          :: geometry       !< structure with geometry data
 !
-    currentLogging = logging
-
     call initializeGeometry(geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
                              geometryF%roughness, geometry, success, errorText)
 
     if (success) then
-        call calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
+        call calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText)
     endif
 
     call deallocateGeometry(geometry)

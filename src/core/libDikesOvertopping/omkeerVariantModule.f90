@@ -45,10 +45,12 @@ real(kind=wp), parameter                   :: tolDischarge = 1d-3   ! relative t
 real(kind=wp), parameter                   :: tolDikeHeight = 1d-3  ! absolute tolerance in m
 real(kind=wp), parameter                   :: minZberm = 0.1_wp     ! minimal difference in Z before interpolation
 
-logical, allocatable                       :: isBerm(:)             ! is part i a berm or not
-logical, allocatable                       :: isValidZ(:)           ! is z in profile valid (above water level)
-real(kind=wp), allocatable                 :: dischargeProfile(:)   ! discharge at profile points
-real(kind=wp), allocatable                 :: ZProfile(:)           ! dikeheight at profile points
+type :: tOmkeer
+    logical, allocatable                   :: isBerm(:)             ! is part i a berm or not
+    logical, allocatable                   :: isValidZ(:)           ! is z in profile valid (above water level)
+    real(kind=wp), allocatable             :: dischargeProfile(:)   ! discharge at profile points
+    real(kind=wp), allocatable             :: ZProfile(:)           ! dikeheight at profile points
+end type
 
 private
 public :: iterateToGivenDischarge
@@ -70,8 +72,6 @@ subroutine iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, 
 !
     type (tpGeometry)                          :: geometry       ! structure with geometry data
 !
-    currentLogging = logging
-
     !
     ! basic test : water level must be > toe, otherwise return water level
     !
@@ -85,7 +85,7 @@ subroutine iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, 
                                  geometryF%roughness, geometry, success, errorText)
 
         if (success) then
-            call iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText )
+            call iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, dikeHeight, modelFactors, overtopping, logging, success, errorText )
         else
             call set_nan(dikeHeight)
         endif
@@ -98,7 +98,7 @@ end subroutine iterateToGivenDischarge
 !! Subroutine with iterateToGivenDischarge, with already checked profile
 !!
 !! @ingroup dllDikesOvertopping
-subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText )
+subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, dikeHeight, modelFactors, overtopping, logging, success, errorText )
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
     use overtoppingInterface
@@ -110,6 +110,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     real(kind=wp), intent(out)                 :: dikeHeight     !< dike height
     type(tpOvertoppingInput), intent(inout)    :: modelFactors   !< struct with modelFactors
     type (tpOvertopping), intent(inout)        :: overtopping    !< structure with overtopping results
+    type(tLogging), intent(in)                 :: logging        !< logging struct
     logical, intent(out)                       :: success        !< flag for success
     character(len=*), intent(out)              :: errorText      !< error message (only set if not successful)
 !
@@ -131,10 +132,12 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     real(kind=wp)                              :: X(2)                  ! argument for logInterpolate
     real(kind=wp)                              :: Y(2)                  ! argument for logInterpolate
     logical                                    :: foundValue            ! flag for early succesfull return
-    
+    type(tOmkeer)                              :: omkeerProps           ! struct with derived properties
+
     foundValue = .false.
     nPoints = geometry%nCoordinates
-    allocate(isBerm(nPoints-1), dischargeProfile(nPoints), isValidZ(nPoints), ZProfile(nPoints), stat=ierr)
+    allocate(omkeerProps%isBerm(nPoints-1), omkeerProps%dischargeProfile(nPoints), omkeerProps%isValidZ(nPoints), &
+             omkeerProps%ZProfile(nPoints), stat=ierr)
     if (ierr /= 0) then
         success = .false.
         write(errorText, GetOvertoppingFormat(allocateError)) 4*nPoints-1
@@ -142,12 +145,12 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     endif
     
     do i = 1, nPoints-1
-        isBerm(i) = geometry%segmentTypes(i) == 2
+        omkeerProps%isBerm(i) = geometry%segmentTypes(i) == 2
     enddo
     do i = 1, nPoints
-        isValidZ(i) = .false.
-        call set_nan(ZProfile(i))
-        call set_nan(dischargeProfile(i))
+        omkeerProps%isValidZ(i) = .false.
+        call set_nan(omkeerProps%ZProfile(i))
+        call set_nan(omkeerProps%dischargeProfile(i))
     enddo
 
     !
@@ -155,16 +158,16 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     !
     do i = 1, nPoints
         nextDikeHeight = geometry%yCoordinates(i)
-        isValidZ(i) = nextDikeHeight >= load%H
+        omkeerProps%isValidZ(i) = nextDikeHeight >= load%H
         if (i > 1) then
-            isValidZ(i) = isValidZ(i) .and. .not. isBerm(i-1)
+            omkeerProps%isValidZ(i) = omkeerProps%isValidZ(i) .and. .not. omkeerProps%isBerm(i-1)
         endif
-        if (isValidZ(i)) then
+        if (omkeerProps%isValidZ(i)) then
             do j = 1, MaxItA
-                call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+                call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText )
                 if (.not. success) return ! only in very exceptional cases
-                ZProfile(i) = nextDikeHeight
-                dischargeProfile(i) = overtopping%Qo
+                omkeerProps%ZProfile(i) = nextDikeHeight
+                omkeerProps%dischargeProfile(i) = overtopping%Qo
                 if (i == 1 .or. overtopping%Qo > 0.0_wp) exit
                 nextDikeHeight = 0.5_wp * ( max(geometry%yCoordinates(i-1), load%H) + nextDikeHeight)
             enddo
@@ -177,13 +180,13 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     iLow = nPoints + 1
     iUp = 0
     do i = 1, nPoints
-        if (isValidZ(i)) then
-            if (equalRealsRelative(givenDischarge , dischargeProfile(i) , tolDischarge )) then
+        if (omkeerProps%isValidZ(i)) then
+            if (equalRealsRelative(givenDischarge , omkeerProps%dischargeProfile(i) , tolDischarge )) then
                 success = .true.
-                dikeHeight = ZProfile(i)
-                overtopping%Qo = dischargeProfile(i)
+                dikeHeight = omkeerProps%ZProfile(i)
+                overtopping%Qo = omkeerProps%dischargeProfile(i)
                 foundValue = .true.
-            else if (givenDischarge < dischargeProfile(i)) then
+            else if (givenDischarge < omkeerProps%dischargeProfile(i)) then
                 iLow = i
             else if (iUp == 0) then
                 iUp = i
@@ -191,7 +194,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
         endif
     enddo
     
-    call checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischarge, dikeHeight, iUp, iLow, dis1, dis2, minDikeHeight, maxDikeHeight, foundValue, success, errorText)
+    call checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischarge, dikeHeight, omkeerProps, logging, iUp, iLow, dis1, dis2, minDikeHeight, maxDikeHeight, foundValue, success, errorText)
     if ( .not. success) return
     !
     ! use logarithmic relation between discharge and dike height
@@ -207,7 +210,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
                 !
                 nextDikeHeight = 0.5_wp * (minDikeHeight + maxDikeHeight)
             endif
-            call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+            call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText )
         
             if (.not. success) return  ! only in very exceptional cases
         
@@ -237,15 +240,17 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
         endif
     endif
 
-    deallocate(isBerm, dischargeProfile, isValidZ, ZProfile)
+    deallocate(omkeerProps%isBerm, omkeerProps%dischargeProfile, omkeerProps%isValidZ, omkeerProps%ZProfile)
 
 end subroutine iterateToGivenDischargeValidProfile
 
-subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischarge, dikeHeight, iUp, iLow, dis1, dis2, minDikeHeight, maxDikeHeight, foundValue, success, errorText)
+subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischarge, dikeHeight, omkeerProps, logging, iUp, iLow, dis1, dis2, minDikeHeight, maxDikeHeight, foundValue, success, errorText)
     type(tpGeometry), intent(in)               :: geometry       !< internal structure with geometry data
     type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
     type(tpOvertoppingInput), intent(inout)    :: modelFactors   !< struct with modelFactors
     type(tpOvertopping), intent(inout)         :: overtopping    !< structure with overtopping results
+    type(tOmkeer), intent(inout)               :: omkeerProps    !< struct with derived properties
+    type(tLogging), intent(in)                 :: logging        !< logging struct
     integer, intent(in)                        :: iUp            !< upper bound on profile
     integer, intent(in)                        :: iLow           !< lower bound on profile
     real(kind=wp), intent(in)                  :: givenDischarge !< discharge to iterate to
@@ -274,28 +279,28 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
     if (foundValue ) then
         continue
     elseif (iUp > iLow + 1 ) then
-        minDikeHeight = ZProfile(iLow)
-        dis1 = dischargeProfile(iLow)
-        maxDikeHeight = ZProfile(iUp)
-        dis2 = dischargeProfile(iUp)
+        minDikeHeight = omkeerProps%ZProfile(iLow)
+        dis1 = omkeerProps%dischargeProfile(iLow)
+        maxDikeHeight = omkeerProps%ZProfile(iUp)
+        dis2 = omkeerProps%dischargeProfile(iUp)
         do i = iLow + 1, iUp - 1
-            if (.not. isBerm(i) ) then
+            if (.not. omkeerProps%isBerm(i) ) then
                 nextDikeHeight = geometry%yCoordinates(i) + xDiff_min * geometry%segmentSlopes(i)
-                call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+                call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText )
                 if (.not. success) return ! only in very exceptional cases
-                ZProfile(i) = nextDikeHeight
-                dischargeProfile(i) = overtopping%Qo
-                isValidZ(i) = .true.
-                if (dischargeProfile(i) < givenDischarge) then
-                    if (ZProfile(i) - ZProfile(iLow) > minZberm ) then
-                        X = (/ dischargeProfile(iLow), dischargeProfile(i) /)
-                        Y = (/ ZProfile(iLow), ZProfile(i) /)
+                omkeerProps%ZProfile(i) = nextDikeHeight
+                omkeerProps%dischargeProfile(i) = overtopping%Qo
+                omkeerProps%isValidZ(i) = .true.
+                if (omkeerProps%dischargeProfile(i) < givenDischarge) then
+                    if (omkeerProps%ZProfile(i) - omkeerProps%ZProfile(iLow) > minZberm ) then
+                        X = (/ omkeerProps%dischargeProfile(iLow), omkeerProps%dischargeProfile(i) /)
+                        Y = (/ omkeerProps%ZProfile(iLow), omkeerProps%ZProfile(i) /)
                     else
-                        nextDikeHeight = max(load%H + eps, ZProfile(i) - minZberm)
-                        call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, success, errorText )
+                        nextDikeHeight = max(load%H + eps, omkeerProps%ZProfile(i) - minZberm)
+                        call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText )
                         if (.not. success) return ! only in very exceptional cases
-                        X = (/ overtopping%Qo, dischargeProfile(i) /)
-                        Y = (/ nextDikeHeight, ZProfile(i) /)
+                        X = (/ overtopping%Qo, omkeerProps%dischargeProfile(i) /)
+                        Y = (/ nextDikeHeight, omkeerProps%ZProfile(i) /)
                     endif
                     X = max(X, tiny(X))
                     dikeHeight = LogLinearInterpolate(X, Y, givenDischarge, ierr, errorText)
@@ -303,19 +308,19 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
                     success = ierr == 0
                     foundValue = .true.
                 else
-                    minDikeHeight = ZProfile(i)
-                    dis1 = dischargeProfile(i)
+                    minDikeHeight = omkeerProps%ZProfile(i)
+                    dis1 = omkeerProps%dischargeProfile(i)
                 endif
             endif
         enddo
     else if (iUp == iLow + 1 ) then
-        minDikeHeight = ZProfile(iLow)
-        dis1 = dischargeProfile(iLow)
-        maxDikeHeight = ZProfile(iUp)
-        dis2 = dischargeProfile(iUp)
+        minDikeHeight = omkeerProps%ZProfile(iLow)
+        dis1 = omkeerProps%dischargeProfile(iLow)
+        maxDikeHeight = omkeerProps%ZProfile(iUp)
+        dis2 = omkeerProps%dischargeProfile(iUp)
     else if (iLow == nPoints + 1 ) then
         minDikeHeight = load%h
-        call calculateQoRTO(minDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
+        call calculateQoRTO(minDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText)
         if (.not. success) return ! only in very exceptional cases
         dis1 = overtopping%Qo
         if (dis1 < givenDischarge) then
@@ -324,20 +329,20 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
             return
         endif
         if (iUp /= 0) then
-            maxDikeHeight = ZProfile(iUp)
-            dis2 = dischargeProfile(iUp)
+            maxDikeHeight = omkeerProps%ZProfile(iUp)
+            dis2 = omkeerProps%dischargeProfile(iUp)
         else
             maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
-            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
+            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText)
             if (.not. success) return ! only in very exceptional cases
             dis2 = overtopping%Qo
         endif
     else
-        minDikeHeight = ZProfile(iLow)
-        dis1 = dischargeProfile(iLow)
+        minDikeHeight = omkeerProps%ZProfile(iLow)
+        dis1 = omkeerProps%dischargeProfile(iLow)
         maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
         do
-            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, success, errorText)
+            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText)
             dis2 = overtopping%Qo
             
             if (.not. success) return ! only in very exceptional cases

@@ -38,6 +38,7 @@ module zFunctionsOvertopping
     use geometryModuleOvertopping,   only : initializeGeometry, deallocateGeometry
     use vectorUtilities,             only : interpolateLine
     use OvertoppingMessages
+    use ModuleLogging
     use equalReals
 
     implicit none
@@ -51,12 +52,13 @@ contains
 !>
 !! Subroutine to calculate the overtopping discharge with the Overtopping dll
 !! @ingroup LibOvertopping
-subroutine calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry, succes, errorMessage)
+subroutine calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry, logging, succes, errorMessage)
     real(kind=wp),                 intent(in)    :: dikeHeight     !< dike height
     type(tpOvertoppingInput),      intent(inout) :: modelFactors   !< struct with model factors
     type (tpOvertopping),          intent(out)   :: overtopping    !< structure with overtopping results
     type (tpGeometry),             intent(in)    :: geometry       !< structure with geometry data
     type (tpLoad),                 intent(in)    :: load           !< structure with load parameters
+    type(tLogging),                intent(in)    :: logging        !< logging struct
     logical,                       intent(out)   :: succes         !< flag for succes
     character(len=*),              intent(out)   :: errorMessage   !< error message
 
@@ -82,7 +84,7 @@ subroutine calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry,
     endif
 
     if (succes) then
-        call calculateOvertopping (geometryAdjusted, load, modelFactors, overtopping, succes, errorMessage)
+        call calculateOvertopping (geometryAdjusted, load, modelFactors, overtopping, logging, succes, errorMessage)
     endif
 
     if (.not. succes) then

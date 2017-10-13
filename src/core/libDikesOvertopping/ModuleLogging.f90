@@ -40,6 +40,4 @@ type, bind(C) :: TLogging
    character(len=maxFilenameLength) :: fileName  =  ' '          !< filename of logging
 end type TLogging
 
-type(TLogging) :: currentLogging                                 !< copy of argument logging
-
 end module ModuleLogging
