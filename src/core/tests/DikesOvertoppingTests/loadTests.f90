@@ -92,8 +92,8 @@ subroutine allLoadTests(nCrossSections, nBasicTestSeries)
             
             write (crossSectionNumber,'(I1)') i
             write (testSerieNumber,   '(I2)') j
-            call testWithLevel(testSeriesLoad, "Calculations with the Overtopping dll in the test serie " // &
-                                           trim(testSerieNumber) // " and cross section " // crossSectionNumber, 1)
+            call testWithLevel(testSeriesLoad, "Trends; Series of varying load with the dll in test series " // &
+                                           trim(testSerieNumber) // " for cross section " // crossSectionNumber, 1)
             
             write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', j, '.txt'
             errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'

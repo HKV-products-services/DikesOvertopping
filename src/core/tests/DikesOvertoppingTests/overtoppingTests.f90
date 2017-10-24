@@ -58,14 +58,14 @@ subroutine allovertoppingTests
     call allOvertoppingDllTests
 
     !
-    ! Test using external dll, Java/FEWS interface
-    call allOvertoppingDllFewsTests
-
-    !    
     ! test for 'omkeerVariant'
     call allOmkeerVariantTests
 
     !
+    ! Test using external dll, Java/FEWS interface
+    call allOvertoppingDllFewsTests
+
+    !    
     ! All test series with varying the load for different cross sections
     call allLoadTests(nCrossSections, nBasicTestSeries)
 

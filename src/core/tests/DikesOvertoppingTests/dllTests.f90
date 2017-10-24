@@ -51,20 +51,20 @@ public :: allOvertoppingDllTests
 contains
 
 subroutine allOvertoppingDllTests
-    call testWithLevel(overtoppingDllTest, 'Test the external overtopping dll', 1)
-    call testWithLevel(overtoppingDikeInProfileTest, 'Test a dikeheight at one of the profile points', 1)
-    call testWithLevel(influenceRoughnessTest, 'Test influence roughness', 1)
-    call testWithLevel(overtoppingValidationTest, 'Test validation of incorrect profile and negative model factor', 1)
-    call testWithLevel(overtoppingValidationRoughnessTest, 'Test validation of invalid roughness', 1)
-    call testWithLevel(overtoppingMultipleValidationTest, 'Test validation of incorrect profile and negative model factor in one call', 1)
-    call testWithLevel(overtoppingValidationTestZPoints, 'Test message of incorrect profile (z-value)', 1)
-    call testWithLevel(overtoppingZ2Test, 'Test h+z2 > dikeheight', 1)
-    call testWithLevel(LoadNaNTest, 'Test error handling in case of NaN in load', 1)
-    call testWithLevel(TestProfileAdjustment, "Test whether the profile is adapted correctly", 1)
-    call testWithLevel(TestRoughnessIssue44A, "First test for calculateGammaF related to issue 44", 1)
-    call testWithLevel(TestRoughnessIssue44B, "Second test for calculateGammaF related to issue 44", 1)
-    call testWithLevel(TestIssue45, "Test for issue 45", 1)
-!    call testWithLevel(overtoppingDllTest2, 'Test the external overtopping dll 2', 0)
+    call testWithLevel(overtoppingDllTest,                 'General; Test functions versionNumber, calculateQoF, calcZValue in the dll', 1)
+    call testWithLevel(overtoppingDikeInProfileTest,       'General; Test a dikeheight at one of the profile points', 1)
+    call testWithLevel(influenceRoughnessTest,             'General; Test influence roughness', 1)
+    call testWithLevel(overtoppingValidationTest,          'General; Test validation of incorrect profile and negative model factor', 1)
+    call testWithLevel(overtoppingValidationRoughnessTest, 'General; Test validation of invalid roughness', 1)
+    call testWithLevel(overtoppingMultipleValidationTest,  'General; Test validation of incorrect profile and negative model factor in one call', 1)
+    call testWithLevel(overtoppingValidationTestZPoints,   'General; Test message of incorrect profile (z-value)', 1)
+    call testWithLevel(overtoppingZ2Test,                  'General; Test h+z2 > dikeheight', 1)
+    call testWithLevel(LoadNaNTest,                        'General; Test error handling in case of NaN in load', 1)
+    call testWithLevel(TestProfileAdjustment,              'General; Test whether the profile is adapted correctly', 1)
+    call testWithLevel(TestRoughnessIssue44A,              'General; ISSUE; Test A for calculateGammaF related to issue 44', 1)
+    call testWithLevel(TestRoughnessIssue44B,              'General; ISSUE; Test B for calculateGammaF related to issue 44', 1)
+    call testWithLevel(TestIssue45,                        'General; ISSUE; Test for issue 45', 1)
+    call testWithLevel(overtoppingDllTest2,                'Uniform Slope; Test the dll for a uniform slope (18 cases)', 1)
 end subroutine allOvertoppingDllTests
 
 !> Test the functions in DikesOvertopping.dll.
@@ -787,6 +787,13 @@ subroutine overtoppingDllTest2
     type(tpOvertoppingInput)       :: modelFactors
     real(kind=wp)                  :: criticalOvertoppingRate
     type(tLogging)                 :: logging
+    integer                        :: testNr
+    real(kind=wp)                  :: z2Expected
+    real(kind=wp)                  :: qoExpected
+    real(kind=wp)                  :: zExpected
+    character(len=128)             :: z2String
+    character(len=128)             :: qoString
+    character(len=128)             :: zString
 
     pointer            (qz, calcZValue)
     pointer            (qc, calculateQoF)
@@ -794,47 +801,159 @@ subroutine overtoppingDllTest2
     p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
     qc = getprocaddress (p, "calculateQoF"C)
     qz = getprocaddress (p, "calcZValue"C)
-    !
-    ! =====  initializations =====
-    !
-    ! model factors
-    !
-    modelFactors%factorDeterminationQ_b_f_n = 2.6_wp
-    modelFactors%factorDeterminationQ_b_f_b = 4.75_wp
-    modelFactors%m_z2                       = 1.00_wp
-    modelFactors%fshallow                   = 0.92_wp
-    modelFactors%ComputedOvertopping        = 1.0_wp
-    modelFactors%CriticalOvertopping        = 1.0_wp
-    modelFactors%relaxationFactor           = 1.0d0
-    !
-    ! structure parameters
-    !
+    
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
-    geometryF%xcoords   = [ 0.0_wp, 30.0_wp]
-    geometryF%ycoords   = [-5.0_wp,  5.0_wp]
-    geometryF%roughness = 1.0_wp
-    geometryF%normal    = 60.0_wp ! degrees
-    geometryF%npoints   = npoints
-    dikeHeight          = 5.0_wp
-    criticalOvertoppingRate = 1.0d-3
-    !
-    ! load parameters
-    !
-    load%h     =     2.0_wp
-    load%Hm0   =     1.0_wp
-    load%Tm_10 =     4.0_wp
-    load%phi   =    60.0_wp
-    !
-    ! ===== actual test computations =====
-    !
-    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
-    call assert_true(succes, errorMessage)
-    call assert_comparable(overtopping%Qo, 0.20234d-03, margin, 'Qo from dllOvertopping.dll')
-    call assert_comparable(overtopping%z2, 2.74895_wp, margin, 'z2 from dllOvertopping.dll')
 
-    call calcZValue(criticalOvertoppingRate, modelFactors, overtopping%Qo, z, succes, errorMessage)
-    call assert_true(succes, errorMessage)
-    call assert_comparable(z, 1.338468_wp, margin, "Z value from dllOvertopping.dll")
+    do testNr=1,18
+        ! =====  initializations =====
+        !
+        ! model factors
+        !
+        modelFactors%factorDeterminationQ_b_f_n = 2.6_wp
+        modelFactors%factorDeterminationQ_b_f_b = 4.75_wp
+        modelFactors%m_z2                       = 1.00_wp
+        modelFactors%fshallow                   = 0.92_wp
+        modelFactors%ComputedOvertopping        = 1.0_wp
+        modelFactors%CriticalOvertopping        = 1.0_wp
+        modelFactors%relaxationFactor           = 1.0d0
+        !
+        ! structure parameters
+        !
+        if (testNr<=9) then
+            geometryF%xcoords   = [ 0.0_wp, 40.0_wp]
+        else
+            geometryF%xcoords   = [ 0.0_wp, 20.0_wp]
+        endif
+        geometryF%ycoords   = [-5.0_wp,  5.0_wp]
+        geometryF%roughness = 1.0_wp
+        geometryF%normal    = 0.0_wp ! degrees
+        geometryF%npoints   = npoints
+        dikeHeight          = 5.0_wp
+        criticalOvertoppingRate = 1.0d-3
+        !
+        ! load parameters
+        !
+        load%h     =     2.0_wp
+        load%Hm0   =     1.0_wp
+        load%Tm_10 =     4.0_wp
+        load%phi   =     0.0_wp
+        !
+        select case (testNr)
+            case (1)
+                z2Expected = 2.06136_wp
+                qoExpected = 5.83238d-06
+                zExpected  = 5.14433_wp
+            case (2)
+                load%h     = 2.5_wp
+                z2Expected = 2.06136_wp
+                qoExpected = 3.90356d-05
+                zExpected  = 3.24328_wp
+            case (3)
+                load%Hm0   = 0.8_wp
+                z2Expected = 1.84374_wp
+                qoExpected = 1.21404d-06
+                zExpected  = 6.71380_wp
+            case (4)
+                load%Tm_10 = 5.0_wp
+                z2Expected = 2.57670_wp
+                qoExpected = 7.13664d-05
+                zExpected  = 2.63993_wp
+            case (5)
+                load%phi   = 45.0_wp
+                z2Expected = 1.85729_wp
+                qoExpected = 7.97870d-07
+                zExpected  = 7.13357_wp
+            case (6)
+                dikeHeight = 4.0_wp
+                z2Expected = 2.06136_wp
+                qoExpected = 2.61262d-04
+                zExpected  = 1.34223_wp
+            case (7)
+                geometryF%roughness = 0.7_wp
+                z2Expected = 1.44295_wp
+                qoExpected = 4.39376d-08
+                zExpected  = 10.03274_wp
+            case (8)
+                modelFactors%m_z2                = 1.10_wp
+                modelFactors%CriticalOvertopping = 0.9_wp
+                z2Expected = 2.26750_wp
+                qoExpected = 5.83238d-06
+                zExpected  = 5.03897_wp
+            case (9)
+                modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
+                modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
+                z2Expected = 2.06136_wp
+                qoExpected = 1.71847d-05
+                zExpected  = 4.06373_wp
+            case (10)
+                z2Expected = 3.05105_wp
+                qoExpected = 2.56622d-04
+                zExpected  = 1.36015_wp
+            case (11)
+                load%h     = 2.5_wp
+                z2Expected = 3.05105_wp
+                qoExpected = 9.41621d-04
+                zExpected  = 6.01523d-02
+            case (12)
+                load%Hm0   = 0.8_wp
+                z2Expected = 2.48203_wp
+                qoExpected = 2.61249d-05
+                zExpected  = 3.64487_wp
+            case (13)
+                load%Tm_10 = 5.0_wp
+                z2Expected = 3.15124_wp
+                qoExpected = 2.56622d-04
+                zExpected  = 1.36015_wp
+            case (14)
+                load%phi   = 45.0_wp
+                z2Expected = 2.74900_wp
+                qoExpected = 6.58446d-05
+                zExpected  = 2.72046_wp
+            case (15)
+                dikeHeight = 4.0_wp
+                z2Expected = 3.05105_wp
+                qoExpected = 3.45509d-03
+                zExpected  = -1.23985_wp
+            case (16)
+                geometryF%roughness = 0.7_wp
+                z2Expected = 2.22043_wp
+                qoExpected = 1.38699d-05
+                zExpected  = 4.27801_wp
+            case (17)
+                modelFactors%m_z2                = 1.10_wp
+                modelFactors%CriticalOvertopping = 0.9_wp
+                z2Expected = 3.35616_wp
+                qoExpected = 2.56622d-04
+                zExpected  = 1.25479_wp
+            case (18)
+                modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
+                modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
+                z2Expected = 3.05105_wp
+                qoExpected = 6.31188d-04
+                zExpected  = 4.60152d-01
+            case default    
+                z2Expected = 0.00000_wp
+                qoExpected = 0.00000d-06
+                zExpected  = 0.00000_wp
+        end select
+            
+!        z2String = achar(testNr)    
+        write (z2String,"(A,I2)") "z2 from dllOvertopping.dll case " , testNr   
+        write (qoString,"(A,I2)") "qo from dllOvertopping.dll case " , testNr   
+        write (zString, "(A,I2)") "Z from dllOvertopping.dll case "  , testNr   
+        !
+        ! ===== actual test computations =====
+        !
+        call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+        call assert_true(succes, errorMessage)
+        call assert_comparable(overtopping%z2, z2Expected, margin, z2String)
+        call assert_comparable(overtopping%Qo, qoExpected, margin, qoString)
+
+        call calcZValue(criticalOvertoppingRate, modelFactors, overtopping%Qo, z, succes, errorMessage) 
+        call assert_true(succes, errorMessage)
+        call assert_comparable(z, zExpected, margin, zString)
+        
+    end do
     !
     ! ===== clean up =====
     !

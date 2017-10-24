@@ -46,10 +46,10 @@ public :: allOvertoppingDllFewsTests
 contains
 
 subroutine allOvertoppingDllFewsTests
-    call testWithLevel(overtoppingValidationFewsTest, 'Test validation for Fews (Java)', 1)
-    call testWithLevel(overtoppingValidationFewsTest2, 'Test validation that passes for Fews (Java)', 1)
-    call testWithLevel(TestCalculateQoJ, 'Test CalculateQoJ', 1)
-    call testWithLevel(omkeerVariantTestJ, 'Test omkeerVariantJ', 1)
+    call testWithLevel(overtoppingValidationFewsTest,  'Java/FEWS interface; Test validation (A)', 1)
+    call testWithLevel(overtoppingValidationFewsTest2, 'Java/FEWS interface; Test validation (B)', 1)
+    call testWithLevel(TestCalculateQoJ,               'Java/FEWS interface; Test CalculateQoJ', 1)
+    call testWithLevel(omkeerVariantTestJ,             'Java/FEWS interface; Test omkeerVariantJ', 1)
 end subroutine allOvertoppingDllFewsTests
 
 !! @ingroup DikeOvertoppingTests

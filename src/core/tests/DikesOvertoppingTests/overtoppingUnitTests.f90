@@ -43,8 +43,8 @@ contains
 
 subroutine allOvertoppingUnitTests
     call SetLanguage('NL')
-    call testWithLevel(testCalculateGammaF, "Test function CalculateGammaF (tiny waves)", 1)
-    call testWithLevel(testCalculateGammaF2, "Test function CalculateGammaF (normal waves)", 1)
+    call testWithLevel(testCalculateGammaF,  "Unit tests; Test CalculateGammaF (tiny waves)", 1)
+    call testWithLevel(testCalculateGammaF2, "Unit tests; Test CalculateGammaF (normal waves)", 1)
 end subroutine allOvertoppingUnitTests
 
 !> test function CalculateGammaF tiny waves
