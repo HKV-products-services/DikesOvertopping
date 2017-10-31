@@ -481,7 +481,7 @@ subroutine versionNumber(version)
     !
     ! locals
     !
-    character(len=*), parameter :: cversion = "16.2.3.5003"
+    character(len=*), parameter :: cversion = "17.1.1.5857"
     !
     !==============================================================================
     !
