@@ -23,17 +23,8 @@ doc/doxygen/DikesOvertoppingFortran.doxyfile -text
 doc/doxygen/DoxygenLayout.xml -text
 doc/doxygen/RunDoxygen.bat -text
 extern/Utils/svn_insert_version.cmd -text
-release/Dikes[!!-~]Overtopping[!!-~]-[!!-~]Protocol[!!-~]van[!!-~]Overdracht[!!-~]-[!!-~]tekenblad.pdf -text
-release/Dikes[!!-~]Overtopping[!!-~]-[!!-~]Protocol[!!-~]van[!!-~]Overdracht.pdf -text
 release/Dikes[!!-~]Overtopping[!!-~]Kernel[!!-~]-[!!-~]Technical[!!-~]Documentation.pdf -text
-release/Dikes[!!-~]Overtopping[!!-~]Kernel[!!-~]-[!!-~]Technical[!!-~]design.pdf -text
 release/LicenseAGPL.txt -text
-release/Release[!!-~]notes[!!-~]Dikes[!!-~]Overtopping.pdf -text
-release/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Functional[!!-~]design.pdf -text
-release/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]plan.pdf -text
-release/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]plan_Summary.pdf -text
-release/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]report.pdf -text
-release/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]report_Summary.pdf -text
 release/dllDikesOvertopping.dll -text
 release/dllDikesOvertopping.lib -text
 src/core/teamcity.bat -text
