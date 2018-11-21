@@ -169,7 +169,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
                 omkeerProps%ZProfile(i) = nextDikeHeight
                 omkeerProps%dischargeProfile(i) = overtopping%Qo
                 if (i == 1 .or. overtopping%Qo > 0.0_wp) exit
-                nextDikeHeight = 0.5_wp * ( max(geometry%yCoordinates(i-1), load%H) + nextDikeHeight)
+                nextDikeHeight = 0.5_wp * ( max(geometry%yCoordinates(i-1) + xDiff_min * geometry%segmentSlopes(i-1), load%H) + nextDikeHeight)
             enddo
             if (overtopping%Qo < givenDischarge ) then
                 exit
@@ -329,8 +329,16 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
             return
         endif
         if (iUp /= 0) then
-            maxDikeHeight = omkeerProps%ZProfile(iUp)
-            dis2 = omkeerProps%dischargeProfile(iUp)
+            if (omkeerProps%dischargeProfile(iUp) > 0.0_wp) then
+                maxDikeHeight = omkeerProps%ZProfile(iUp)
+                dis2 = omkeerProps%dischargeProfile(iUp)
+            else
+                dikeHeight = load%h
+                overtopping%z2 = 0d0
+                overtopping%Qo = 0d0
+                foundValue = .true.
+                return
+            endif
         else
             maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
             call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText)
