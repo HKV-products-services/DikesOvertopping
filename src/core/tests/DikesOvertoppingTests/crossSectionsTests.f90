@@ -41,7 +41,9 @@ module crossSectionsAdaptionTests
     use typeDefinitionsOvertopping
     use geometryModuleOvertopping
     use moduleLogging
-
+    use omkeerVariantModule
+    use overtoppingInterface
+    
     implicit none
 
     type (tpOvertoppingInput) :: modelFactors         ! structure with model factors
@@ -187,7 +189,7 @@ subroutine TestSeriesCrossSections
     integer                    :: ios                  ! input/output-status
     integer                    :: nstep                ! number of computations in the test serie
     integer                    :: istep                ! do-loop counter in the test serie
-
+    
     real(kind=wp)              :: var                  ! value of the variable in the test serie
     real(kind=wp)              :: varmin               ! minimum value of the variable in the test serie
     real(kind=wp)              :: varmax               ! maximum value of the variable in the test serie
@@ -200,6 +202,16 @@ subroutine TestSeriesCrossSections
     character(len=250)         :: errorMessage         ! error message
     character(len=5)           :: ratio                ! ratio to be printed
     type(tLogging)             :: logging              ! logging struct
+
+    type(OvertoppingGeometryTypeF) :: geometryF
+    integer                    :: i                    ! do-loop counter
+    integer                    :: npoints              ! number of profile points
+    real(kind=wp)              :: z2                   ! z2 from overtopping calculation
+    real(kind=wp)              :: q0                   ! q0 from overtopping calculation
+    real(kind=wp)              :: HBN_2                ! HBN from omkeervariant at qc=1E-2
+    real(kind=wp)              :: HBN_3                ! HBN from omkeervariant at qc=1E-3
+    real(kind=wp)              :: HBN_4                ! HBN from omkeervariant at qc=1E-4  
+    real(kind=wp), parameter   :: HBNdummy = -9.999    ! dummy value for HBN (in case of failure)
 !
 !   source
 !
@@ -224,6 +236,9 @@ subroutine TestSeriesCrossSections
     yCoordinates     = geometry%yCoordinates
     roughnessFactors = geometry%roughnessFactors
 
+    npoints = geometry%nCoordinates
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+
     !
     ! boundaries for variation of the slope
     call variableBoundaries (crossSectionId, numberTestSerie, varmin, varmax, varstep, varSlope)
@@ -235,14 +250,14 @@ subroutine TestSeriesCrossSections
     open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
     call assert_equal(ios, 0 ,  'Unable to open the file: ' // trim(outputFile))
 
-    write (ounit,'(a)') '# Input and results test serie Overtopping dll'
-    write (ounit,'(a)') '#  1       2       3'
+    write (ounit,'(a)')     '# Input and results test serie Overtopping dll'
+    write (ounit,'(a)')     '#       1       2              3       4       5       6'
     if (varSlope > 0) then
-        write (ounit,'(a)') '#  Slope   Z2%     Qo'
+        write (ounit,'(a)') '#   Slope     Z2%             Qo   HBN_4   HBN_3   HBN_2'
     elseif ((crossSectionId == 2) .or. (crossSectionId == 3)) then
-        write (ounit,'(a)') '#  Buckling Z2%     Qo'
+        write (ounit,'(a)') '#   Buckl     Z2%             Qo   HBN_4   HBN_3   HBN_2'
     elseif (crossSectionId == 4) then
-        write (ounit,'(a)') '#  BermLeng Z2%     Qo'
+        write (ounit,'(a)') '#   BermL     Z2%             Qo   HBN_4   HBN_3   HBN_2'
     endif
 
     psi = geometry%psi
@@ -262,32 +277,63 @@ subroutine TestSeriesCrossSections
                                 geometry%xCoordinates, geometry%yCoordinates,   &
                                 geometry%roughnessFactors, succes, errorMessage)
 
+        do i = 1, npoints
+            geometryF%xcoords(i)   = geometry%xCoordinates(i)
+            geometryF%ycoords(i)   = geometry%yCoordinates(i)
+            if (i < npoints) geometryF%roughness(i) = geometry%roughnessFactors(i)
+        enddo
+        geometryF%normal  = geometry%psi
+        geometryF%npoints = npoints
+
         call assert_true (succes, errorMessage)
         !
         ! Compute the wave runup and the wave overtopping discharge with the Overtopping module
         call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, succes, errorMessage)
+
         if (.not. succes) then
             write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
-        !
-        ! Write the results to the output file
-        else if (varSlope > 0) then
-            write(ratio, '(f5.1)') 1.0d0 / geometry%segmentSlopes(varSlope)
-            if (.not. extraSlopeTest) then
-                write (ounit,'(2a,f8.3,f15.10)') '    1:', trim(adjustl(ratio)), load%h + overtopping%z2, overtopping%Qo
-            else
-                write (ounit,'(2a,f8.3,f15.10)') '    1:', ratio, load%h + overtopping%z2, overtopping%Qo
-            endif
-        elseif ((crossSectionId == 2) .or. (crossSectionId == 3)) then
-            write (ounit,'(f9.3,f8.3,f15.10)') geometry%yCoordinates(2), load%h + overtopping%z2, overtopping%Qo
-        elseif (crossSectionId == 4) then
-            write (ounit,'(f9.1,f8.3,f15.10)') geometry%xCoordinates(3) - geometry%xCoordinates(2), &
-                                               load%h + overtopping%z2, overtopping%Qo
+        else
+            z2   = overtopping%z2
+            q0   = overtopping%Qo
+            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, succes, errorMessage, logging)
+            if (.not. succes) then
+               HBN_4 = HBNdummy
+            end if
+            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, succes, errorMessage, logging)
+            if (.not. succes) then
+               HBN_3 = HBNdummy
+            end if
+            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, succes, errorMessage, logging)
+            if (.not. succes) then
+               HBN_2 = HBNdummy
+            end if
+!            if (.not. succes) then
+!                write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
+!            else
+                ! Write the results to the output file
+                if (varSlope > 0) then
+                    write(ratio, '(f5.1)') 1.0d0 / geometry%segmentSlopes(varSlope)
+                    if (.not. extraSlopeTest) then
+                        write (ounit,'(2a,f8.3,f15.10,f8.3,f8.3,f8.3)') '    1:', trim(adjustl(ratio)), &
+                            load%h+z2, q0, HBN_4, HBN_3, HBN_2
+                    else
+                        write (ounit,'(2a,f8.3,f15.10,f8.3,f8.3,f8.3)') '    1:', ratio, &
+                            load%h+z2, q0, HBN_4, HBN_3, HBN_2
+                    endif
+                elseif ((crossSectionId == 2) .or. (crossSectionId == 3)) then
+                    write (ounit,'(f9.3,f8.3,f15.10,f8.3,f8.3,f8.3)') geometry%yCoordinates(2), &
+                            load%h+z2, q0, HBN_4, HBN_3, HBN_2
+                elseif (crossSectionId == 4) then
+                    write (ounit,'(f9.1,f8.3,f15.10,f8.3,f8.3,f8.3)') geometry%xCoordinates(3) - geometry%xCoordinates(2), &
+                            load%h+z2, q0, HBN_4, HBN_3, HBN_2
+                endif
+ !           endif
         endif
-
     enddo
     close(ounit)
 
     call deallocateGeometry(geometry)
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
     deallocate(xCoordinates)
     deallocate(yCoordinates)

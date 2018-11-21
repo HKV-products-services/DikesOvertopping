@@ -38,6 +38,7 @@ src/wrappers/lib/Deltares.Standard.dll -text
 src/wrappers/lib/Deltares.Standard.pdb -text
 src/wrappers/lib/nunit.framework.dll -text
 test/PlotResults.m/Analyse_overtoppingmodule_results_all.m -text
+test/PlotResults.m/Compare_overtoppingmodule_results_all.m -text
 test/PlotResults.m/centre_title.m -text
 test/PlotResults.m/md_paper_deltares.m -text
 test/PlotResults.m/rd_overtoppingmodule_results_B.m -text

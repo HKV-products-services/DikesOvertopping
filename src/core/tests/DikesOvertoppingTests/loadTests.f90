@@ -42,6 +42,8 @@ module loadTests
     use readCrossSectionForTests
     use overtoppingMessages
     use moduleLogging
+    use omkeerVariantModule
+    use overtoppingInterface
 
     implicit none
     private
@@ -113,9 +115,11 @@ subroutine testSeriesLoad
     integer                  :: tunit                ! unit-number for the test serie file
     integer                  :: ounit                ! unit-number for the output file
     integer                  :: ios                  ! input/output-status
-
+    integer                  :: i                    ! do-loop counter
+    
     integer                  :: nstep                ! number of computations in the test serie
     integer                  :: istep                ! do-loop counter in the test serie
+    integer                  :: npoints              ! number of profile points
 
     real(kind=wp)            :: waveSteepness        ! wave steepness
     real(kind=wp)            :: beta                 ! wave direction w.r.t. the dike normal
@@ -124,11 +128,17 @@ subroutine testSeriesLoad
     real(kind=wp)            :: varmax               ! maximum value of the variable in the test serie
     real(kind=wp)            :: varstep              ! step size of the variable in the test serie
     real(kind=wp)            :: trig                 ! trigger for the variable in the test serie
+    real(kind=wp)            :: z2                   ! z2 from overtopping calculation
+    real(kind=wp)            :: q0                   ! q0 from overtopping calculation
+    real(kind=wp)            :: HBN_2                ! HBN from omkeervariant at qc=1E-2
+    real(kind=wp)            :: HBN_3                ! HBN from omkeervariant at qc=1E-3
+    real(kind=wp)            :: HBN_4                ! HBN from omkeervariant at qc=1E-4
 
     character(len=1)         :: comment              ! comment character
     character(len=2)         :: free                 ! symbol for the parameter to vary in the test serie 
 
     type (tpGeometry)        :: geometry             ! structure with geometry data
+    type(OvertoppingGeometryTypeF) :: geometryF
     type (tpLoad)            :: load                 ! structure with load data
     type (tpOvertopping)     :: overtopping          ! structure with overtopping results
     logical                  :: succes               ! flag for succes
@@ -137,12 +147,23 @@ subroutine testSeriesLoad
 
     real(kind=wp), parameter :: margin = 1.0d-6      ! relative value for the margin
     integer                  :: ierr                 ! error code
+    real(kind=wp), parameter :: HBNdummy = -9.999    ! dummy value for HBN (in case of failure)
 !
 !   source
 !
     !
     !   read the cross section
     call readCrossSection(crossSectionFile, geometry, succes, errorMessage)
+
+    npoints = geometry%nCoordinates
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    do i = 1, npoints
+        geometryF%xcoords(i)   = geometry%xCoordinates(i)
+        geometryF%ycoords(i)   = geometry%yCoordinates(i)
+        if (i < npoints) geometryF%roughness(i) = geometry%roughnessFactors(i)
+    enddo
+    geometryF%normal  = geometry%psi
+    geometryF%npoints = npoints
     !
     ! Read the test serie
     !
@@ -196,8 +217,8 @@ subroutine testSeriesLoad
     !
     ! write headers to output file
     write (ounit,'(a)') '# Input and results test serie Overtopping dll'
-    write (ounit,'(a)') '#  1       2       3       4       5       6       7'
-    write (ounit,'(a)') '#  WL      HS      WS      BETA    TSPEC   Z2%     Qo'
+    write (ounit,'(a)') '#      1       2       3       4       5       6              7       8       9      10'
+    write (ounit,'(a)') '#     WL      HS      WS    BETA   TSPEC     Z2%             Qo   HBN_4   HBN_3   HBN_2'
 
     nstep = nint( (varmax - varmin) / varstep)
     do istep = 0, nstep
@@ -227,14 +248,33 @@ subroutine testSeriesLoad
         if (.not. succes) then
             write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
         else
-        ! Write the results to the output file
-            write (ounit,'(f8.2,2f8.3,f8.1,f8.2,f8.3,f15.10)') load%h, load%Hm0, waveSteepness, beta, load%Tm_10, &
-                                                           load%h + overtopping%z2, overtopping%Qo
+            z2   = overtopping%z2
+            q0   = overtopping%Qo
+            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, succes, errorMessage, logging)
+            if (.not. succes) then
+               HBN_4 = HBNdummy
+            end if
+            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, succes, errorMessage, logging)
+            if (.not. succes) then
+               HBN_3 = HBNdummy
+            end if
+            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, succes, errorMessage, logging)
+            if (.not. succes) then
+               HBN_2 = HBNdummy
+            end if
+!            if (.not. succes) then
+!                write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
+!            else
+                ! Write the results to the output file
+                write (ounit,'(f8.2,2f8.3,f8.1,f8.2,f8.3,f15.10,f8.3,f8.3,f8.3)') load%h, load%Hm0, waveSteepness, &
+                                    beta, load%Tm_10, load%h + z2, q0, HBN_4, HBN_3, HBN_2
+!            end if
         end if
     enddo
     close(ounit)
 
     call deallocateGeometry(geometry)
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine testSeriesLoad
 

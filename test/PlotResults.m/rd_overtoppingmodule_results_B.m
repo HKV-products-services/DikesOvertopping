@@ -1,18 +1,25 @@
-function [B,z2L,qo] = rd_overtoppingmodule_results_B(dirnm,filnm)
+function [B,z2L,qo,HBN_4,HBN_3,HBN_2] = rd_overtoppingmodule_results_B(dirnm,filnm)
 
 fidin = fopen([dirnm filnm],'r');
+fgetl(fidin);
+fgetl(fidin);
+fgetl(fidin);
+
 iL  = 0;
 next = true;
 while next
     linestring = fgetl(fidin);
     if ~ischar(linestring)
         next = false;
-    elseif length(linestring) == 32 || length(linestring) == 34
+    elseif length(linestring) == 56 || length(linestring) == 58
         linearray = str2num(linestring);
         iL = iL + 1;
         B(iL)    = linearray(1);
         z2L(iL)  = linearray(2);
         qo(iL)   = linearray(3);
+        HBN_4(iL) = linearray(4);
+        HBN_3(iL) = linearray(5);
+        HBN_2(iL) = linearray(6);
     end
 end
 fclose(fidin);

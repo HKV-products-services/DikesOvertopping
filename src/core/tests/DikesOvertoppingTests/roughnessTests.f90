@@ -41,6 +41,8 @@ module crossSectionRoughnessTests
     use typeDefinitionsOvertopping
     use geometryModuleOvertopping
     use moduleLogging
+    use omkeerVariantModule
+    use overtoppingInterface
 !
     implicit none
 
@@ -153,7 +155,7 @@ subroutine TestSeriesRoughness
     integer              :: ounit                ! unit-number for the output file
 
     integer              :: i                    ! do-loop counter
-    integer              :: segment              ! segment numner
+    integer              :: segment              ! segment number
 
     integer              :: ios                  ! input/output-status
     integer              :: nstep                ! number of computations in the test serie
@@ -169,6 +171,15 @@ subroutine TestSeriesRoughness
     logical              :: succes               ! flag for succes
     character(len=250)   :: errorMessage         ! error message
     type(tLogging)       :: logging              ! logging struct
+
+    type(OvertoppingGeometryTypeF) :: geometryF
+    integer                    :: npoints              ! number of profile points
+    real(kind=wp)              :: z2                   ! z2 from overtopping calculation
+    real(kind=wp)              :: q0                   ! q0 from overtopping calculation
+    real(kind=wp)              :: HBN_2                ! HBN from omkeervariant at qc=1E-2
+    real(kind=wp)              :: HBN_3                ! HBN from omkeervariant at qc=1E-3
+    real(kind=wp)              :: HBN_4                ! HBN from omkeervariant at qc=1E-4  
+    real(kind=wp), parameter   :: HBNdummy = -9.999    ! dummy value for HBN (in case of failure)
 !
 !   source
 !
@@ -176,6 +187,17 @@ subroutine TestSeriesRoughness
     !
     write (crossSectionFile,'(a,i1,a)') '../DikesOvertoppingTests/InputOvertopping/Cross_section', crossSectionId, '.txt'
     call readCrossSection(crossSectionFile, geometry, succes, errorMessage)
+
+    npoints = geometry%nCoordinates
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    do i = 1, npoints
+        geometryF%xcoords(i)   = geometry%xCoordinates(i)
+        geometryF%ycoords(i)   = geometry%yCoordinates(i)
+        if (i < npoints) geometryF%roughness(i) = geometry%roughnessFactors(i)
+    enddo
+    geometryF%normal  = geometry%psi
+    geometryF%npoints = npoints
+
     !
     ! open the output file
     call getFreeLuNumber(ounit)
@@ -183,8 +205,8 @@ subroutine TestSeriesRoughness
     call assert_equal(ios, 0, 'Unable to open the file: ' // trim(outputFile))
 
     write (ounit,'(a)') '# Input and results test serie Overtopping dll'
-    write (ounit,'(a)') '#  1          2       3'
-    write (ounit,'(a)') '#  Roughness  Z2%     Qo'
+    write (ounit,'(a)') '#      1          2              3       4       5       6'
+    write (ounit,'(a)') '# Roughn        Z2%             Qo   HBN_4   HBN_3   HBN_2'
     !
     ! boundaries for variation of the roughness
     varmin  =  0.5d0
@@ -200,6 +222,7 @@ subroutine TestSeriesRoughness
         do i = 1, size(roughness)
             segment = roughness(i)
             geometry%roughnessFactors(segment) = var
+            geometryF%roughness(segment) = var
         enddo
 
         !
@@ -208,14 +231,34 @@ subroutine TestSeriesRoughness
         if (.not. succes) then
             write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
         else
-            !
-            ! write the results to the output file
-            write (ounit,'(f8.2,f11.3,f15.10)') var, load%h + overtopping%z2, overtopping%Qo
+            z2   = overtopping%z2
+            q0   = overtopping%Qo
+            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, succes, errorMessage, logging)
+            if (.not. succes) then
+               HBN_4 = HBNdummy
+            end if
+            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, succes, errorMessage, logging)
+            if (.not. succes) then
+               HBN_3 = HBNdummy
+            end if
+            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, succes, errorMessage, logging)
+            if (.not. succes) then
+               HBN_2 = HBNdummy
+            end if
+!            if (.not. succes) then
+!                write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
+!            else
+                !
+                ! write the results to the output file
+                write (ounit,'(f8.2,f11.3,f15.10,f8.3,f8.3,f8.3)') var, &
+                    load%h + z2, q0, HBN_4, HBN_3, HBN_2
+!            end if
         end if
     enddo
     close(ounit)
 
     call deallocateGeometry(geometry)
+    deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine TestSeriesRoughness
 

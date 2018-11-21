@@ -413,16 +413,19 @@ end
 %
 % Store fields in records
 %
-BFormat.Border=Border;
-BFormat.Margin=Margin;
-BFormat.LineWidth=LineWidth;
-BFormat.Color=Color;
-BFormat.HTabs=HTabs;
-BFormat.HRange=HRange;
-BFormat.VTabs=VTabs;
-BFormat.VRange=VRange;
-BFormat.Box=Box;
-BFormat.Bold=Bold;
+if ~isstruct(BFormat)
+    BFormat = struct;
+    BFormat.Border=Border;
+    BFormat.Margin=Margin;
+    BFormat.LineWidth=LineWidth;
+    BFormat.Color=Color;
+    BFormat.HTabs=HTabs;
+    BFormat.HRange=HRange;
+    BFormat.VTabs=VTabs;
+    BFormat.VRange=VRange;
+    BFormat.Box=Box;
+    BFormat.Bold=Bold;
+end
 %
 % Interpret Orientation
 %

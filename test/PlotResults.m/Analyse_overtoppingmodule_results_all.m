@@ -5,18 +5,18 @@ clear all
 
 [nT,nC] = size(iS);
 
-iC = 1;
-iL = 2;
-chapternr    = 1;
+%iC = 1;
+%iL = 2;
+%chapternr    = 1;
 reportlayout = 1;
-figure2pdf   = 1;
-
-pause_on     = 0;
+figure2pdf   = 0;
+pause_on     = 1;
 
 Fig_pdf_dir  = 'd:\Overtopping_tests\';
 Projectstr   = 'Wave overtopping kernel tests';
 ProjectNrstr = '1220043.002';
-dirnm = 'd:\svn_checkouts\DikesOvertopping\trunk\src\core\tests\DikesOvertoppingTests\OutputRTOovertopping\';
+%dirnm = 'd:\svn_checkouts\DikesOvertopping\trunk\src\core\tests\DikesOvertoppingTests\OutputOvertopping\';
+dirnm = 'd:\svn_checkouts\DikesOvertopping\trunk\src\core\tests\unitTests\';
 qomin = 10^-10;
 
 for iC=1:8
@@ -35,20 +35,27 @@ for iC=1:8
             figurenr = figurenr + 1;
             
             switch iType(iT)
-                case {1 2 3 4}
-                    [h,Hs,So,Bt,Tm,z2L,qo] = rd_overtoppingmodule_results_L(dirnm,filnm);
+                case {1}
+                    [h,Hs,So,Bt,Tm,z2L,qo,HBN_4,HBN_3,HBN_2] = rd_overtoppingmodule_results_L(dirnm,filnm);
+                case {2 3 4}
+                    %[h,Hs,So,Bt,Tm,z2L,qo] = rd_overtoppingmodule_results_L(dirnm,filnm);
+                    [h,Hs,So,Bt,Tm,z2L,qo,HBN_4,HBN_3,HBN_2] = rd_overtoppingmodule_results_L(dirnm,filnm);
                 case {5 6}
-                    [cota,z2L,qo] = rd_overtoppingmodule_results_C(dirnm,filnm);
+%                    [cota,z2L,qo] = rd_overtoppingmodule_results_C(dirnm,filnm);
+                    [cota,z2L,qo,HBN_4,HBN_3,HBN_2] = rd_overtoppingmodule_results_C(dirnm,filnm);
                     tana = 1./cota;
                     h = 3.0;
                 case {7}
-                    [BPlev,z2L,qo]  = rd_overtoppingmodule_results_B(dirnm,filnm);
+%                    [BPlev,z2L,qo]  = rd_overtoppingmodule_results_B(dirnm,filnm);
+                    [BPlev,z2L,qo,HBN_4,HBN_3,HBN_2]  = rd_overtoppingmodule_results_B(dirnm,filnm);
                     h = 3.0;
                 case {8}
-                    [Bwidth,z2L,qo] = rd_overtoppingmodule_results_B(dirnm,filnm);
+%                    [Bwidth,z2L,qo] = rd_overtoppingmodule_results_B(dirnm,filnm);
+                    [Bwidth,z2L,qo,HBN_4,HBN_3,HBN_2] = rd_overtoppingmodule_results_B(dirnm,filnm);
                     h = 3.0;
                 case {9}
-                    [RF,z2L,qo]     = rd_overtoppingmodule_results_B(dirnm,filnm);
+%                    [RF,z2L,qo]     = rd_overtoppingmodule_results_B(dirnm,filnm);
+                    [RF,z2L,qo,HBN_4,HBN_3,HBN_2]     = rd_overtoppingmodule_results_B(dirnm,filnm);
                     h = 3.0;
             end
             
@@ -57,37 +64,47 @@ for iC=1:8
                     var    = h;
                     Xtick  = -2:1:7;
                     xasstr = 'Water level (m+NAP)';
+                    legpos = 'SouthEast';
                 case 2
                     var    = Hs;
                     Xtick  = 0:0.5:5;
                     xasstr = 'Wave height (m)';
+                    legpos = 'SouthEast';
                 case 3
                     var    = So;
                     Xtick  = 0.00:0.01:0.07;
                     xasstr = 'Wave steepness (-)';
+                    legpos = 'NorthEast';
                 case 4
                     var    = Bt;
                     Xtick  = 0:10:180;
+                    xasstr = 'Wave angle (^o)';
+                    legpos = 'NorthEast';
                 case 5
                     var    = tana;
                     Xtick  = 0:0.01:0.07;
                     xasstr = 'Slope tan(\alpha) (-)';
+                    legpos = 'SouthEast';
                 case 6
                     var    = cota;
                     Xtick  = 1:1:8;
                     xasstr = 'Slope cot(\alpha) (-)';
+                    legpos = 'NorthEast';
                 case 7
                     var    = BPlev;
                     Xtick  = []; %-2:1:4;
                     xasstr = 'Buckling point level (m+NAP)';
+                    legpos = 'NorthWest';
                 case 8
                     var    = Bwidth;
                     Xtick  = 2:1:20;
                     xasstr = 'Berm width (m)';
+                    legpos = 'NorthEast';
                 case 9
                     var    = RF;
                     Xtick  = 0.5:0.1:1.0;
                     xasstr = 'Roughness factor (-)';
+                    legpos = 'NorthWest';
             end
             %}
             if wave_angle(iT) == 0
@@ -109,17 +126,21 @@ for iC=1:8
                 linewidth =  2;
             end
             
-            legpos   = 'SouthEast';
-            
             % Define subplot 1 --------------------------------------------------------
             subplot(2,1,1);
-            h = plot(var,z2L,'k.-');
+            h = plot(...
+                var,z2L,'k.-', ...
+                var,HBN_4,'r.-', ...
+                var,HBN_3,'b.-', ...
+                var,HBN_2,'g.-');
             set(h,'LineWidth',linewidth);
             
             % Add title and x,y labels
             %title('<title 1>');
             xlabel(xasstr);
-            ylabel('2% run-up level (m+NAP)');
+            ylabel('Load level (m+NAP)');
+            legend('z2%','HBN4','HBN3','HBN2','Location',legpos);
+            
             Ytick = [-2:2:14];
             Ytick = [];
             

@@ -65,6 +65,7 @@ subroutine allOvertoppingDllTests
     call testWithLevel(TestRoughnessIssue44B,              'General; ISSUE; Test B for calculateGammaF related to issue 44', 1)
     call testWithLevel(TestIssue45,                        'General; ISSUE; Test for issue 45', 1)
     call testWithLevel(overtoppingDllTest2,                'Uniform Slope; Test the dll for a uniform slope (18 cases)', 1)
+    call testWithLevel(TestOmkeervar,                      'General; ISSUE; Omkeervar', 1)
 end subroutine allOvertoppingDllTests
 
 !> Test the functions in DikesOvertopping.dll.
@@ -960,5 +961,46 @@ subroutine overtoppingDllTest2
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine overtoppingDllTest2
+
+!> check output omkeervariant
+subroutine TestOmkeervar
+    use dllOvertopping
+    integer                        :: npoints             ! number of coordinates
+    real(kind=wp), parameter       :: dikeHeight = 0.2534_wp
+    type(OvertoppingGeometryTypeF) :: geometryF
+    type(tpOvertoppingInput)       :: modelFactors
+    type(TErrorMessages)           :: errorStruct
+    type (tpLoad)                  :: load           !< structure with load data
+    type(tLogging)                 :: logging        !< logging struct
+    type (tpOvertopping)           :: overtopping    !< structure with overtopping results
+    logical                        :: succes
+    character(len=128)             :: errorMessage      !< error message
+
+    call init_modelfactors_and_load(modelFactors)
+
+    npoints = 2
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    !
+    geometryF%xcoords      = [-16.0_wp, 16.0_wp]
+    geometryF%ycoords      = [ -4.0_wp,  4.0_wp]
+    geometryF%roughness    = 1.0_wp
+    geometryF%normal = 270.0_wp ! degrees
+    geometryF%npoints = npoints
+    !
+    ! test actual computations in iterateToGivenDischarge; ...
+    !
+    ! water level below first lowest profile point
+    load%h        =  -1.0_wp
+    load%phi      = 270.0_wp
+    load%Hm0      =   0.8_wp
+    load%Tm_10    =   3.3_wp
+ 
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
+    call calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_true(succes, errorMessage)
+!    call assert_comparable(overtopping%z2, z2Expected, margin, z2String)
+    call assert_comparable(overtopping%Qo, 1.0d-3, 1.0d-4, 'test overslagdebiet')
+
+end subroutine TestOmkeervar
 
 end module dllTests
