@@ -52,9 +52,10 @@ module crossSectionRoughnessTests
     integer                    :: crossSectionId       ! id-number of the cross section 
     integer                    :: numberTestSerie      ! number of test serie
     real(kind=wp), pointer     :: roughness(:)         ! roughness variation for segment numbers
+    integer                    :: ii                   ! loop counter
 
     private
-    
+
     public :: allCrossSectionRoughnessTests
 
 contains
@@ -72,12 +73,11 @@ subroutine allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
 !
 !   local parameters
 !
-    character(len=120)         :: frozenFile           ! frozen copy of the output file of the testserie
     character(len=128)         :: errorMessage         ! error message
     character(len=1)           :: crossSectionNumber   ! number of the cross section
     character(len=2)           :: testSerieNumber      ! number of the test serie
 
-    integer                    :: i, j, k              ! do-loop counters
+    integer                    :: j, k                 ! do-loop counters
     integer                    :: nTestSeriesSlopes    ! amount of test series for slopes
     integer                    :: nWaveDirections      ! number of wave directions in the test series
     integer                    :: nRoughnesses         ! number of test series for the roughness for the specific cross section
@@ -112,29 +112,24 @@ subroutine allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
 
     !
     ! execute roughness test series for all cross sections
-    do i = 1, nCrossSections
-        crossSectionId = i
-        call numberTestSeriesSlopes (i, nTestSeriesSlopes)
-        call numberTestSeriesRoughness (i, nRoughnesses)
+    do ii = 1, nCrossSections
+        crossSectionId = ii
+        call numberTestSeriesSlopes (ii, nTestSeriesSlopes)
+        call numberTestSeriesRoughness (ii, nRoughnesses)
         numberTestSerie = nBasicTestSeries + nWaveDirections * nTestSeriesSlopes
         do j = 1, nRoughnesses
-            call roughnesses (i, j, roughness)
+            call roughnesses (ii, j, roughness)
 
             do k = 1, nWaveDirections
                 load%phi = phi(k)
                 numberTestSerie = numberTestSerie + 1
                 
-                write (outputFile,'(a,i1,a,i2.2,a)') './output_section', crossSectionId, '_test', numberTestSerie, '.txt'
 
                 write (crossSectionNumber,'(I1)') crossSectionId
                 write (testSerieNumber,   '(I2)') numberTestSerie
 
                 call testWithLevel(TestSeriesRoughness, "Trends; Series of varying roughness with the dll in test series " // &
                                            trim(testSerieNumber) // " for cross section " // crossSectionNumber, 1)
-
-                write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', numberTestSerie, '.txt'
-                errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
-                call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
 
             enddo
             deallocate (roughness)
@@ -171,6 +166,7 @@ subroutine TestSeriesRoughness
     logical              :: succes               ! flag for succes
     character(len=250)   :: errorMessage         ! error message
     type(tLogging)       :: logging              ! logging struct
+    character(len=120)   :: frozenFile           ! frozen copy of the output file of the testserie
 
     type(OvertoppingGeometryTypeF) :: geometryF
     integer                    :: npoints              ! number of profile points
@@ -259,6 +255,15 @@ subroutine TestSeriesRoughness
 
     call deallocateGeometry(geometry)
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
+    !
+    ! do comparison:
+    !
+
+    write (outputFile,'(a,i1,a,i2.2,a)') './output_section', crossSectionId, '_test', numberTestSerie, '.txt'
+    write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', ii, '_test', numberTestSerie, '.txt'
+    errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
+    call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
 
 end subroutine TestSeriesRoughness
 

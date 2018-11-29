@@ -52,6 +52,7 @@ module loadTests
     character(len=90)         :: crossSectionFile        ! file with cross section coordinates
     character(len=90)         :: testSerieFile           ! file with values of the test serie
     character(len=90)         :: outputFile              ! file for the output of the testserie
+    integer                   :: i, j                    ! do-loop counters
 
     public :: allLoadTests
 
@@ -69,11 +70,8 @@ subroutine allLoadTests(nCrossSections, nBasicTestSeries)
 !
 !   local parameters
 !
-    character(len=120)      :: frozenFile           ! frozen copy of the output file of the testserie
-    character(len=90)       :: errorMessage         ! error message
     character(len=1)        :: crossSectionNumber   ! number of the cross section
     character(len=2)        :: testSerieNumber      ! number of the test serie
-    integer                 :: i, j                 ! do-loop counters
 !
 !   Source
 !
@@ -90,16 +88,11 @@ subroutine allLoadTests(nCrossSections, nBasicTestSeries)
         write (crossSectionFile,'(a,i1,a)') '../DikesOvertoppingTests/InputOvertopping/Cross_section', i, '.txt'
         do j = 1, nBasicTestSeries
             write (testSerieFile,'(a,i1,a)')   '../DikesOvertoppingTests/InputOvertopping/Basic_test', j, '.txt'
-            write (outputFile,'(a,i1,a,i2.2,a)') 'output_section', i, '_test', j, '.txt'
             
             write (crossSectionNumber,'(I1)') i
             write (testSerieNumber,   '(I2)') j
             call testWithLevel(testSeriesLoad, "Trends; Series of varying load with the dll in test series " // &
                                            trim(testSerieNumber) // " for cross section " // crossSectionNumber, 1)
-            
-            write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', j, '.txt'
-            errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
-            call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
         enddo
     enddo
 
@@ -144,6 +137,7 @@ subroutine testSeriesLoad
     logical                  :: succes               ! flag for succes
     character(len=250)       :: errorMessage         ! error message
     type(tLogging)           :: logging              ! logging struct
+    character(len=120)       :: frozenFile           ! frozen copy of the output file of the testserie
 
     real(kind=wp), parameter :: margin = 1.0d-6      ! relative value for the margin
     integer                  :: ierr                 ! error code
@@ -275,6 +269,14 @@ subroutine testSeriesLoad
 
     call deallocateGeometry(geometry)
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
+
+    !
+    ! do comparison:
+    !
+    write (outputFile,'(a,i1,a,i2.2,a)') 'output_section', i, '_test', j, '.txt'
+    write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', j, '.txt'
+    errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
+    call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
 
 end subroutine testSeriesLoad
 

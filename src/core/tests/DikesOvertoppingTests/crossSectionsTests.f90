@@ -52,9 +52,11 @@ module crossSectionsAdaptionTests
     integer                   :: crossSectionId       ! id-number of the cross section 
     integer                   :: numberTestSerie      ! number of test serie
     logical                   :: extraSlopeTest       ! perform extra slope test
+    character(len=128)        :: ModuleErrorMessage   ! error message
+    character(len=120)        :: frozenFile           ! frozen copy of the output file of the testserie
 
     private
-    
+
     public :: allCrossSectionsTests
 
 contains
@@ -72,7 +74,6 @@ subroutine allCrossSectionsTests(nCrossSections, nBasicTestSeries)
 !
 !   local parameters
 !
-    character(len=120)         :: frozenFile             ! frozen copy of the output file of the testserie
     character(len=128)         :: errorMessage           ! error message
     character(len=1)           :: crossSectionNumber     ! number of the cross section
     character(len=2)           :: testSerieNumber        ! number of the test serie
@@ -127,13 +128,12 @@ subroutine allCrossSectionsTests(nCrossSections, nBasicTestSeries)
 
                 write (crossSectionNumber,'(I1)') crossSectionId
                 write (testSerieNumber,   '(I2)') numberTestSerie
+                write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', numberTestSerie, '.txt'
+                ModuleErrorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
 
                 call testWithLevel(TestSeriesCrossSections, "Trends; Series (A) of varying geometry with the dll in test series " // &
                                            trim(testSerieNumber) // " for cross section " // crossSectionNumber, 1)
 
-                write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', numberTestSerie, '.txt'
-                errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
-                call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
             enddo
         enddo
     enddo
@@ -156,12 +156,11 @@ subroutine allCrossSectionsTests(nCrossSections, nBasicTestSeries)
                 write (crossSectionNumber,'(I1)') crossSectionId
                 write (testSerieNumber,   '(I2)') numberTestSerie
 
+                write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', numberTestSerie, 'berm.txt'
+                ModuleErrorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
                 call testWithLevel(TestSeriesCrossSections, "Trends; Series (B) of varying geometry with the dll in test series " // &
                                            trim(testSerieNumber) // " for cross section " // crossSectionNumber, 1)
 
-                write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', numberTestSerie, 'berm.txt'
-                errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
-                call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
             enddo
         enddo
     enddo
@@ -338,6 +337,8 @@ subroutine TestSeriesCrossSections
     deallocate(xCoordinates)
     deallocate(yCoordinates)
     deallocate(roughnessFactors)
+
+    call assert_files_comparable(outputFile, frozenFile, trim(ModuleErrorMessage))
 
 end subroutine TestSeriesCrossSections
 
