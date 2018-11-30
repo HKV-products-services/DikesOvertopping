@@ -24,6 +24,7 @@ doc/doxygen/DoxygenLayout.xml -text
 doc/doxygen/RunDoxygen.bat -text
 extern/Utils/svn_insert_version.cmd -text
 extern/java/build.gradle -text
+extern/java/gradlew -text
 extern/java/gradlew.bat -text
 extern/java/settings.gradle -text
 extern/java/src/main/java/nl/deltares/wti/Application.java -text
