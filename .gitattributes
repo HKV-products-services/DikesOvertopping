@@ -23,6 +23,7 @@ doc/doxygen/DikesOvertoppingFortran.doxyfile -text
 doc/doxygen/DoxygenLayout.xml -text
 doc/doxygen/RunDoxygen.bat -text
 extern/Utils/svn_insert_version.cmd -text
+extern/java/build.gradle -text
 extern/java/src/main/java/nl/deltares/wti/Application.java -text
 extern/java/src/main/java/nl/deltares/wti/kernels/dikesovertopping/LibDikesOvertopping.java -text
 extern/java/src/main/java/nl/deltares/wti/kernels/dikesovertopping/OvertoppingGeometryStruct.java -text
