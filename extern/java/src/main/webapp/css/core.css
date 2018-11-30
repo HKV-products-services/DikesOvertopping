@@ -1,0 +1,160 @@
+/**
+Bootstrap paging buttons.
+ */
+.pagination > li > a {
+  background-color: white;
+  color: #337ab7;
+}
+
+.pagination > li > a:focus,
+.pagination > li > a:hover,
+.pagination > li > span:focus,
+.pagination > li > span:hover {
+  color: #337ab7;
+  background-color: #eee;
+  border-color: #ddd;
+}
+
+.pagination > .active > a {
+  color: white;
+  background-color: #337ab7;
+  border: solid 1px #337ab7;
+}
+
+.pagination > .active > a:hover {
+  background-color: #337ab7;
+  border: solid 1px #337ab7;
+}
+
+
+.page-header {
+  margin: 10px 0 20px;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-td {
+  cursor: pointer;
+}
+
+/* Render a red star after a required form field */
+.form-group.required .control-label:after {
+  content:"*";
+  color:red;
+}
+
+.btn-glyphicon {
+  padding: 8px;
+  background: #ffffff;
+  margin-right: 4px;
+}
+
+.icon-btn {
+  padding: 1px 15px 3px 2px;
+  border-radius: 50px;
+}
+
+.table-database-condensed-10 {
+  font-size: 10px;
+}
+
+.table-database-condensed-11 {
+  font-size: 11px;
+}
+
+.table-database-condensed-12 {
+  font-size: 12px;
+}
+
+.table-database-condensed-13 {
+  font-size: 13px;
+}
+
+.table-database-condensed-14 {
+  font-size: 14px;
+}
+
+.panel-heading .accordion-toggle:after {
+  /* symbol for "opening" panels */
+  font-family: 'Glyphicons Halflings'; /* essential for enabling glyphicon */
+  content: "\e114"; /* adjust as needed, taken from bootstrap.css */
+  float: right; /* adjust as needed */
+  color: grey; /* adjust as needed */
+}
+
+.panel-heading .accordion-toggle.collapsed:after {
+  /* symbol for "collapsed" panels */
+  content: "\e080"; /* adjust as needed, taken from bootstrap.css */
+}
+
+.modal-dialog {
+  overflow-y: initial !important
+}
+.modal-body {
+  height: 250px;
+  overflow-y: auto;
+}
+
+.button-color {
+  color: #337ab7;
+}
+
+.hilight_stop_deprecated {
+  background-color: #ffcccc;  
+  font-size: 12px;
+}
+
+.hilight_wait_deprecated {
+  background-color: #ffffcc;
+  font-size: 12px;
+}
+
+.hilight_scheduled_deprecated, .hilight_pending_deprecated {
+  background-color: #FFE6B3;
+  font-size: 12px;
+}
+
+.hilight_go_deprecated {
+  background-color: #ccffcc;
+  font-size: 12px;
+}
+
+.hilight_stop {
+  background-color: #f2cccc;
+  color: black;
+  font-size: 13px;
+
+}
+
+.hilight_wait {
+  background-color: #ffffcc;
+  color: black;  
+  font-size: 13px;
+
+}
+
+.hilight_scheduled, .hilight_pending {
+  background-color: #FFE6B3;
+  color: black;
+  font-size: 13px;
+}
+
+.hilight_go {
+  background-color: #d0e9c6;
+  color: black;
+  font-size: 13px;
+}
+
+.info-button-tooltip-small {
+  font-size: 10px;
+}
+.panel-heading-small {
+  height: 50px;
+}
+
+.btn-xs {
+  width: 22px;
+}
+

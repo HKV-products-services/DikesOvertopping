@@ -1,0 +1,9 @@
+{
+  "geometry" : {
+    "xCoords" : [5, 10, 15],
+    "yCoords" : [5, 7, 9],
+    "roughness": [1, 1, 1],
+    "normal" : 60,
+    "dikeHeight" : 9.1
+  }
+}
