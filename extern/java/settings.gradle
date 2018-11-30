@@ -1,0 +1,6 @@
+rootProject.name = 'wti-tools'
+
+enableFeaturePreview('IMPROVED_POM_SUPPORT')
+
+
+
