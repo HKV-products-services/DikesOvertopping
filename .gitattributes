@@ -26,6 +26,11 @@ extern/Utils/svn_insert_version.cmd -text
 extern/java/build.gradle -text
 extern/java/gradlew -text
 extern/java/gradlew.bat -text
+extern/java/lib/deltares/Delft_Util.jar -text
+extern/java/lib/deltares/jna-3.5.1.jar -text
+extern/java/lib/dlls/LicenseAGPL.txt -text
+extern/java/lib/dlls/dllDikesOvertopping.dll -text
+extern/java/lib/dlls/dllDikesOvertopping.lib -text
 extern/java/settings.gradle -text
 extern/java/src/main/java/nl/deltares/wti/Application.java -text
 extern/java/src/main/java/nl/deltares/wti/kernels/dikesovertopping/LibDikesOvertopping.java -text
