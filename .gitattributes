@@ -33,6 +33,7 @@ extern/java/lib/dlls/dllDikesOvertopping.dll -text
 extern/java/lib/dlls/dllDikesOvertopping.lib -text
 extern/java/settings.gradle -text
 extern/java/src/main/java/nl/deltares/wti/Application.java -text
+extern/java/src/main/java/nl/deltares/wti/WtiConfig.java -text
 extern/java/src/main/java/nl/deltares/wti/kernels/dikesovertopping/LibDikesOvertopping.java -text
 extern/java/src/main/java/nl/deltares/wti/kernels/dikesovertopping/OvertoppingGeometryStruct.java -text
 extern/java/src/main/java/nl/deltares/wti/kernels/dikesovertopping/OvertoppingLoadStruct.java -text

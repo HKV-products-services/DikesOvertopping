@@ -50,8 +50,8 @@ public class LibDikesOvertoppingTest {
         if (!result.success)
             throw new RuntimeException("Calculation of Q failed with message: " + result.message);
 
-        Assert.assertEquals(8.089025E-09d, result.z2, 1.0E-15d);
-        Assert.assertEquals(1.519737, result.qo, 0.000001);
+        Assert.assertEquals(8.089025E-09d, result.qo, 1.0E-15d);
+        Assert.assertEquals(1.519737, result.z2, 0.000001);
     }
 
     @Test
@@ -93,8 +93,8 @@ public class LibDikesOvertoppingTest {
         if (!result.success)
             throw new RuntimeException("Reverse Calculation failed with message: " + result.message);
 
-        Assert.assertEquals(0.22143452756966334d, result.z2, 1.0E-15d);
-        Assert.assertEquals(1.519737, result.qo, 0.000001);
+        Assert.assertEquals(0.22143452756966334d, result.qo, 1.0E-15d);
+        Assert.assertEquals(1.519737, result.z2, 0.000001);
         Assert.assertEquals(5.5, result.dikeHeight, 0.000001);
     }
 
