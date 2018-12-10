@@ -151,12 +151,12 @@ subroutine allCrossSectionsTests(nCrossSections, nBasicTestSeries)
                 load%phi = phi(k)
                 numberTestSerie = numberTestSerie + 1
 
-                write (outputFile,'(a,i1,a,i2.2,a)') './output_section', crossSectionId, '_test', numberTestSerie, 'berm.txt'
+                write (outputFile,'(a,i1,a,i2.2,a)') './output_section', crossSectionId, '_sections_test', numberTestSerie, 'berm.txt'
 
                 write (crossSectionNumber,'(I1)') crossSectionId
                 write (testSerieNumber,   '(I2)') numberTestSerie
 
-                write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', numberTestSerie, 'berm.txt'
+                write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_sections_test', numberTestSerie, 'berm.txt'
                 ModuleErrorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
                 call testWithLevel(TestSeriesCrossSections, "Trends; Series (B) of varying geometry with the dll in test series " // &
                                            trim(testSerieNumber) // " for cross section " // crossSectionNumber, 1)

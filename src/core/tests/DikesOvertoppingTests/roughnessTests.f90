@@ -197,6 +197,7 @@ subroutine TestSeriesRoughness
     !
     ! open the output file
     call getFreeLuNumber(ounit)
+    write (outputFile,'(a,i1,a,i2.2,a)') './output_section', crossSectionId, '_test', numberTestSerie, '.txt'
     open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
     call assert_equal(ios, 0, 'Unable to open the file: ' // trim(outputFile))
 
@@ -260,7 +261,6 @@ subroutine TestSeriesRoughness
     ! do comparison:
     !
 
-    write (outputFile,'(a,i1,a,i2.2,a)') './output_section', crossSectionId, '_test', numberTestSerie, '.txt'
     write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', ii, '_test', numberTestSerie, '.txt'
     errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
     call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))

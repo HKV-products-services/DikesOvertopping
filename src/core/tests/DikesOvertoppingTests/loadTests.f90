@@ -108,8 +108,7 @@ subroutine testSeriesLoad
     integer                  :: tunit                ! unit-number for the test serie file
     integer                  :: ounit                ! unit-number for the output file
     integer                  :: ios                  ! input/output-status
-    integer                  :: i                    ! do-loop counter
-    
+
     integer                  :: nstep                ! number of computations in the test serie
     integer                  :: istep                ! do-loop counter in the test serie
     integer                  :: npoints              ! number of profile points
@@ -142,6 +141,7 @@ subroutine testSeriesLoad
     real(kind=wp), parameter :: margin = 1.0d-6      ! relative value for the margin
     integer                  :: ierr                 ! error code
     real(kind=wp), parameter :: HBNdummy = -9.999    ! dummy value for HBN (in case of failure)
+    integer                  :: ii
 !
 !   source
 !
@@ -151,10 +151,10 @@ subroutine testSeriesLoad
 
     npoints = geometry%nCoordinates
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
-    do i = 1, npoints
-        geometryF%xcoords(i)   = geometry%xCoordinates(i)
-        geometryF%ycoords(i)   = geometry%yCoordinates(i)
-        if (i < npoints) geometryF%roughness(i) = geometry%roughnessFactors(i)
+    do ii = 1, npoints
+        geometryF%xcoords(ii)   = geometry%xCoordinates(ii)
+        geometryF%ycoords(ii)   = geometry%yCoordinates(ii)
+        if (ii < npoints) geometryF%roughness(ii) = geometry%roughnessFactors(ii)
     enddo
     geometryF%normal  = geometry%psi
     geometryF%npoints = npoints
@@ -206,8 +206,10 @@ subroutine testSeriesLoad
     !
     ! open the output file
     call getFreeLuNumber(ounit)
-    open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
+    write (outputFile,'(a,i1,a,i2.2,a)') 'output_section', i, '_test', j, '.txt'
+    open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios, action='write')
     call assert_equal(ios, 0, 'Unable to open the file: ' // trim(outputFile))
+    if (ios /= 0) return
     !
     ! write headers to output file
     write (ounit,'(a)') '# Input and results test serie Overtopping dll'
@@ -273,7 +275,6 @@ subroutine testSeriesLoad
     !
     ! do comparison:
     !
-    write (outputFile,'(a,i1,a,i2.2,a)') 'output_section', i, '_test', j, '.txt'
     write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', j, '.txt'
     errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
     call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
