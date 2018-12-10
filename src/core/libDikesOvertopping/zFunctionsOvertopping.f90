@@ -146,6 +146,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
     real(kind=wp)     :: slope                  !< slope of the profile
     integer           :: i                      !< do-loop counter
     integer           :: ierr                   !< error code of allocate
+    logical           :: previousWasBerm        !< previous segment is a berm
 
     succes = .true.
     if (nrCoordinates < 2) then
@@ -177,15 +178,16 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
         endif
     else
         nrCoordsAdjusted = nrCoordinates
+        previousWasBerm = .false.
         do i = 2, nrCoordinates - 1
-            slope = (coordinates(i+1)%zCoordinate - coordinates(i)%zCoordinate) / (coordinates(i+1)%xCoordinate - coordinates(i)%xCoordinate)
+            slope = (coordinates(i+1)%zCoordinate - coordinates(i  )%zCoordinate) / (coordinates(i+1)%xCoordinate - coordinates(i  )%xCoordinate)
             if (slope < slope_min .and. i < nrCoordinates - 1) then
                 !
                 ! the next segment of the cross section is a berm segment
                 auxiliaryHeightBerm = interpolateLine(coordinates(i+1)%xCoordinate, coordinates(i+2)%xCoordinate, coordinates(i+1)%zCoordinate, coordinates(i+2)%zCoordinate, coordinates(i+1)%xCoordinate + xDiff_min, ierr, errorMessage)
                 if (ierr /= 0) return
                 if (dikeHeight < auxiliaryHeightBerm) then 
-                    nrCoordsAdjusted = i
+                    nrCoordsAdjusted = merge(i-1, i, previousWasBerm)
                     exit
                 endif
             else
@@ -202,6 +204,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
                     exit
                 endif
             endif
+            previousWasBerm = slope < slope_min
         enddo
         
         !

@@ -66,6 +66,7 @@ subroutine allOvertoppingDllTests
     call testWithLevel(TestIssue45,                        'General; ISSUE; Test for issue 45', 1)
     call testWithLevel(overtoppingDllTest2,                'Uniform Slope; Test the dll for a uniform slope (18 cases)', 1)
     call testWithLevel(TestOmkeervar,                      'General; ISSUE; Omkeervar', 1)
+    call testWithLevel(TestIssue52,                        'General; ISSUE; two berms', 1)
 end subroutine allOvertoppingDllTests
 
 !> Test the functions in DikesOvertopping.dll.
@@ -568,7 +569,7 @@ subroutine overtoppingValidationTestZPoints
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     geometryF%xcoords = [ 0, 40, 80 ]
     geometryF%ycoords = [-10, 0, -10]
-    geometryF%roughness = [ 1.0, 1.0, 1.0 ]
+    geometryF%roughness = [ 1.0, 1.0 ]
     
     geometryF%normal = 60.0_wp ! degrees
     geometryF%npoints = npoints
@@ -1002,5 +1003,82 @@ subroutine TestOmkeervar
     call assert_comparable(overtopping%Qo, 1.0d-3, 1.0d-4, 'test overslagdebiet')
 
 end subroutine TestOmkeervar
+
+!> test for issue Overs-52 (two berm segments)
+!! @ingroup DikeOvertoppingTests
+subroutine TestIssue52
+    logical                        :: succes
+    integer, parameter             :: npointsA = 5
+    integer, parameter             :: npointsB = 4
+    type (tpOvertopping)           :: overtopping
+    character(len=128)             :: errorMessage      !< error message
+    type (tpLoad)                  :: load              !< structure with load data
+    type(OvertoppingGeometryTypeF) :: geometryA, geometryB
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    type(tLogging)                 :: logging
+    integer                        :: p
+    pointer            (qc, calculateQoF)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qc = getprocaddress (p, "calculateQoF"C)
+
+    !
+    ! initializations
+    !
+    call init_modelfactors_and_load(modelFactors)
+    load%h        =  3.0_wp
+    load%phi      =  0.0_wp
+    load%Hm0      =  2.0_wp
+    load%Tm_10    =  5.65997611606080_wp
+
+    allocate(geometryA%xcoords(npointsA), geometryA%ycoords(npointsA), geometryA%roughness(npointsA-1))
+    geometryA%roughness = 1.0_wp
+    geometryA%xcoords   = [0.0_wp, 24.15_wp, 28.15_wp, 32.15_wp, 40.55_wp]
+    geometryA%ycoords   = [-2.0_wp, 3.75_wp,  4.0_wp, 4.0_wp, 6.0_wp]
+
+    geometryA%normal = 0.0_wp ! degrees
+    geometryA%npoints = npointsA
+    
+    allocate(geometryB%xcoords(npointsB), geometryB%ycoords(npointsB), geometryB%roughness(npointsB-1))
+    geometryB%roughness = 1.0_wp
+    geometryB%xcoords   = [0.0_wp, 24.15_wp, 32.15_wp, 40.55_wp]
+    geometryB%ycoords   = [-2.0_wp, 3.75_wp, 4.0_wp, 6.0_wp]
+
+    geometryB%normal = 0.0_wp ! degrees
+    geometryB%npoints = npointsB
+    !
+    ! test actual computations in iterateToGivenDischarge
+    !
+    dikeHeight = 4.004_wp
+    call calculateQoF(load, geometryA, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_comparable(overtopping%qo, overtopping%Qo, 0.236185_wp, 'discharge two berms, dikeHeight = 4.004_wp')
+
+    dikeHeight = 4.007_wp
+    call calculateQoF(load, geometryA, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_comparable(overtopping%qo, overtopping%Qo, 7.161912d-2, 'discharge two berms, dikeHeight = 4.007_wp')
+
+    dikeHeight = 3.99_wp
+    call calculateQoF(load, geometryA, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_comparable(overtopping%qo, overtopping%Qo, 0.242233_wp, 'discharge two berms, dikeHeight = 3.99_wp')
+
+    dikeHeight = 4.004_wp
+    call calculateQoF(load, geometryB, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_comparable(overtopping%qo, overtopping%Qo, 0.236185_wp, 'discharge one berm, dikeHeight = 4.004_wp')
+
+    dikeHeight = 4.007_wp
+    call calculateQoF(load, geometryB, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_comparable(overtopping%qo, overtopping%Qo, 7.161912d-2, 'discharge one berm, dikeHeight = 4.007_wp')
+
+    dikeHeight = 3.99_wp
+    call calculateQoF(load, geometryB, dikeHeight, modelFactors, overtopping, succes, errorMessage, logging)
+    call assert_comparable(overtopping%qo, overtopping%Qo,  0.242233_wp, 'discharge one berm, dikeHeight = 3.99_wp')
+
+
+    ! clean up
+    deallocate(geometryA%xcoords, geometryA%ycoords, geometryA%roughness)
+    deallocate(geometryB%xcoords, geometryB%ycoords, geometryB%roughness)
+
+end subroutine TestIssue52
 
 end module dllTests
