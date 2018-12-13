@@ -1,0 +1,28 @@
+:root {
+  --primary-1: #01689b;
+  --primary-2: #cce0f1;
+  --primary-3: #e5f0f9;
+  --primary-4: #007bc7;
+  --primary-5: #b2d7ee;
+  --primary-6: #d9ebf7;
+
+  --accent-1: #154273;
+  --accent-2: #f9e11e;
+  --accent-3: #dfd4b5;
+  --accent-4: #8fcae7;
+  --accent-5: #d52b1e;
+  --accent-6: #76d2b6;
+  --accent-7: #fcf29a;
+
+  --neutral-0: #ffffff;
+  --neutral-1: #f3f3f3;
+  --neutral-2: #e6e6e6;
+  --neutral-3: #cccccc;
+  --neutral-4: #b4b4b4;
+  --neutral-5: #999999;
+  --neutral-6: #696969;
+  --neutral-7: #535353;
+  --neutral-8: #222222;
+
+  --primary-layout-width: 75rem;
+}

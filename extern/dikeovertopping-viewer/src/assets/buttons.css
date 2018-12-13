@@ -1,0 +1,59 @@
+.button {
+  min-width: 2.5em;
+  min-height: 2.5em;
+  padding-right: 1em;
+  padding-left: 1em;
+  border-radius: 3px;
+  background-color: var(--neutral-0);
+}
+
+.button[disabled],
+.button[disabled]:focus,
+.button[disabled]:hover {
+  color: var(--neutral-5);
+  background: var(--neutral-2);
+  border-color: var(--neutral-4);
+  cursor: not-allowed;
+}
+
+.button--default {
+  color: var(--primary-4);
+  border: 1px solid currentColor;
+}
+
+.button--default:focus,
+.button--default:hover {
+  color: var(--primary-1);
+  box-shadow: 1px 1px 3px var(--neutral-2) inset, 0 0 5px var(--primary-5);
+}
+
+.button--default::-moz-focus-inner {
+  outline: 0;
+}
+
+.button--default:active {
+  background: var(--primary-1);
+  color: var(--neutral-0);
+  box-shadow: none;
+}
+
+.button--primary {
+  font-size: 1.1rem;
+  background: var(--primary-4);
+  color: var(--neutral-0);
+  font-weight: bold;
+  border: none;
+  line-height: 1.4rem;
+  margin: 0.25em 0;
+}
+
+.button--primary:active,
+.button--primary:focus,
+.button--primary:hover {
+  background: var(--primary-1);
+}
+
+.button--danger {
+  color: var(--accent-5);
+  border: 1px solid currentColor;
+}
