@@ -7,7 +7,7 @@
 html {
   box-sizing: border-box;
   font-family: 'rijksoverheid sans', Arial, 'Helvetica Neue', Helvetica, sans-serif;
-  min-width: 30rem;
+  min-width: 34rem;
   color: var(--neutral-8);
   background: var(--neutral-0);
   overflow-y: scroll;

@@ -177,6 +177,8 @@ extern/dikeovertopping-viewer/customizations/.env.example -text
 extern/dikeovertopping-viewer/customizations/nuxt.config.js -text
 extern/dikeovertopping-viewer/customizations/src/assests/core.css -text
 extern/dikeovertopping-viewer/customizations/src/components/app-header.vue -text
+extern/dikeovertopping-viewer/customizations/src/components/calculation-form.vue -text
+extern/dikeovertopping-viewer/customizations/src/components/dike-form.vue -text
 extern/dikeovertopping-viewer/nuxt.config.js -text
 extern/dikeovertopping-viewer/package-lock.json -text
 extern/dikeovertopping-viewer/package.json -text
@@ -194,6 +196,7 @@ extern/dikeovertopping-viewer/src/components/dike-form.vue -text
 extern/dikeovertopping-viewer/src/components/dike-profile.vue -text
 extern/dikeovertopping-viewer/src/components/dike-scenario-input.vue -text
 extern/dikeovertopping-viewer/src/components/dike-scenario-output.vue -text
+extern/dikeovertopping-viewer/src/components/profile-axis.vue -text
 extern/dikeovertopping-viewer/src/components/profile-point.vue -text
 extern/dikeovertopping-viewer/src/components/profile-water.vue -text
 extern/dikeovertopping-viewer/src/layouts/default.vue -text

@@ -19,9 +19,7 @@
     "dotenv-safe": "^6.1.0",
     "eslint": "^5.0.1",
     "eslint-loader": "^2.0.0",
-    "eslint-plugin-vue": "^4.0.0",
-    "gulp": "^4.0.0",
-    "gulp-modify-css-urls": "^2.0.0"
+    "eslint-plugin-vue": "^4.0.0"
   },
   "eslintConfig": {
     "env": {

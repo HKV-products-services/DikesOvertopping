@@ -14,13 +14,17 @@
       :wave-period="$store.state.load.period"
       class="dike-profile__water"
     />
+    <ProfileAxis
+      :bounds="dikeBoundingBox"
+      :scale="scaleFactor"
+    />
     <polygon
       :points="dikeProfileFill"
       class="dike-profile__background"
     />
     <polyline
       :points="dikeProfileLine"
-      :stroke-width="4 * scaleFactor"
+      :stroke-width="3 * scaleFactor"
       class="dike-profile__line"
     />
     <polyline
@@ -37,8 +41,8 @@
       :selected="(point === selection.point)"
     />
     <line
-      v-if="result.success"
-      :x1="viewBox.xMin"
+      v-if="resultStatus === 'success'"
+      :x1="dikeBoundingBox.xMin"
       :x2="dikeBoundingBox.xMax"
       :y2="result.dikeHeight"
       :y1="result.dikeHeight"
@@ -46,8 +50,8 @@
       class="dike-profile__result-dike-height"
     />
     <line
-      v-if="result.success"
-      :x1="viewBox.xMin"
+      v-if="resultStatus === 'success'"
+      :x1="dikeBoundingBox.xMin"
       :x2="dikeBoundingBox.xMax"
       :y2="result.waveRunUp"
       :y1="result.waveRunUp"
@@ -61,14 +65,16 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex';
+  import { mapState, mapGetters } from 'vuex';
   import ProfilePoint from './profile-point.vue';
   import ProfileWater from './profile-water.vue';
+  import ProfileAxis from './profile-axis.vue';
 
   export default {
     components: {
       ProfilePoint,
       ProfileWater,
+      ProfileAxis,
     },
     props: {
       width: {
@@ -86,6 +92,9 @@
         'selection',
         'result',
         'calculationMethod',
+      ]),
+      ...mapGetters([
+        'resultStatus',
       ]),
       validatedPoints() {
         return this.points.filter(point =>
@@ -113,8 +122,8 @@
       dikeProfileFill() {
         return `
           ${this.dikeProfileLine}
-          ${this.dikeBoundingBox.xMax}, ${this.dikeBoundingBox.yMin}
-          ${this.dikeBoundingBox.xMin}, ${this.dikeBoundingBox.yMin}
+          ${this.dikeBoundingBox.xMax}, ${this.dikeBoundingBox.yMin - 0.3}
+          ${this.dikeBoundingBox.xMin}, ${this.dikeBoundingBox.yMin - 0.3}
         `;
       },
       selectedLine() {
@@ -127,7 +136,7 @@
         return `${startPoint.x},${startPoint.y} ${endPoint.x},${endPoint.y}`;
       },
       viewBox() {
-        const padding = 5;
+        const padding = 10;
         const { xMin, xMax, yMin, yMax } = this.dikeBoundingBox;
 
         return {

@@ -80,7 +80,8 @@
   }
 
   .page__result-profile {
-    width: 60%;
+    width: 100%;
+    position: relative;
   }
 
   .page__result-output {
@@ -92,15 +93,17 @@
     flex-direction: column;
   }
 
-  @media(min-width: 40rem) {
-    .page__result {
-      flex-direction: row;
-    }
-  }
-
   @media(min-width: 52rem) {
     .page__input {
       flex-direction: row;
+    }
+
+    .page__result {
+      flex-direction: row;
+    }
+
+    .page__result-profile {
+      width: 60%;
     }
   }
 </style>

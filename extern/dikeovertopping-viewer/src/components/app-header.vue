@@ -78,7 +78,7 @@
     background-color: var(--accent-7);
   }
 
- .app-header__title {
+  .app-header__title {
     font-size: 1em;
     max-width: var(--primary-layout-width);
     margin: 0 auto;
