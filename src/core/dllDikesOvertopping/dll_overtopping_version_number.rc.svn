@@ -25,8 +25,8 @@ LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 17,1,1,SVNREV
- PRODUCTVERSION 17,1,1,SVNREV
+ FILEVERSION 18,1,1,SVNREV
+ PRODUCTVERSION 18,1,1,SVNREV
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -44,14 +44,14 @@ BEGIN
             VALUE "Comments", "-"
             VALUE "CompanyName", "Deltares"
             VALUE "FileDescription", "VTV Dikes Overtopping"
-            VALUE "FileVersion", "17.1.1.SVNREV"
+            VALUE "FileVersion", "18.1.1.SVNREV"
             VALUE "InternalName", "DikesOvertopping"
-            VALUE "LegalCopyright", "Copyright (c) 2014-2017"
+            VALUE "LegalCopyright", "Copyright (c) 2014-2018"
             VALUE "LegalTrademarks", "Copyright Deltares"
             VALUE "OriginalFilename", "dllOvertopping.dll"
             VALUE "PrivateBuild", "-"
             VALUE "ProductName", "VTV Dikes Overtopping"
-            VALUE "ProductVersion", "17.1.1.SVNREV"
+            VALUE "ProductVersion", "18.1.1.SVNREV"
             VALUE "SpecialBuild", "-"
         END
     END
