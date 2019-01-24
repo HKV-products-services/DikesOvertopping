@@ -1101,7 +1101,14 @@ end subroutine deallocateGeometry
        roughnessFactor = geometryF%roughness(i)
        diffx           = xnext - xi
        diffy           = ynext - yi
-       if (diffx < xDiff_min - tol) then
+       if (diffx < 0) then
+           success = .false.
+           message%errorcode = diffx_negative
+           message%severity = severityError
+           formatstr = GetOvertoppingFormat(diffx_negative)
+           write(message%message, formatstr) xDiff_min, xi, xnext
+           call addMessage(errorStruct, message)
+       else if (diffx < xDiff_min - tol) then
            success = .false.
            message%errorcode = diffx_too_small
            message%severity = severityError

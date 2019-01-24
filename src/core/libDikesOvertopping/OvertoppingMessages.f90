@@ -82,6 +82,7 @@ enum, bind(c)
     enumerator :: zero_or_negative_critical_overtopping
     enumerator :: diffx_too_small
     enumerator :: diffy_too_small
+    enumerator :: diffx_negative
 ! parameters :
     enumerator :: par_fB
     enumerator :: par_fN
@@ -291,6 +292,8 @@ select case(language)
                 GetOvertoppingFormat = '("X-coordinates must differ at least ",F4.2,".",F8.3," and ",F8.3," are too close to each other.")'
             case (diffy_too_small)
                 GetOvertoppingFormat = '("Coordinates in vertical direction must be non-decreasing.",F7.2," and ",F7.2," are not.")'
+            case (diffx_negative)
+                GetOvertoppingFormat = '("X-coordinates must increase at least with ",F4.2,".",F8.3," and ",F8.3," do not meet this condition.")'
             case default
                 write(GetOvertoppingFormat,*) '(Internal error, ID = ', ID, ')'
         end select
@@ -314,6 +317,8 @@ select case(language)
                 GetOvertoppingFormat = '("X-coordinaten moeten ten minste ",F4.2," van elkaar verschillen.",F8.3," en ",F8.3," ligt te dicht bij elkaar.")'
             case (diffy_too_small)
                 GetOvertoppingFormat = '("Verticale coordinaten mogen niet afnemen.",F7.2," en ",F7.2," doen dat wel.")'
+            case (diffx_negative)
+                GetOvertoppingFormat = '("X-coordinaten moeten ten minste met ",F4.2," toenemen.",F8.3," en ",F8.3," voldoen hier niet aan.")'
             case default
                 write(GetOvertoppingFormat,*) '(Interne fout, ID = ', ID, ')'
         end select

@@ -602,6 +602,16 @@ subroutine overtoppingValidationTestZPoints
     call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     call assert_equal(4, errorStruct%nErrors, 'expected 4 (total) validation errors')
 
+    geometryF%xcoords = [ 0d0, 40d0, 39.0d0 ]
+    geometryF%ycoords = [-10d0, 0d0, 10d0]
+    call SetLanguage('NL')
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
+    call SetLanguage('UK')
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
+    call assert_equal(6, errorStruct%nErrors, 'expected 6 (total) validation errors')
+    call assert_equal(errorStruct%messages(5)%message, 'X-coordinaten moeten ten minste met 0.02 toenemen.  40.000 en   39.000 voldoen hier niet aan.', 'error handling')
+    call assert_equal(errorStruct%messages(6)%message, 'X-coordinates must increase at least with 0.02.  40.000 and   39.000 do not meet this condition.', 'error handling')
+
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine overtoppingValidationTestZPoints
