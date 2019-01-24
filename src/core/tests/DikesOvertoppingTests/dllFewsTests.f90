@@ -142,6 +142,7 @@ subroutine overtoppingValidationFewsTest
     !
     ! initializations
     !
+    call SetLanguage('NL')
     call init_modelfactors_and_load(modelFactors)
     call convertJ(modelFactors, modelFactorsArray)
 
@@ -166,7 +167,7 @@ subroutine overtoppingValidationFewsTest
     call ValidateInputJ(xcoords, ycoords, roughness, normal, nPoints, dikeHeight, modelFactorsArray, success, errorMsg)
     call assert_false(success, "expect failure")
     loc = index(errorMsg, 'Model factor 2% wave runup smaller than  0.000')
-    call assert_equal(loc, 7, 'error message validate 3')
+    call assert_equal(loc, 67, 'error message validate 3')
 
     !
     ! do validation of input (modelfactor foreshore < 0.3) :
@@ -176,7 +177,7 @@ subroutine overtoppingValidationFewsTest
     call ValidateInputJ(xcoords, ycoords, roughness, normal, nPoints, dikeHeight, modelFactorsArray, success, errorMsg)
     call assert_false(success, "expect failure")
     loc = index(errorMsg, 'Model factor reduction factor foreshore not between  0.300 and  1.000')
-    call assert_equal(loc, 7, 'error message validate 4')
+    call assert_equal(loc, 67, 'error message validate 4')
 
 end subroutine overtoppingValidationFewsTest
 

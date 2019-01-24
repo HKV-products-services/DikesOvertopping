@@ -48,6 +48,7 @@
    public :: determineSegmentTypes, copyGeometry, mergeSequentialBerms, adjustNonHorizontalBerms
    public :: removeBerms, removeDikeSegments, splitCrossSection, calculateHorzLengths
    public :: calculateHorzDistance, deallocateGeometry, basicGeometryTest
+   public :: checkSegmentTypes
 !
    contains
 
@@ -119,30 +120,9 @@
       endif
    endif
 
-   ! check segment types
    if (succes) then
-      if (count(geometry%segmentTypes == 3) > 0d0) then
-         succes = .false.
-         errorMessage = GetOvertoppingMessage(dike_segment_mismatches)
-      endif
-   endif
-
-   ! check number of berm segments
-   if (succes) then
-      if (geometry%NbermSegments > 2) then
-         succes = .false.
-         errorMessage = GetOvertoppingMessage(max2berm_segments)
-      endif
-   endif
-
-   ! check if first and last dike segment is a slope segment
-   if (succes) then
-      if ((geometry%segmentTypes(1) == 2) .or. &
-          (geometry%segmentTypes(geometry%nCoordinates-1) == 2)) then
-         succes = .false.
-         errorMessage = GetOvertoppingMessage(first_and_last_must_be_slope)
-      endif
-   endif
+       call checkSegmentTypes(geometry, succes, errorMessage)
+    endif
 
    ! check roughness factors
    if (succes) then
@@ -160,6 +140,36 @@
    call deallocateGeometry(geometry)
    
    end subroutine checkCrossSection
+
+   ! validation routine for segment types
+   subroutine checkSegmentTypes(geometry, success, errorMessage)
+   type (tpGeometry), intent(in)   :: geometry     !< structure with geometry data
+   logical, intent(out)            :: success      !< validation failed or not
+   character(len=*), intent(inout) :: errorMessage !< error message, only set in case of an error
+
+   ! check segment types
+   if (count(geometry%segmentTypes == 3) > 0d0) then
+      success = .false.
+      errorMessage = GetOvertoppingMessage(dike_segment_mismatches)
+   endif
+
+   ! check number of berm segments
+   if (success) then
+      if (geometry%NbermSegments > 2) then
+         success = .false.
+         errorMessage = GetOvertoppingMessage(max2berm_segments)
+      endif
+   endif
+
+   ! check if first and last dike segment is a slope segment
+   if (success) then
+      if ((geometry%segmentTypes(1) == 2) .or. &
+          (geometry%segmentTypes(geometry%nCoordinates-1) == 2)) then
+         success = .false.
+         errorMessage = GetOvertoppingMessage(first_and_last_must_be_slope)
+      endif
+   endif
+   end subroutine checkSegmentTypes
 
 !> initializeGeometry:
 !! initialize the geometry

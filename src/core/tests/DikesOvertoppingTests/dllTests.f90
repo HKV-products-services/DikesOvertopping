@@ -58,6 +58,7 @@ subroutine allOvertoppingDllTests
     call testWithLevel(overtoppingValidationRoughnessTest, 'General; Test validation of invalid roughness', 1)
     call testWithLevel(overtoppingMultipleValidationTest,  'General; Test validation of incorrect profile and negative model factor in one call', 1)
     call testWithLevel(overtoppingValidationTestZPoints,   'General; Test message of incorrect profile (z-value)', 1)
+    call testWithLevel(overtoppingValidationTestInvalidSlope,'General: Test message of invalid slope', 1)
     call testWithLevel(overtoppingZ2Test,                  'General; Test h+z2 > dikeheight', 1)
     call testWithLevel(LoadNaNTest,                        'General; Test error handling in case of NaN in load', 1)
     call testWithLevel(TestProfileAdjustment,              'General; Test whether the profile is adapted correctly', 1)
@@ -427,7 +428,7 @@ subroutine overtoppingValidationTest
     call SetLanguage('UK')
     call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     
-    call assert_equal(errorStruct%messages(3)%message, 'Model factor 2% wave runup smaller than  0.000', 'error handling')
+    call assert_equal(errorStruct%messages(4)%message, 'Model factor 2% wave runup smaller than  0.000', 'error handling')
     
     !
     ! do validation of input (modelfactor foreshore < 0.3) :
@@ -435,7 +436,7 @@ subroutine overtoppingValidationTest
     modelFactors%m_z2                      = 1.00_wp
     modelFactors%reductionFactorForeshore  = 0.25_wp
     call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
-    call assert_equal(errorStruct%messages(4)%message, 'Model factor reduction factor foreshore not between  0.300 and  1.000', 'error handling')
+    call assert_equal(errorStruct%messages(6)%message, 'Model factor reduction factor foreshore not between  0.300 and  1.000', 'error handling')
 
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
@@ -597,7 +598,7 @@ subroutine overtoppingValidationTestZPoints
     call assert_equal(errorStruct%messages(4)%message, 'X-coordinates must differ at least 0.02.  40.000 and   40.019 are too close to each other.', 'error handling')
 
     geometryF%xcoords = [ 0d0, 40d0, 40.0201d0 ]
-    geometryF%ycoords = [ 0d0, 9.9d0, 10d0]
+    geometryF%ycoords = [ 0d0, 9.9d0, 9.91d0]
     call SetLanguage('NL')
     call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     call assert_equal(4, errorStruct%nErrors, 'expected 4 (total) validation errors')
@@ -615,6 +616,51 @@ subroutine overtoppingValidationTestZPoints
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
 end subroutine overtoppingValidationTestZPoints
+
+!! @ingroup DikeOvertoppingTests
+subroutine overtoppingValidationTestInvalidSlope
+    integer                        :: p
+    external                       :: ValidateInputF, SetLanguage
+    integer, parameter             :: npoints = 3
+    type(TErrorMessages)           :: errorStruct
+    type(OvertoppingGeometryTypeF) :: geometryF
+    real(kind=wp)                  :: dikeHeight
+    type(tpOvertoppingInput)       :: modelFactors
+    real(kind=wp)                  :: criticalOvertoppingRate
+
+    pointer            (qc, ValidateInputF)
+    pointer            (qsl, SetLanguage)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qc = getprocaddress (p, "ValidateInputF"C)
+    qsl = getprocaddress (p, "SetLanguage"C)
+    !
+    ! initializations
+    !
+    dikeHeight  =  9.1_wp
+    call init_modelfactors_and_load(modelFactors)
+    criticalOvertoppingRate        = 1.0d-3
+
+    allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
+    geometryF%xcoords = [ 0, 40, 80 ]
+    geometryF%ycoords = [-10, 0, 41]
+    geometryF%roughness = [ 1.0, 1.0 ]
+
+    geometryF%normal = 60.0_wp ! degrees
+    geometryF%npoints = npoints
+    !
+    ! do validation of input :
+    !
+    call initErrorMessages(errorStruct)
+    call SetLanguage('NL')
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
+    call SetLanguage('UK')
+    call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
+
+    call assert_equal(2, errorStruct%nErrors, 'expected 2 validation errors')
+    call assert_equal(errorStruct%messages(1)%message, 'Dijk segment is van ander type dan berm segment of helling segment', 'error handling')
+    call assert_equal(errorStruct%messages(2)%message, 'Dike segment mismatches berm segment or slope segment', 'error handling')
+end subroutine overtoppingValidationTestInvalidSlope
 
 !> test for the adjustment of the cross section
 !!
@@ -753,7 +799,10 @@ subroutine TestIssue45
     type(OvertoppingGeometryTypeF) :: geometryF
     type(tpOvertoppingInput)       :: modelFactors
     type(TErrorMessages)           :: errorStruct
+    character(len=2)               :: lang
 
+    call GetLanguage(lang)
+    call SetLanguage('NL')
     npoints = 6
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     geometryF%npoints = npoints
@@ -774,6 +823,8 @@ subroutine TestIssue45
     call ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     call assert_equal(errorStruct%nErrors, 1, "expect 1 error message about berms")
     call assert_equal(errorStruct%messages(1)%message, 'Eerste segment is een berm. Dat is niet toegestaan.', 'error in validation message')
+
+    call SetLanguage(lang)
 
 end subroutine TestIssue45
 

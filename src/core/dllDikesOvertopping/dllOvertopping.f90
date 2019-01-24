@@ -347,6 +347,10 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     endif
 
     if (success) then
+        call checkSegmentTypes(geometry, success, errorText)
+    endif
+
+    if (success) then
 
         call profileInStructure(geometry%nCoordinates, geometry%xcoordinates, geometry%ycoordinates, dikeHeight, &
                             nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, success, errorText)
