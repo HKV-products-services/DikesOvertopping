@@ -560,7 +560,7 @@ def do_work():
     getUCRTVersionNumber()
 
     if not templateSolutionPath:
-        process_solution_file("DikesOvertopping.sln", os.path.join("template", "HydraRing.sln"))
+        process_solution_file("DikesOvertopping.sln", os.path.join("template", "DikesOvertopping.sln"))
 
     else:
         slnName = os.path.basename(templateSolutionPath).replace("_template","")
