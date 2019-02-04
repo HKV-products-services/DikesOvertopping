@@ -8,6 +8,7 @@ echo Platform (Win32/x64): %5
 echo Project name	: VTV Dikes Overtopping
 
 IF %4==VS2012 GOTO VS2012
+IF %4==VS2015 GOTO VS2015
 
 set devenv_path="c:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE"
 IF EXIST "C:\Program Files (x86)\" set devenv_path="c:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE"
@@ -16,6 +17,11 @@ GOTO COMPILE
 :VS2012
 set devenv_path="c:\Program Files\Microsoft Visual Studio 11.0\Common7\IDE"
 IF EXIST "C:\Program Files (x86)\" set devenv_path="c:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE"
+GOTO COMPILE
+
+:VS2015
+set devenv_path="c:\Program Files\Microsoft Visual Studio 14.0\Common7\IDE"
+IF EXIST "C:\Program Files (x86)\" set devenv_path="c:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE"
 
 :COMPILE
 echo devenv		: %devenv_path%
