@@ -29,7 +29,6 @@
 program unitTestsProgram
 
     use ftnunit
-    use utilities
     use overtoppingTests
 
     use, intrinsic :: ieee_exceptions
@@ -74,13 +73,14 @@ subroutine prepareTests
     integer  :: lun   !< LU-number
     
     ! Initialization called from ftnunit before running tests
-    subptrTestProgramInit => initTestProgram
+    ! disabled, as it fails on Windows-10, and on Windows-7 it calls an empty subroutine
+    !subptrTestProgramInit => initTestProgram
     
     ! Initialization called from ftnunit before running each separate test
-    subptrTestInit => initTest
-    
-    call getFreeLuNumber( lun )
-    open( lun, file = 'ftnunit.run' )
+    ! disabled, as it fails on Windows-10, and on Windows-7 it calls an empty subroutine
+    !subptrTestInit => initTest
+
+    open( newunit=lun, file = 'ftnunit.run' )
     write( lun, '(a)' ) 'ALL'
     close( lun )
 
