@@ -30,7 +30,7 @@
 !!
 !! @ingroup DikeOvertoppingTests
 module omkeerVariantTests
-use precision, only : wp
+use precision, only : wp, pntlen
 use typeDefinitionsOvertopping
 use overtoppingInterface
 use ModuleLogging
@@ -78,7 +78,7 @@ end subroutine allOmkeerVariantTests
 !> inverse of overtoppingDllTest test:
 !! @ingroup DikeOvertoppingTests
 subroutine omkeerVariantTestBasic
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: omkeerVariant
     integer                        :: i
     logical                        :: succes

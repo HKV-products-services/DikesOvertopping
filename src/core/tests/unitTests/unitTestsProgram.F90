@@ -28,6 +28,7 @@
 !
 program unitTestsProgram
 
+    use precision, only : pntlen
     use ftnunit
     use overtoppingTests
 
@@ -38,9 +39,12 @@ program unitTestsProgram
     ! Enable following line to catch division by zero
     ! call ieee_set_halting_mode( IEEE_DIVIDE_BY_ZERO, .true. )
 
+    call setTestTitle("Unit tests DikesOvertopping " // merge("64-bit", "32-bit", pntlen==8))
+
     call prepareTests
 
     call runtests_init
+
     call setRunTestLevel(3) ! should be 3
 
     call runtests(allOvertoppingTests)

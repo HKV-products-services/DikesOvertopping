@@ -44,6 +44,7 @@ module loadTests
     use moduleLogging
     use omkeerVariantModule
     use overtoppingInterface
+    use precision, only : wp
 
     implicit none
     private

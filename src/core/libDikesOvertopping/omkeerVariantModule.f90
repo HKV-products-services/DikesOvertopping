@@ -39,6 +39,7 @@ use zFunctionsOvertopping
 use OvertoppingMessages
 use equalReals
 use vectorUtilities
+use precision, only : wp, set_nan
 implicit none
 
 real(kind=wp), parameter                   :: tolDischarge = 1d-3   ! relative tolerance

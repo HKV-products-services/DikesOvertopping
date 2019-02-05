@@ -36,6 +36,7 @@
    module geometryModuleOvertopping
 !***********************************************************************************************************
 
+   use precision, only : wp
    use typeDefinitionsOvertopping
    use formulaModuleOvertopping
    use OvertoppingMessages

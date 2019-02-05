@@ -43,6 +43,7 @@
    use waveRunup
    use OvertoppingMessages
    use ModuleLogging
+   use precision
 
    implicit none
 

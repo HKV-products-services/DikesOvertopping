@@ -36,7 +36,8 @@
    module typeDefinitionsOvertopping
 !***********************************************************************************************************
    !
-   use precision 
+   use precision, only : wp
+   private :: wp
    
    !> tpGeometry: structure with geometry data
    type, public              :: tpGeometry

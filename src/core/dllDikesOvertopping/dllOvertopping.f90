@@ -44,7 +44,7 @@
 module dllOvertopping
     use zFunctionsOvertopping,      only : calculateQoRTO, zFuncLogRatios
     use geometryModuleOvertopping,  only : deallocateGeometry
-    use precision,                  only : wp
+    use precision,                  only : wp, set_nan
     use typeDefinitionsOvertopping, only : tpGeometry, tpLoad, tpOvertoppingInput
     use overtoppingInterface,       only : OvertoppingGeometryType, OvertoppingGeometryTypeF
     use, intrinsic :: iso_c_binding

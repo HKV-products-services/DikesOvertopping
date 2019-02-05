@@ -30,7 +30,7 @@
 !!
 !! @ingroup DikeOvertoppingTests
 module dllFewsTests
-use precision, only : wp
+use precision, only : wp, pntlen
 use typeDefinitionsOvertopping
 use testHelper, only : init_modelfactors_and_load
 use ftnunit
@@ -54,7 +54,7 @@ end subroutine allOvertoppingDllFewsTests
 
 !! @ingroup DikeOvertoppingTests
 subroutine TestCalculateQoJ
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: calculateQoJ
     integer                        :: i
     logical                        :: succes
@@ -118,7 +118,7 @@ end subroutine TestCalculateQoJ
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingValidationFewsTest
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: ValidateInputJ, SetLanguage
     integer, parameter             :: npoints = 5
     real(kind=wp)                  :: xcoords(nPoints)
@@ -186,7 +186,7 @@ end subroutine overtoppingValidationFewsTest
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingValidationFewsTest2
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: ValidateInputJ, SetLanguage
     integer, parameter             :: npoints = 2
     real(kind=wp)                  :: xcoords(nPoints)
@@ -225,7 +225,7 @@ end subroutine overtoppingValidationFewsTest2
 !> test for omkeerVariantJ
 !! @ingroup DikeOvertoppingTests
 subroutine omkeerVariantTestJ
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: omkeerVariantJ
     integer                        :: i
     logical                        :: succes

@@ -43,6 +43,7 @@ module crossSectionRoughnessTests
     use moduleLogging
     use omkeerVariantModule
     use overtoppingInterface
+    use precision, only : wp
 !
     implicit none
 

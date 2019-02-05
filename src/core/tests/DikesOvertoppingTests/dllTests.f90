@@ -30,7 +30,7 @@
 !!
 !! @ingroup DikeOvertoppingTests
 module dllTests
-use precision, only : wp
+use precision, only : wp, pntlen, set_nan
 use overtoppingInterface, only : OvertoppingGeometryTypeF
 use typeDefinitionsOvertopping
 use ModuleLogging
@@ -88,7 +88,7 @@ subroutine overtoppingDllTest
     real(kind=wp), parameter :: zExpected2 = -6.43985_wp
     real(kind=wp), parameter :: margin     =  0.0000100_wp
 
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     character(len=12)              :: version
     external                       :: calcZValue
     external                       :: calculateQoF
@@ -162,7 +162,7 @@ end subroutine overtoppingDllTest
 !! test Dike at one of the profile points
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingDikeInProfileTest
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: calculateQoF
     integer                        :: i
     logical                        :: succes
@@ -217,7 +217,7 @@ subroutine overtoppingZ2Test
     real(kind=wp), parameter :: zExpected2 = -6.43985_wp
     real(kind=wp), parameter :: margin     =  0.0000100_wp
 
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: calculateQoF
     integer                        :: i
     logical                        :: succes
@@ -267,7 +267,7 @@ end subroutine overtoppingZ2Test
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine influenceRoughnessTest
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: calculateQoF
     logical                        :: succes
     integer, parameter             :: npoints = 2
@@ -317,7 +317,7 @@ end subroutine influenceRoughnessTest
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine LoadNaNTest
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: calculateQoF
     integer                        :: i
     logical                        :: succes
@@ -381,7 +381,7 @@ end subroutine LoadNaNTest
 !!
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingValidationTest
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: ValidateInputF, SetLanguage
     integer, parameter             :: npoints = 5
     type(OvertoppingGeometryTypeF) :: geometryF
@@ -443,7 +443,7 @@ subroutine overtoppingValidationTest
 end subroutine overtoppingValidationTest
 
 subroutine overtoppingValidationRoughnessTest
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: ValidateInputF, SetLanguage
     integer, parameter             :: npoints = 5
     type(TErrorMessages)           :: errorStruct
@@ -492,7 +492,7 @@ end subroutine overtoppingValidationRoughnessTest
 
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingMultipleValidationTest
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: ValidateInputF, SetLanguage
     integer, parameter             :: npoints = 5
     type(TErrorMessages)           :: errorStruct
@@ -545,7 +545,7 @@ end subroutine overtoppingMultipleValidationTest
 
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingValidationTestZPoints
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: ValidateInputF, SetLanguage
     integer, parameter             :: npoints = 3
     type(TErrorMessages)           :: errorStruct
@@ -619,7 +619,7 @@ end subroutine overtoppingValidationTestZPoints
 
 !! @ingroup DikeOvertoppingTests
 subroutine overtoppingValidationTestInvalidSlope
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: ValidateInputF, SetLanguage
     integer, parameter             :: npoints = 3
     type(TErrorMessages)           :: errorStruct
@@ -837,7 +837,7 @@ subroutine overtoppingDllTest2
 
     real(kind=wp), parameter       :: margin = 0.0000100_wp
 
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     external                       :: calcZValue
     external                       :: calculateQoF
     logical                        :: succes
@@ -1078,7 +1078,7 @@ subroutine TestIssue52
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
     type(tLogging)                 :: logging
-    integer                        :: p
+    integer(kind=pntlen)           :: p
     pointer            (qc, calculateQoF)
 
     p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C

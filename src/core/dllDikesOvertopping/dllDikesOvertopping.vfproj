@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject ProjectType="typeDynamicLibrary" ProjectCreator="Intel Fortran" Keyword="Dll" Version="11.0" ProjectIdGuid="{7A17AB03-B82C-4262-82A6-8C210446685B}">
 	<Platforms>
-		<Platform Name="Win32"/></Platforms>
+		<Platform Name="Win32"/>
+		<Platform Name="x64"/></Platforms>
 	<Configurations>
 		<Configuration Name="Debug|Win32" OutputDirectory="..\bin\$(ConfigurationName)" IntermediateDirectory="..\bin\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Diagnostics="diagnosticsShowAll" WarnInterfaces="true" LocalVariableStorage="localStorageAutomatic" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
@@ -18,6 +19,26 @@
 				<Tool Name="VFLinkerTool" AdditionalLibraryDirectories="$(OSS_UCRTLIBDIR)" SuppressStartupBanner="true" SubSystem="subSystemWindows" LinkDLL="true"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool" CommandLine="copy ..\..\licenses\LicenseAGPL.txt ..\bin\$(ConfigurationName)\LicenseAGPL.txt" Outputs="..\bin\$(ConfigurationName)\LicenseAGPL.txt"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool" CommandLine="&quot;$(ProjectDir)..\..\..\extern\utils\svn_insert_version.cmd&quot; &quot;$(ProjectDir)&quot; &quot;dll_overtopping_version_number.rc.svn&quot; &quot;dll_overtopping_version_number.rc&quot;"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Debug|x64" OutputDirectory="..\bin\$(PlatformName)\$(ConfigurationName)" IntermediateDirectory="..\bin\$(PlatformName)\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Diagnostics="diagnosticsShowAll" WarnInterfaces="true" LocalVariableStorage="localStorageAutomatic" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OSS_UCRTLIBDIR)" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool" CommandLine="copy ..\..\licenses\LicenseAGPL.txt ..\bin\$(ConfigurationName)\LicenseAGPL.txt" Outputs="..\bin\$(ConfigurationName)\LicenseAGPL.txt"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool" CommandLine="&quot;$(ProjectDir)..\..\..\extern\utils\svn_insert_version.cmd&quot; &quot;$(ProjectDir)&quot; &quot;dll_overtopping_version_number.rc.svn&quot; &quot;dll_overtopping_version_number.rc&quot;"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|x64" OutputDirectory="..\bin\$(PlatformName)\$(ConfigurationName)" IntermediateDirectory="..\bin\$(PlatformName)\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" OmitFramePointers="false" LocalVariableStorage="localStorageAutomatic" Traceback="true"/>
+				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OSS_UCRTLIBDIR)" SubSystem="subSystemWindows" LinkDLL="true"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool" CommandLine="copy ..\..\licenses\LicenseAGPL.txt ..\bin\$(ConfigurationName)\LicenseAGPL.txt" Outputs="..\bin\$(ConfigurationName)\LicenseAGPL.txt"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool" CommandLine="&quot;$(ProjectDir)..\..\..\extern\utils\svn_insert_version.cmd&quot; &quot;$(ProjectDir)&quot; &quot;dll_overtopping_version_number.rc.svn&quot; &quot;dll_overtopping_version_number.rc&quot;"/>

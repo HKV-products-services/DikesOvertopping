@@ -35,6 +35,7 @@
 module waveRunup
 !***********************************************************************************************************
 
+   use precision, only : wp
    use factorModuleOvertopping
    use typeDefinitionsOvertopping
    use formulaModuleOvertopping

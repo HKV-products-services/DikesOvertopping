@@ -38,7 +38,7 @@
 
    use typeDefinitionsOvertopping
    use geometryModuleOvertopping
-   use precision, only : wp
+   use precision, only : wp, pi
    use OvertoppingMessages
 
    implicit none
