@@ -33,7 +33,6 @@ module loadTests
 
     use equalReals
     use ftnunit
-    use utilities
     use angleUtilities
     use waveParametersUtilities, only : computeWavePeriod
     use typeDefinitionsOvertopping
@@ -163,8 +162,7 @@ subroutine testSeriesLoad
     ! Read the test serie
     !
     ! Open the file with the test serie
-    call getFreeLuNumber(tunit)
-    open (unit=tunit, file=trim(testseriefile), status='old', iostat=ios)
+    open (newunit=tunit, file=trim(testseriefile), status='old', iostat=ios)
     call assert_equal(ios, 0, 'Unable to open the file: ' // trim(testseriefile))
     !
     ! Skip comment lines in test serie file 
@@ -206,9 +204,8 @@ subroutine testSeriesLoad
     endif
     !
     ! open the output file
-    call getFreeLuNumber(ounit)
     write (outputFile,'(a,i1,a,i2.2,a)') 'output_section', i, '_test', j, '.txt'
-    open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios, action='write')
+    open (newunit=ounit, file=trim(outputFile), status='unknown', iostat=ios, action='write')
     call assert_equal(ios, 0, 'Unable to open the file: ' // trim(outputFile))
     if (ios /= 0) return
     !

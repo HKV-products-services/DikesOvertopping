@@ -34,7 +34,6 @@ module crossSectionRoughnessTests
 !***********************************************************************************************************
 !
     use ftnunit
-    use utilities
     use waveParametersUtilities
     use mainModuleOvertopping
     use readCrossSectionForTests
@@ -197,9 +196,8 @@ subroutine TestSeriesRoughness
 
     !
     ! open the output file
-    call getFreeLuNumber(ounit)
     write (outputFile,'(a,i1,a,i2.2,a)') './output_section', crossSectionId, '_test', numberTestSerie, '.txt'
-    open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
+    open (newunit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
     call assert_equal(ios, 0, 'Unable to open the file: ' // trim(outputFile))
 
     write (ounit,'(a)') '# Input and results test serie Overtopping dll'
@@ -323,7 +321,7 @@ subroutine roughnesses(crossSectionId, roughnessSlopesId, roughness)
             roughness(1) = 1
         else
             ! only one roughness test serie
-            call assert_true(.false. , 'Wrong roughnesses id-number')
+            call assert('Wrong roughnesses id-number')
         endif
     elseif ((crossSectionId == 2) .or. (crossSectionId == 3)) then
         if (roughnessSlopesId == 1) then
@@ -343,7 +341,7 @@ subroutine roughnesses(crossSectionId, roughnessSlopesId, roughness)
             allocate (roughness(nSegments))
             roughness(1) = 2
         else
-            call assert_true(.false. , 'Wrong roughnesses id-number')
+            call assert('Wrong roughnesses id-number')
         endif
     elseif (crossSectionId == 4) then
         if (roughnessSlopesId == 1) then
@@ -358,7 +356,7 @@ subroutine roughnesses(crossSectionId, roughnessSlopesId, roughness)
             roughness(1) = 1
             roughness(2) = 3
         else
-            call assert_true(.false. , 'Wrong roughnesses id-number')
+            call assert('Wrong roughnesses id-number')
         endif
     elseif ((crossSectionId == 5) .or. (crossSectionId == 6)) then
         if (roughnessSlopesId == 1) then
@@ -384,7 +382,7 @@ subroutine roughnesses(crossSectionId, roughnessSlopesId, roughness)
             roughness(1) = 2
             roughness(2) = 4
         else
-            call assert_true(.false. , 'Wrong roughnesses id-number')
+            call assert('Wrong roughnesses id-number')
         endif
     elseif ((crossSectionId == 7) .or. (crossSectionId == 8)) then
         if (roughnessSlopesId == 1) then
@@ -401,10 +399,10 @@ subroutine roughnesses(crossSectionId, roughnessSlopesId, roughness)
             roughness(2) = 3
             roughness(3) = 5
         else
-            call assert_true(.false. , 'Wrong roughnesses id-number')
+            call assert('Wrong roughnesses id-number')
         endif
     else
-        call assert_true(.false. , 'Wrong cross section id-number')
+        call assert('Wrong cross section id-number')
     endif
 
 end subroutine roughnesses

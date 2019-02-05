@@ -32,7 +32,6 @@
 !! @ingroup DikeOvertoppingTests
 module readCrossSectionForTests
 
-    use utilities
     use precision
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
@@ -81,8 +80,7 @@ subroutine readCrossSection(crossSectionFile, geometry, succes, errorMessage)
     allocate (roughnessFactors(nCoordinates))
 
     ios=0
-    call getFreeLuNumber(punit)
-    open (unit=punit, file=trim(crossSectionFile), status='old', iostat=ios)
+    open (newunit=punit, file=trim(crossSectionFile), status='old', iostat=ios)
     call assert_equal(ios, 0, 'Unable to open the file: ' // trim(crossSectionFile))
     !
     ! Skip comment lines in cross section file
@@ -133,8 +131,7 @@ subroutine readNumberOfRelevantLines (fileName, NumberOfRelevantLines)
 !
 !   source
 !
-    call getFreeLuNumber(ifile)
-    open(ifile, file=trim(filename), status='old', iostat=ios)
+    open(newunit=ifile, file=trim(filename), status='old', iostat=ios)
     call assert_equal(ios, 0, 'File ' // trim(filename) // ' can not opened')
     !
     ! Read the file 

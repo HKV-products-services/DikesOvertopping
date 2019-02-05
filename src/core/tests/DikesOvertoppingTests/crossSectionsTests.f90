@@ -33,7 +33,6 @@
 module crossSectionsAdaptionTests
 
     use precision
-    use utilities
     use ftnunit
     use waveParametersUtilities
     use readCrossSectionForTests
@@ -245,8 +244,7 @@ subroutine TestSeriesCrossSections
 
     !
     ! Open the output file
-    call getFreeLuNumber(ounit)
-    open (unit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
+    open (newunit=ounit, file=trim(outputFile), status='unknown', iostat=ios)
     call assert_equal(ios, 0 ,  'Unable to open the file: ' // trim(outputFile))
 
     write (ounit,'(a)')     '# Input and results test serie Overtopping dll'
