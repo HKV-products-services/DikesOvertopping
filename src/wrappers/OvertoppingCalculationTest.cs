@@ -140,5 +140,46 @@ namespace TestWrapper
             Assert.AreEqual(msg[1], "FOUT:Verticale coordinaten mogen niet afnemen.   4.00 en    0.00 doen dat wel.", "validation message");
             Assert.AreEqual(msg[2], "FOUT:Model factor fS (ondiepe golven) kleiner dan  0.000", "validation message");
         }
+
+        [Test]
+        public static void TestOmkeerVariant()
+        {
+            const int npoints = 3;
+            var xcoords = new double[npoints];
+            var ycoords = new double[npoints];
+            var roughness = new double[npoints];
+
+            //const double dikeHeight = 9.1;
+            var modelFactors = new OvertoppingInput
+            {
+                FactorDeterminationQnFn = 2.3,
+                FactorDeterminationQbFb = 4.3,
+                Mz2 = 1.0,
+                Fshallow = 0.92,
+                ComputedOvertopping = 1,
+                CriticalOvertopping = 1,
+                Relaxationfactor = 1.0,
+                ReductionFactorForeshore = 0.5
+            };
+
+            for (int i = 0; i < npoints; i++)
+            {
+                xcoords[i] = 5 * (i + 1);
+                ycoords[i] = 3 + 2 * (i + 1);
+                roughness[i] = 1;
+            }
+
+            const double normal = 60.0; // degrees
+
+            var load = new OvertoppingLoadStruct
+                {WaterLevel = 5.5, Direction = 50, Height = 1, Period = 4.0};
+
+            const double discharge = 1e-8;
+
+            var dikeHeight = OvertoppingFortranAccess.OmkeerVariant(load, discharge, normal, xcoords, ycoords, roughness, modelFactors);
+
+            // this is not a benchmark, it only checks that the results do not change within 7 significant digits
+            Assert.AreEqual(9.055, dikeHeight, 0.01);
+        }
     }
 }

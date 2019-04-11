@@ -100,6 +100,39 @@ namespace TestWrapper
             return result;
         }
 
+        public static double OmkeerVariant(OvertoppingLoadStruct wave, double discharge, double normal,
+            double[] xCoords, double[] zCoords, double[] roughness,
+            OvertoppingInput input)
+        {
+
+            var geometry = new OvertoppingGeometryStruct
+            {
+                Normal = normal,
+                NPoints = xCoords.Length,
+                XCoords = Marshal.AllocHGlobal(Marshal.SizeOf(xCoords[0]) * xCoords.Length),
+                YCoords = Marshal.AllocHGlobal(Marshal.SizeOf(zCoords[0]) * zCoords.Length),
+                Roughness = Marshal.AllocHGlobal(Marshal.SizeOf(roughness[0]) * roughness.Length)
+            };
+            Marshal.Copy(xCoords, 0, geometry.XCoords, xCoords.Length);
+            Marshal.Copy(zCoords, 0, geometry.YCoords, zCoords.Length);
+            Marshal.Copy(roughness, 0, geometry.Roughness, roughness.Length);
+
+            var success = false;
+            var errorMessage = new StringBuilder(ErrorMessageLength);
+            double result;
+            var verbosity = -1;
+            var logFile = new StringBuilder(MaxFileSizeLength);
+            omkeerVariantC(ref wave, ref discharge, ref geometry, ref input, out result, ref success, errorMessage,
+                ref verbosity, logFile, errorMessage.Capacity, logFile.Capacity);
+
+            Marshal.FreeHGlobal(geometry.XCoords);
+            Marshal.FreeHGlobal(geometry.YCoords);
+            Marshal.FreeHGlobal(geometry.Roughness);
+
+            if (!success) { throw new Exception(ConvertString(errorMessage)); }
+            return result;
+        }
+
         public static double GetZValue(double criticalOvertoppingRate, OvertoppingInput input, double qo)
         {
             var success = false;
@@ -185,5 +218,10 @@ namespace TestWrapper
         [DllImport("dllDikesOvertopping.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void ValidateInputC(ref OvertoppingGeometryStruct geometry,
             ref double dikeHeight, ref OvertoppingInput input, ref bool succes, StringBuilder message, int stringLength);
+
+        [DllImport("dllDikesOvertopping.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void omkeerVariantC(ref OvertoppingLoadStruct load, ref double discharge, ref OvertoppingGeometryStruct geometry,
+            ref OvertoppingInput input, out double result, ref bool success,
+            StringBuilder message, ref int verbosity, StringBuilder logFile, int stringLength1, int stringLength2);
     }
 }

@@ -30,6 +30,7 @@
 !!  - ValidateInputC
 !!  - ValidateInputF
 !!  - ValidateInputJ
+!!  - omkeerVariantC
 !!  - omkeerVariantF
 !!  - omkeerVariantJ
 !!  - SetLanguage
@@ -426,6 +427,40 @@ subroutine omkeerVariantJ(load, xcoords, ycoords, roughness, normal, npoints, gi
         errorMessage = 'Allocation error in omkeerVariantJ'
     endif
 end subroutine omkeerVariantJ
+
+!>
+!! Subroutine that calculates the discharge needed for the Z-function DikesOvertopping
+!! Wrapper for omkeerVariantF: convert C-like input structures to Fortran input structures
+!!
+!! @ingroup dllDikesOvertopping
+subroutine omkeerVariantC(load, discharge, geometryInput, modelFactors, dikeHeight, success, errorText, verbosity, logFile)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"omkeerVariantC" :: omkeerVariantC
+    use geometryModuleOvertopping
+    use typeDefinitionsOvertopping
+    use omkeerVariantModule
+    use ModuleLogging
+    type(OvertoppingGeometryType), intent(in) :: geometryInput  !< struct with geometry and roughness as c-pointers
+    real(kind=wp), intent(in)                 :: discharge      !< input discharge
+    type(tpLoad), intent(in)                  :: load           !< struct with waterlevel and wave parameters
+    real(kind=wp), intent(out)                :: dikeHeight     !< dike height
+    type(tpOvertoppingInput), intent(inout)   :: modelFactors   !< struct with modelfactors
+    logical, intent(out)                      :: success        !< flag for success
+    character(len=*), intent(out)             :: errorText      !< error message (only set if not successful)
+    integer, intent(in)                       :: verbosity      !< level of verbosity
+    character(len=*), intent(in)              :: logFile        !< filename of logfile
+
+    type(OvertoppingGeometryTypeF)            :: geometry       !< fortran struct with geometry and roughness
+    type(tLogging)                            :: logging        !< logging struct
+    type (tpOvertopping)                      :: overtopping    !< structure with overtopping results
+
+    geometry = geometry_c_f(geometryInput)
+
+    logging%verbosity = verbosity
+    logging%filename = logFile
+
+    call iterateToGivenDischarge(load, geometry, discharge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+
+end subroutine omkeerVariantC
 
 !>
 !! Subroutine with omkeerVariant (get dikeHeight by given discharge)
