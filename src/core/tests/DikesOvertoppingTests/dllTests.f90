@@ -121,6 +121,7 @@ subroutine overtoppingDllTest
     criticalOvertoppingRate        = 1.0d-3
 
     call versionNumber(version)
+    call assert_false('0.0.0.0' == version, "version not set")
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     do i = 1, npoints

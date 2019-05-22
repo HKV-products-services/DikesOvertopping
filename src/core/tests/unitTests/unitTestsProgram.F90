@@ -27,7 +27,8 @@
 ! $Id$
 !
 program unitTestsProgram
-
+    use user32
+    use kernel32
     use precision, only : pntlen
     use ftnunit
     use overtoppingTests
@@ -35,11 +36,17 @@ program unitTestsProgram
     use, intrinsic :: ieee_exceptions
 
     implicit none
+    character(len=16) :: version
+    pointer            (qv, versionNumber)
+    integer(kind=pntlen)           :: p
 
     ! Enable following line to catch division by zero
     ! call ieee_set_halting_mode( IEEE_DIVIDE_BY_ZERO, .true. )
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qv = getprocaddress (p, "versionNumber"C)
 
-    call setTestTitle("Unit tests DikesOvertopping " // merge("64-bit", "32-bit", pntlen==8))
+    call versionNumber(version)
+    call setTestTitle("Unit tests DikesOvertopping " // merge("64-bit", "32-bit", pntlen==8) // ", version: " // trim(version) )
 
     call prepareTests
 
@@ -53,6 +60,7 @@ program unitTestsProgram
     call showResult
 
 contains
+
 
 !> Routine to be called when tests are started
 subroutine initTestProgram

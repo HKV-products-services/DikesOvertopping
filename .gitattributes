@@ -31,6 +31,7 @@ src/core/prepare_sln.cmd -text
 src/core/prepare_sln.py -text
 src/core/teamcity.bat -text
 src/core/tests/unitTests/runtests.bat -text
+src/core/winapi.vcxproj -text
 src/licenses/LicenseAGPL.txt -text
 src/wrappers/TestRunner/App.config -text
 src/wrappers/TestRunner/Properties/AssemblyInfo.cs -text

@@ -52,6 +52,7 @@
 		<File RelativePath=".\external\general\fileUtilities.f90"/>
 		<File RelativePath=".\external\general\interpolationTriangular.f90"/>
 		<File RelativePath=".\external\general\vectorUtilities.f90"/>
+		<File RelativePath=".\external\general\versionInfo.f90"/>
 		<File RelativePath=".\external\general\waveParametersUtilities.f90"/>
 		<File RelativePath=".\external\general\writeUtilities.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>
