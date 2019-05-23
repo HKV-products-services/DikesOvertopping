@@ -25,8 +25,14 @@ doc/doxygen/RunDoxygen.bat -text
 extern/Utils/svn_insert_version.cmd -text
 release/Dikes[!!-~]Overtopping[!!-~]Kernel[!!-~]-[!!-~]Technical[!!-~]Documentation.pdf -text
 release/LicenseAGPL.txt -text
-release/dllDikesOvertopping.dll -text
-release/dllDikesOvertopping.lib -text
+release/win32/dllDikesOvertopping.dll -text
+release/win32/dllDikesOvertopping.lib -text
+release/win32/winapi.dll -text
+release/win32/winapi.lib -text
+release/x64/dllDikesOvertopping.dll -text
+release/x64/dllDikesOvertopping.lib -text
+release/x64/winapi.dll -text
+release/x64/winapi.lib -text
 src/core/prepare_sln.cmd -text
 src/core/prepare_sln.py -text
 src/core/teamcity.bat -text
