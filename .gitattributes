@@ -33,6 +33,7 @@ release/x64/dllDikesOvertopping.dll -text
 release/x64/dllDikesOvertopping.lib -text
 release/x64/winapi.dll -text
 release/x64/winapi.lib -text
+src/CreateSigExport.ps1 -text
 src/core/prepare_sln.cmd -text
 src/core/prepare_sln.py -text
 src/core/teamcity.bat -text
