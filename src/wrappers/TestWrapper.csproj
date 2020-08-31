@@ -88,8 +88,14 @@
     <Compile Include="OvertoppingFortranAccess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\..\release\dllDikesOvertopping.dll">
+  <ItemGroup Condition="'$(Platform)' == 'x64'">
+    <Content Include="..\..\release\x64\dllDikesOvertopping.dll">
+      <Link>dllDikesOvertopping.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'win32'">
+    <Content Include="..\..\release\win32\dllDikesOvertopping.dll">
       <Link>dllDikesOvertopping.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
