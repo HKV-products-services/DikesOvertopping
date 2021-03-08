@@ -181,5 +181,76 @@ namespace TestWrapper
             // this is not a benchmark, it only checks that the results do not change within 7 significant digits
             Assert.AreEqual(9.055, dikeHeight, 0.01);
         }
+
+        [Test]
+        public static void TestOvertoppingValidationGeometry()
+        {
+            // Note: this test proves that validation by the Overtopping fails is some cases (mainly when checking allowed angles for slopes and berms) 
+            const double dikeHeight = 9.1;
+            var modelFactors = new OvertoppingInput
+            {
+                FactorDeterminationQnFn = 0.4,
+                FactorDeterminationQbFb = 0.4,
+                Mz2 = 1.0,
+                Fshallow = 0.92,
+                ComputedOvertopping = 1,
+                CriticalOvertopping = 1,
+                Relaxationfactor = 1.0,
+                ReductionFactorForeshore = 0.34
+            };
+            string[] msg;
+
+            // Only one point so error expected
+            var xcoords = new double[] { 0 };
+            var ycoords = new double[] { -5 };
+            var roughness = new[] { 0.5 };
+
+            var result = OvertoppingFortranAccess.Validate(xcoords, ycoords, roughness, dikeHeight, modelFactors, out msg);
+            // This validation does work
+            Assert.IsFalse(result, "validation");
+            Assert.AreEqual(1, msg.Length, "number of validation messages");
+            Assert.AreEqual(msg[0], "FOUT:Aantal coordinaten dijk doorsnede is kleiner dan 2");
+
+            xcoords = new double[] { 0, 10, 12, 13, 15, 18, 20, 22 };
+            ycoords = new double[] { 5, 10, 11, 11.2, 11.4, 12, 13, 13.8 };
+            roughness = new[] { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 };
+
+            result = OvertoppingFortranAccess.Validate(xcoords, ycoords, roughness, dikeHeight, modelFactors, out msg);
+            Assert.IsFalse(result, "validation");
+            Assert.AreEqual(1, msg.Length, "number of validation messages");
+            Assert.AreEqual(msg[0], "FOUT:Dijk segment is van ander type dan berm segment of helling segment");
+
+            // correct number of points, slope far too steep
+            xcoords = new double[] { 0, 1 };
+            ycoords = new double[] { -5, 10 };
+            roughness = new[] { 0.5, 0.5 };
+
+            result = OvertoppingFortranAccess.Validate(xcoords, ycoords, roughness, dikeHeight, modelFactors, out msg);
+            Assert.IsFalse(result, "validation");
+            Assert.AreEqual(1, msg.Length, "number of validation messages");
+            Assert.AreEqual(msg[0], "FOUT:Dijk segment is van ander type dan berm segment of helling segment", "validation message 1");
+
+            // correct number of points, no slope at all
+            xcoords = new double[] { 0, 1 };
+            ycoords = new double[] { 10.00, 10.00 };
+            roughness = new[] { 0.5, 0.5 };
+
+            // This validation does work.
+            result = OvertoppingFortranAccess.Validate(xcoords, ycoords, roughness, dikeHeight, modelFactors, out msg);
+            Assert.IsFalse(result, "validation");
+            Assert.AreEqual(1, msg.Length, "number of validation messages");
+            Assert.AreEqual(msg[0], "FOUT:Eerste segment is een berm. Dat is niet toegestaan."); //TODO berm as slope == 0.0 ?
+
+            // correct number of points, too shallow slope
+            xcoords = new double[] { 0, 10000 };
+            ycoords = new double[] { 10, 11 };
+            roughness = new[] { 0.5, 0.5 };
+
+            // NOTE: This should have failed as slope clearly exceeds min of 1:8
+            result = OvertoppingFortranAccess.Validate(xcoords, ycoords, roughness, dikeHeight, modelFactors, out msg);
+            Assert.IsFalse(result, "validation");
+            Assert.AreEqual(1, msg.Length, "number of validation messages");
+            Assert.AreEqual(msg[0], "FOUT:Eerste segment is een berm. Dat is niet toegestaan."); //TODO berm as slope == 0.0 ?
+        }
     }
 }
