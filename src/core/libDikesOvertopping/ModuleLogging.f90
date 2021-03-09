@@ -35,7 +35,7 @@ implicit none
 integer, parameter :: maxFilenameLength = 256      !< maximum length of filename
 
 !> TLogging: structure for steering the logging
-type, bind(C) :: TLogging
+type :: TLogging
    integer                          :: verbosity =  verboseNone  !< level of verbosity: one of verboseNone, verboseBasic, verboseDetailed, verboseDebugging
    character(len=maxFilenameLength) :: fileName  =  ' '          !< filename of logging
 end type TLogging

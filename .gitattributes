@@ -34,6 +34,10 @@ release/x64/dllDikesOvertopping.lib -text
 release/x64/winapi.dll -text
 release/x64/winapi.lib -text
 src/CreateSigExport.ps1 -text
+src/core/linux/Makefile -text
+src/core/linux/copy_files.sh -text
+src/core/linux/vectorUtilities.f90 -text
+src/core/linux/versionInfo.f90 -text
 src/core/prepare_sln.cmd -text
 src/core/prepare_sln.py -text
 src/core/tests/unitTests/runtests.bat -text
