@@ -9,7 +9,7 @@ cp ../../external/tools/equalReals.f90 .
 # cp ../../external/general/versionInfo.f90 .
 cp ../../external/general/waveParametersUtilities.f90 .
 cp ../../external/general/angleUtilities.f90 .
-cp ../../external/ftnunit/ftnunit_hooks.f90 .
+cp ../../external/ftnunit/ftnunit_hooks_teamcity.f90 .
 cp ../../external/ftnunit/ftnunit.f90 .
 cp ../../libDikesOvertopping/typeDefinitionsOvertopping.f90 .
 cp ../../libDikesOvertopping/OvertoppingMessages.f90 .

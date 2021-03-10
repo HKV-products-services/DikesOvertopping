@@ -11,7 +11,7 @@ vectorUtilities.f90 \
 versionInfo.f90 \
 waveParametersUtilities.f90 \
 angleUtilities.f90 \
-ftnunit_hooks.f90 \
+ftnunit_hooks_teamcity.f90 \
 ftnunit.f90 \
 typeDefinitionsOvertopping.f90\
 OvertoppingMessages.f90 \
