@@ -34,7 +34,7 @@ module overtoppingTests
     use loadTests
     use crossSectionsAdaptionTests
     use crossSectionRoughnessTests
-#if defined WIN32 || WIN64
+#if defined _WIN32 || _WIN64
     use dllTests
     use dllFewsTests
 #endif
@@ -57,7 +57,7 @@ subroutine allovertoppingTests
 
     !
     ! Test using external dll
-#if defined WIN32 || WIN64
+#if defined _WIN32 || _WIN64
     call allOvertoppingDllTests
 #endif
 
@@ -67,7 +67,7 @@ subroutine allovertoppingTests
 
     !
     ! Test using external dll, Java/FEWS interface
-#if defined WIN32 || WIN64
+#if defined _WIN32 || _WIN64
     call allOvertoppingDllFewsTests
 #endif
 

@@ -37,7 +37,7 @@ use ModuleLogging
 use ftnunit
 use testHelper, only : init_modelfactors_and_load
 use omkeerVariantModule
-#if defined WIN32 || defined WIN64
+#if defined _WIN32 || defined _WIN64
 use user32
 use kernel32
 #endif
@@ -96,7 +96,7 @@ subroutine omkeerVariantTestBasic
 
     pointer            (q, omkeerVariant)
 
-#if defined WIN32 || defined WIN64
+#if defined _WIN32 || defined _WIN64
     p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
     call assert_true(p /= 0, 'load dllDikesOvertopping.dll')
     q = getprocaddress (p, "omkeerVariantF"C)

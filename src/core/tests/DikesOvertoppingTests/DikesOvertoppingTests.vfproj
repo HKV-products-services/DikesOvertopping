@@ -52,8 +52,24 @@
 		<File RelativePath=".\dllFewsTests.f90"/>
 		<File RelativePath=".\dllTests.f90"/>
 		<File RelativePath=".\loadTests.f90"/>
-		<File RelativePath=".\omkeerVariantTests.f90"/>
-		<File RelativePath=".\overtoppingTests.f90"/>
+		<File RelativePath=".\omkeerVariantTests.f90">
+			<FileConfiguration Name="Debug|Win32">
+				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
+			<FileConfiguration Name="Release|x64">
+				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
+			<FileConfiguration Name="Debug|x64">
+				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
+			<FileConfiguration Name="Release|Win32">
+				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration></File>
+		<File RelativePath=".\overtoppingTests.f90">
+			<FileConfiguration Name="Debug|Win32">
+				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
+			<FileConfiguration Name="Release|x64">
+				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
+			<FileConfiguration Name="Debug|x64">
+				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
+			<FileConfiguration Name="Release|Win32">
+				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration></File>
 		<File RelativePath=".\overtoppingUnitTests.f90"/>
 		<File RelativePath=".\readCrossSectionForTests.f90"/>
 		<File RelativePath=".\roughnessTests.f90"/>

@@ -27,7 +27,7 @@
 ! $Id$
 !
 program unitTestsProgram
-#if defined WIN32 || defined WIN64
+#if defined _WIN32 || defined _WIN64
     use user32
     use kernel32
 #endif
@@ -39,14 +39,14 @@ program unitTestsProgram
 
     implicit none
     character(len=16) :: version
-#if defined WIN32 || defined WIN64
+#if defined _WIN32 || defined _WIN64
     pointer            (qv, versionNumber)
-#endif
     integer(kind=pntlen)           :: p
+#endif
 
     ! Enable following line to catch division by zero
     ! call ieee_set_halting_mode( IEEE_DIVIDE_BY_ZERO, .true. )
-#if defined WIN32 || defined WIN64
+#if defined _WIN32 || defined _WIN64
     p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
     qv = getprocaddress (p, "versionNumber"C)
 
