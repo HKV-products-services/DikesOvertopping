@@ -1,0 +1,4 @@
+FCOMP = gfortran
+FCFLAGS = -O2 -cpp -ffree-line-length-none -fcray-pointer
+
+include make.inc
