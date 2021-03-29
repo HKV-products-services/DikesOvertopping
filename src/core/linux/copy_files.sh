@@ -20,9 +20,15 @@ cp ../libDikesOvertopping/zFunctionsOvertopping.f90 .
 cp ../libDikesOvertopping/omkeerVariantModule.f90 .
 cp ../dllDikesOvertopping/dllOvertopping.f90 .
 
-cp /opt/apps/intel/18.0.3/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/libifport.so.5 .
-cp /opt/apps/intel/18.0.3/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/libifcoremt.so.5 .
-cp /opt/apps/intel/18.0.3/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/libimf.so .
-cp /opt/apps/intel/18.0.3/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/libsvml.so .
-cp /opt/apps/intel/18.0.3/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/libintlc.so.5 .
+if [ -d /opt/apps/intel/18.0.3 ]; then
+   cp /opt/apps/intel/18.0.3/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/libifport.so.5 .
+   cp /opt/apps/intel/18.0.3/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/libifcoremt.so.5 .
+   cp /opt/apps/intel/18.0.3/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/libimf.so .
+   cp /opt/apps/intel/18.0.3/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/libsvml.so .
+   cp /opt/apps/intel/18.0.3/compilers_and_libraries_2018.3.222/linux/compiler/lib/intel64_lin/libintlc.so.5 .
+fi
+
+if [ -f /opt/apps/gcc/10.1.0/lib64/libgfortran.so.5 ]; then
+   cp /opt/apps/gcc/10.1.0/lib64/libgfortran.so.5 .
+fi
 
