@@ -128,8 +128,8 @@
          overtopping%z2 = 0.0d0
          overtopping%Qo = 0.0d0
       else
-      
-         ! if applicable merge two sequential berms
+
+         ! if applicable merge two sequential berms  TODO: liever eerder
          call mergeSequentialBerms (geometry, geometryMergedBerms, succes, errorMessage)
          
          ! calculate the wave length
@@ -205,7 +205,7 @@
    type (tpOvertopping),      intent(out)    :: overtopping    !< structure with overtopping results
    type(tLogging),            intent(in)     :: logging        !< logging struct
    logical,                   intent(out)    :: succes         !< flag for succes
-   character(len=*),          intent(out)    :: errorMessage   !< error message
+   character(len=*),          intent(inout)  :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -223,7 +223,6 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
    overtopping%z2 = 0.0_wp
    overtopping%Qo = 0.0_wp
 
@@ -552,7 +551,7 @@
    type (tpOvertopping),   intent(in)  :: overtoppingF   !< structure with overtopping results foreshores
    type (tpOvertopping),   intent(out) :: overtopping    !< structure with combined overtopping results
    logical,                intent(out) :: succes         !< flag for succes
-   character(len=*),       intent(out) :: errorMessage   !< error message
+   character(len=*),       intent(inout) :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -565,8 +564,7 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
-   
+
    ! -------------------------------------------
    ! calculate the total width of the wide berms
    ! -------------------------------------------
@@ -626,11 +624,11 @@
 !
 !  Input/output parameters
 !
-   type (tpGeometry)    ,     intent(in)  :: geometry       !< structure with geometry data
-   type (tpLoad)        ,     intent(in)  :: load           !< structure with load parameters
-   type (tpOvertoppingInput), intent(in)  :: modelFactors   !< structure with model factors
-   logical,                   intent(out) :: succes         !< flag for succes
-   character(len=*),          intent(out) :: errorMessage   !< error message
+   type (tpGeometry)    ,     intent(in   ) :: geometry       !< structure with geometry data
+   type (tpLoad)        ,     intent(in   ) :: load           !< structure with load parameters
+   type (tpOvertoppingInput), intent(in   ) :: modelFactors   !< structure with model factors
+   logical,                   intent(  out) :: succes         !< flag for succes
+   character(len=*),          intent(inout) :: errorMessage   !< error message, only set in case of an error
 !
 !  local parameters
 !
@@ -640,7 +638,6 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! check local water level
    if (succes) then
@@ -671,6 +668,7 @@
    endif
 
    if (succes) then
+      ! liever niet tijdens z-func
       call checkModelFactors (modelFactors, 1, errorMessage, ierr)
       succes = (ierr == 0)
    endif

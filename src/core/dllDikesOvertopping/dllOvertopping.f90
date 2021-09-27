@@ -153,7 +153,7 @@ subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, 
     type(tpOvertoppingInput), intent(inout)    :: modelFactors   !< struct with modelFactors
     type (tpOvertopping), intent(out)          :: overtopping    !< structure with overtopping results
     logical, intent(out)                       :: success        !< flag for success
-    character(len=*), intent(out)              :: errorText      !< error message (only set if not successful)
+    character(len=*), intent(inout)            :: errorText      !< error message (only set if not successful)
     type(tLogging), intent(in)                 :: logging        !< logging struct
 !
     type (tpGeometry)                          :: geometry       !< structure with geometry data

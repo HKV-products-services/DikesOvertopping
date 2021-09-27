@@ -72,7 +72,7 @@
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
    logical,                   intent(out)    :: succes         !< flag for succes
-   character(len=*),          intent(out)    :: errorMessage   !< error message
+   character(len=*),          intent(inout)  :: errorMessage   !< error message, only set in case of an error
 
 ! ==========================================================================================================
 
@@ -123,7 +123,7 @@
    type(tpOvertoppingInput), intent(in)  :: modelFactors   !< structure with model factors
    real(kind=wp),            intent(out) :: Qo             !< wave overtopping discharge (l/m per s)
    logical,                  intent(out) :: succes         !< flag for succes
-   character(len=*),         intent(out) :: errorMessage   !< error message
+   character(len=*),         intent(inout) :: errorMessage !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -135,7 +135,6 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! check input parameters calculation wave overtopping discharge
    if (succes) succes = (Hm0            > 0.0d0)
@@ -215,7 +214,7 @@
 ! ==========================================================================================================
 
    ! calculate the wave length
-   L0 = gravityConstant * (Tm_10**2) / (2*pi)
+   L0 = gravityConstant * (Tm_10**2) / (2.0_wp*pi)
 
    end subroutine calculateWaveLength
 
@@ -230,11 +229,11 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),    intent(in)  :: Hm0            !< significant wave height (m)
-   real(kind=wp),    intent(in)  :: Tm_10          !< spectral wave period (s)
-   real(kind=wp),    intent(out) :: s0             !< wave steepness
-   logical,          intent(out) :: succes         !< flag for succes
-   character(len=*), intent(out) :: errorMessage   !< error message
+   real(kind=wp),    intent(in   ) :: Hm0            !< significant wave height (m)
+   real(kind=wp),    intent(in   ) :: Tm_10          !< spectral wave period (s)
+   real(kind=wp),    intent(  out) :: s0             !< wave steepness
+   logical,          intent(  out) :: succes         !< flag for succes
+   character(len=*), intent(inout) :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -244,19 +243,16 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! calculate the wave length
    call calculateWaveLength (Tm_10, L0)
 
    ! calculate the wave steepness
-   if (succes) then
-      if (L0 > 0.0d0) then
-         s0 = Hm0/L0
-      else
-         succes = .false.
-         errorMessage = GetOvertoppingMessage(calc_wave_steepness_period_is_zero)
-      endif
+   if (L0 > 0.0d0) then
+      s0 = Hm0/L0
+   else
+      succes = .false.
+      errorMessage = GetOvertoppingMessage(calc_wave_steepness_period_is_zero)
    endif
 
    end subroutine calculateWaveSteepness
@@ -272,31 +268,22 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),    intent(in)  :: tanAlpha       !< representative slope angle
-   real(kind=wp),    intent(in)  :: s0             !< wave steepness
-   real(kind=wp),    intent(out) :: ksi0           !< breaker parameter
-   logical,          intent(out) :: succes         !< flag for succes
-   character(len=*), intent(out) :: errorMessage   !< error message
+   real(kind=wp),    intent(in   ) :: tanAlpha       !< representative slope angle
+   real(kind=wp),    intent(in   ) :: s0             !< wave steepness
+   real(kind=wp),    intent(  out) :: ksi0           !< breaker parameter
+   logical,          intent(  out) :: succes         !< flag for succes
+   character(len=*), intent(inout) :: errorMessage   !< error message, only set in case of an error
 
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! calculate the breaker parameter
    if (s0 > 0.0d0) then
-      if (sqrt(s0) > 0.0d0) then
-         ksi0 = tanAlpha/sqrt(s0)
-      else
-         succes = .false.
-      endif
+      ksi0 = tanAlpha/sqrt(s0)
    else
       succes = .false.
-   endif
-
-   ! determine possible error message
-   if (.not. succes) then
       errorMessage = GetOvertoppingMessage(calc_breaker_param_steepness_is_zero)
    endif
 
@@ -336,10 +323,10 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),             intent(in)  :: gammaB         ! influence factor for berms
-   real(kind=wp),             intent(out) :: ksi0Limit      ! limit value breaker parameter
-   logical,                   intent(out) :: succes         ! flag for succes
-   character(len=*),          intent(out) :: errorMessage   ! error message
+   real(kind=wp),             intent(in   ) :: gammaB         ! influence factor for berms
+   real(kind=wp),             intent(  out) :: ksi0Limit      ! limit value breaker parameter
+   logical,                   intent(  out) :: succes         ! flag for succes
+   character(len=*),          intent(inout) :: errorMessage   ! error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -357,7 +344,10 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
+   if (gammaB == 1.0_wp) then
+       ksi0limit = 1.73383901115961_wp
+       return
+   end if
 
    ! fRunup1 * gammaB * ksi0 = fRunup2 - fRunup3/sqrt(ksi0)
    !
@@ -414,7 +404,7 @@
    real(kind=wp),    intent(in)     :: ksi0           !< breaker parameter
    real(kind=wp),    intent(in)     :: ksi0Limit      !< limit value breaker parameter
    logical,          intent(out)    :: succes         !< flag for succes
-   character(len=*), intent(out)    :: errorMessage   !< error message
+   character(len=*), intent(inout)  :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -431,7 +421,6 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! initialize the minimal values for the influence factors
    gammaB_min = 0.6d0
@@ -454,7 +443,7 @@
          gammaT = gammaF * gammaBeta
       endif
 
-      ! check if the total influence factor is greather than zero
+      ! check if the total influence factor is greater than zero
       succes = (gammaT > 0.0d0)
    endif
 
@@ -473,7 +462,7 @@
          if ((ratioBeta < 0.0d0) .or. (ratioBeta > 1.0d0)) succes = .false.
 
          if (succes) then
-         
+
             ! calculate the sum of the ratios
             ratioT = ratioB + ratioF + ratioBeta
 
@@ -481,8 +470,8 @@
             gammaB    = gammaB    * exp((ratioB   /ratioT) * log(0.4d0/gammaT))
             gammaF    = gammaF    * exp((ratioF   /ratioT) * log(0.4d0/gammaT))
             gammaBeta = gammaBeta * exp((ratioBeta/ratioT) * log(0.4d0/gammaT))
-            
-         endif         
+
+         endif
 
       endif
    endif
@@ -505,14 +494,14 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),    intent(in)  :: a              !< coefficient a cubic function
-   real(kind=wp),    intent(in)  :: b              !< coefficient b cubic function
-   real(kind=wp),    intent(in)  :: c              !< coefficient c cubic function
-   real(kind=wp),    intent(in)  :: d              !< coefficient d cubic function
-   integer,          intent(out) :: N              !< number of real roots cubic function
-   real(kind=wp),    intent(out) :: x(3)           !< real roots cubic function
-   logical,          intent(out) :: succes         !< flag for succes
-   character(len=*), intent(out) :: errorMessage   !< error message
+   real(kind=wp),    intent(in  )  :: a              !< coefficient a cubic function
+   real(kind=wp),    intent(in  )  :: b              !< coefficient b cubic function
+   real(kind=wp),    intent(in  )  :: c              !< coefficient c cubic function
+   real(kind=wp),    intent(in  )  :: d              !< coefficient d cubic function
+   integer,          intent(  out) :: N              !< number of real roots cubic function
+   real(kind=wp),    intent(  out) :: x(3)           !< real roots cubic function
+   logical,          intent(  out) :: succes         !< flag for succes
+   character(len=*), intent(inout) :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -561,13 +550,13 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),    intent(in)  :: a              !< coefficients a cubic function
-   real(kind=wp),    intent(in)  :: b              !< coefficients b cubic function
-   real(kind=wp),    intent(in)  :: c              !< coefficients c cubic function
-   real(kind=wp),    intent(in)  :: d              !< coefficients d cubic function
-   double complex,   intent(out) :: z(3)           !< roots cubic function
-   logical,          intent(out) :: succes         !< flag for succes
-   character(len=*), intent(out) :: errorMessage   !< error message
+   real(kind=wp),    intent(in   )  :: a              !< coefficients a cubic function
+   real(kind=wp),    intent(in   )  :: b              !< coefficients b cubic function
+   real(kind=wp),    intent(in   )  :: c              !< coefficients c cubic function
+   real(kind=wp),    intent(in   )  :: d              !< coefficients d cubic function
+   double complex,   intent(  out) :: z(3)           !< roots cubic function
+   logical,          intent(  out) :: succes         !< flag for succes
+   character(len=*), intent(inout) :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -577,7 +566,6 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! check first coefficient cubic function
    succes = (.not. isEqualZero (a))

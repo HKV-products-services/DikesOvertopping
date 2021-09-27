@@ -63,13 +63,13 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),       intent(in)  :: h              !< local water level (m+NAP)
-   real(kind=wp),       intent(in)  :: Hm0            !< significant wave height (m)
-   real(kind=wp),       intent(in)  :: z2             !< 2% wave run-up (m)
-   type(tpGeometry),    intent(in)  :: geometry       !< structure with geometry data
-   real(kind=wp),       intent(out) :: tanAlpha       !< representative slope angle
-   logical,             intent(out) :: succes         !< flag for succes
-   character(len=*),    intent(out) :: errorMessage   !< error message
+   real(kind=wp),       intent(in   ) :: h              !< local water level (m+NAP)
+   real(kind=wp),       intent(in   ) :: Hm0            !< significant wave height (m)
+   real(kind=wp),       intent(in   ) :: z2             !< 2% wave run-up (m)
+   type(tpGeometry),    intent(in   ) :: geometry       !< structure with geometry data
+   real(kind=wp),       intent(  out) :: tanAlpha       !< representative slope angle
+   logical,             intent(  out) :: succes         !< flag for succes
+   character(len=*),    intent(inout) :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -82,7 +82,6 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! local water level not lower than dike toe (first y-coordinate)
    if (h < geometry%yCoordinates(1)) then
@@ -182,20 +181,20 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),          intent(in)  :: h              !< local water level (m+NAP)
-   real(kind=wp),          intent(in)  :: ksi0           !< breaker parameter
-   real(kind=wp),          intent(in)  :: ksi0Limit      !< limit value breaker parameter
-   real(kind=wp),          intent(in)  :: gammaB         !< influence factor berms
-   real(kind=wp),          intent(in)  :: z2             !< 2% wave run-up (m)
-   type(tpGeometry),       intent(in)  :: geometry       !< structure with geometry data
-   real(kind=wp),          intent(out) :: gammaF         !< influence factor roughness
-   logical,                intent(out) :: succes         !< flag for succes
-   character(len=*),       intent(out) :: errorMessage   !< error message
+   real(kind=wp),          intent(in   ) :: h              !< local water level (m+NAP)
+   real(kind=wp),          intent(in   ) :: ksi0           !< breaker parameter
+   real(kind=wp),          intent(in   ) :: ksi0Limit      !< limit value breaker parameter
+   real(kind=wp),          intent(in   ) :: gammaB         !< influence factor berms
+   real(kind=wp),          intent(in   ) :: z2             !< 2% wave run-up (m)
+   type(tpGeometry),       intent(in   ) :: geometry       !< structure with geometry data
+   real(kind=wp),          intent(  out) :: gammaF         !< influence factor roughness
+   logical,                intent(  out) :: succes         !< flag for succes
+   character(len=*),       intent(inout) :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
-   real(kind=wp), allocatable :: rFactors(:)     !< roughness factors  of segments with influence
-   real(kind=wp), allocatable :: horzLengths(:)  !< horizontal lengths of segments with influence (m)
+   real(kind=wp)              :: rFactors(geometry%nCoordinates-1)     !< roughness factors  of segments with influence
+   real(kind=wp)              :: horzLengths(geometry%nCoordinates-1)  !< horizontal lengths of segments with influence (m)
    real(kind=wp)              :: yLower          !< y-coordinate lower bound segments with influence (m+NAP)
    real(kind=wp)              :: yUpper          !< y-coordinate upper bound segments with influence (m+NAP)
    integer                    :: iLower          !< index dike segment lower bound
@@ -203,7 +202,6 @@
    real(kind=wp)              :: sum_horzLengths !< sum of all horzLengths
    real(kind=wp), parameter   :: one = 1.0_wp    !< constant in comparision with breaker parameters
    real(kind=wp), parameter   :: ten = 10.0_wp   !< constant in comparision with breaker parameters
-   integer                    :: ierr            !< error code of allocate
    real(kind=wp)              :: dy1             !< delta y in calculation yLower
    real(kind=wp)              :: dy2             !< delta y in calculation yUpper
 
@@ -211,7 +209,6 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! local water level not lower than dike toe (first y-coordinate)
    if (h < geometry%yCoordinates(1)) then
@@ -223,16 +220,6 @@
    if (h > geometry%yCoordinates(geometry%nCoordinates)) then
       succes = .false.
       call GetMSG_calculateGammaFtoHigh(errorMessage)
-   endif
-
-   if (succes) then
-
-      ! allocate roughness factors and horizontal lengths and check results
-      allocate (rFactors(geometry%nCoordinates-1), horzLengths(geometry%nCoordinates-1), stat=ierr)
-      if (ierr /= 0) then
-          write(errorMessage, GetOvertoppingFormat(allocateError)) 2*(geometry%nCoordinates-1)
-          succes = .false.
-      endif
    endif
 
    if (succes) then
@@ -294,10 +281,6 @@
          gammaF = min(one, gammaF)
       endif
 
-      ! deallocate roughness factors and horizontal lengths
-      deallocate (rFactors)
-      deallocate (horzLengths)
-
    endif
 
    ! determine possible error message
@@ -320,13 +303,13 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),          intent(in)  :: h              !< local water level (m+NAP)
-   real(kind=wp),          intent(in)  :: Hm0            !< significant wave height (m)
-   real(kind=wp),          intent(in)  :: z2             !< 2% wave run-up (m)
-   type(tpGeometry),       intent(in)  :: geometry       !< structure with geometry data
-   real(kind=wp),          intent(out) :: gammaB         !< influence factor berms
-   logical,                intent(out) :: succes         !< flag for succes
-   character(len=*),       intent(out) :: errorMessage   !< error message
+   real(kind=wp),          intent(in   ) :: h              !< local water level (m+NAP)
+   real(kind=wp),          intent(in   ) :: Hm0            !< significant wave height (m)
+   real(kind=wp),          intent(in   ) :: z2             !< 2% wave run-up (m)
+   type(tpGeometry),       intent(in   ) :: geometry       !< structure with geometry data
+   real(kind=wp),          intent(  out) :: gammaB         !< influence factor berms
+   logical,                intent(  out) :: succes         !< flag for succes
+   character(len=*),       intent(inout) :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -350,7 +333,6 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! local water level not lower than dike toe (first y-coordinate)
    if (h < geometry%yCoordinates(1)) then

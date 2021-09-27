@@ -50,7 +50,7 @@
    public :: removeBerms, removeDikeSegments, splitCrossSection, calculateHorzLengths
    public :: calculateHorzDistance, deallocateGeometry, basicGeometryTest
    public :: checkSegmentTypes
-!
+
    contains
 
 !> checkCrossSection:
@@ -70,7 +70,7 @@
    real(kind=wp),    intent(in)  :: yCoordinates    (nCoordinates)   !< y-coordinates (m+NAP)
    real(kind=wp),    intent(in)  :: roughnessFactors(nCoordinates-1) !< roughness factors
    logical,          intent(out) :: succes                           !< flag for succes
-   character(len=*), intent(out) :: errorMessage                     !< error message
+   character(len=*), intent(inout) :: errorMessage                   !< error message
 !
 !  Local parameters
 !
@@ -81,7 +81,6 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! check dike normal
    if (succes) then
@@ -184,14 +183,14 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),       intent(in)  :: psi                              !< dike normal (degree)
-   integer,             intent(in)  :: nCoordinates                     !< number of coordinates
-   real(kind=wp),       intent(in)  :: xCoordinates    (nCoordinates)   !< x-coordinates (m)
-   real(kind=wp),       intent(in)  :: yCoordinates    (nCoordinates)   !< y-coordinates (m+NAP)
-   real(kind=wp),       intent(in)  :: roughnessFactors(nCoordinates-1) !< roughness factors
-   type (tpGeometry),   intent(out) :: geometry                         !< structure with geometry data
-   logical,             intent(out) :: succes                           !< flag for succes
-   character(len=*),    intent(out) :: errorMessage                     !< error message
+   real(kind=wp),       intent(in   ) :: psi                   !< dike normal (degree)
+   integer,             intent(in   ) :: nCoordinates          !< number of coordinates
+   real(kind=wp),       intent(in   ) :: xCoordinates    (:)   !< x-coordinates (m)
+   real(kind=wp),       intent(in   ) :: yCoordinates    (:)   !< y-coordinates (m+NAP)
+   real(kind=wp),       intent(in   ) :: roughnessFactors(:)   !< roughness factors
+   type (tpGeometry),   intent(  out) :: geometry              !< structure with geometry data
+   logical,             intent(  out) :: succes                !< flag for succes
+   character(len=*),    intent(inout) :: errorMessage          !< error message, only set in case of an error
 !
 !  local parameters
 !
@@ -202,7 +201,6 @@
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! copy dike normal to structure with geometry data
    geometry%psi = psi
@@ -323,15 +321,14 @@ end subroutine deallocateGeometry
 !  Input/output parameters
 !
    type (tpGeometry),   intent(inout)  :: geometry       !< structure with geometry data
-   logical,             intent(out)    :: succes         !< flag for succes
-   character(len=*),    intent(out)    :: errorMessage   !< error message
+   logical,             intent(  out)  :: succes         !< flag for succes
+   character(len=*),    intent(inout)  :: errorMessage   !< error message, only set in case of an error
 
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
-      
+
    ! calculate horizontal distances
    geometry%xCoordDiff = geometry%xCoordinates(2:geometry%nCoordinates  ) - &
                          geometry%xCoordinates(1:geometry%nCoordinates-1) 
@@ -362,8 +359,8 @@ end subroutine deallocateGeometry
 !  Input/output parameters
 !
    type (tpGeometry),   intent(inout)  :: geometry     !< structure with geometry data
-   logical,             intent(out)    :: succes       !< success flag
-   character(len=*),    intent(out)    :: errorMessage !< error message; only set in case of error
+   logical,             intent(out  )  :: succes       !< success flag
+   character(len=*),    intent(inout)  :: errorMessage !< error message; only set in case of error
 !
 !  Local parameters
 !
@@ -380,13 +377,13 @@ end subroutine deallocateGeometry
 
    ! loop over dike segments
    do i=1, geometry%nCoordinates - 1
-         
+
       ! determine type of dike segment
       slopeSegment = ((geometry%segmentSlopes(i) >= slope_min - marginGrad) .and. &
                       (geometry%segmentSlopes(i) <= slope_max + marginGrad))
       bermSegment  = ((geometry%segmentSlopes(i) >= berm_min  - marginGrad) .and. &
                       (geometry%segmentSlopes(i) <= berm_max  + marginGrad))
-         
+
       ! add type to structure with geometry data
       if (slopeSegment) then
          geometry%segmentTypes(i) = 1 ! slope
@@ -441,6 +438,7 @@ end subroutine deallocateGeometry
 
    if (succes) then
    ! copy dike normal and number of coordinates to structure with geometry data copy
+      geometryCopy%copyNumber   = geometry%copyNumber + 1
       geometryCopy%psi          = geometry%psi
       geometryCopy%nCoordinates = geometry%nCoordinates
 
@@ -476,10 +474,10 @@ end subroutine deallocateGeometry
 !
 !  Input/output parameters
 !
-   type (tpGeometry),   intent(in)    :: geometry             !< structure with geometry data
-   type (tpGeometry),   intent(inout) :: geometryMergedBerms  !< geometry data with merged sequential berms
-   logical,             intent(out)   :: succes               !< flag for succes
-   character(len=*),    intent(out)   :: errorMessage         !< error message
+   type (tpGeometry),   intent(in   )   :: geometry             !< structure with geometry data
+   type (tpGeometry),   intent(inout)   :: geometryMergedBerms  !< geometry data with merged sequential berms
+   logical,             intent(  out)   :: succes               !< flag for succes
+   character(len=*),    intent(inout)   :: errorMessage         !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -495,7 +493,6 @@ end subroutine deallocateGeometry
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! ---------------------------------------
    ! determine if there are sequential berms
@@ -585,10 +582,10 @@ end subroutine deallocateGeometry
 !
 !  Input/output parameters
 !
-   type (tpGeometry),   intent(in)  :: geometry          !< structure with geometry data
-   type (tpGeometry),   intent(out) :: geometryFlatBerms !< geometry data with horizontal berms
-   logical,             intent(out) :: succes            !< flag for succes
-   character(len=*),    intent(out) :: errorMessage      !< error message
+   type (tpGeometry),   intent(in   ) :: geometry          !< structure with geometry data
+   type (tpGeometry),   intent(  out) :: geometryFlatBerms !< geometry data with horizontal berms
+   logical,             intent(  out) :: succes            !< flag for succes
+   character(len=*),    intent(inout) :: errorMessage      !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -601,7 +598,6 @@ end subroutine deallocateGeometry
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! initialize the structure with geometry data with horizontal berms
    call copyGeometry (geometry, geometryFlatBerms, succes, errorMessage)
@@ -674,10 +670,10 @@ end subroutine deallocateGeometry
 !
 !  Input/output parameters
 !
-   type (tpGeometry),   intent(in)  :: geometry          !< structure with geometry data
-   type (tpGeometry),   intent(out) :: geometryNoBerms   !< geometry data withouth berms
-   logical,             intent(out) :: succes            !< flag for succes
-   character(len=*),    intent(out) :: errorMessage      !< error message
+   type (tpGeometry),   intent(in   ) :: geometry          !< structure with geometry data
+   type (tpGeometry),   intent(  out) :: geometryNoBerms   !< geometry data withouth berms
+   logical,             intent(  out) :: succes            !< flag for succes
+   character(len=*),    intent(inout) :: errorMessage      !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -689,7 +685,6 @@ end subroutine deallocateGeometry
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! determine (x,y)-coordinates cross section without berms
    if (geometry%NbermSegments > 0) then
@@ -778,13 +773,12 @@ end subroutine deallocateGeometry
    integer,             intent(in)  :: index             !< index starting point new cross section
    type (tpGeometry),   intent(out) :: geometryAdjusted  !< geometry data with removed dike segments
    logical,             intent(out) :: succes            !< flag for succes
-   character(len=*),    intent(out) :: errorMessage      !< error message
+   character(len=*),    intent(inout) :: errorMessage    !< error message
    
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! check index starting point new cross section
    if ((index < 1) .or. (index > geometry%nCoordinates-1)) then
@@ -838,13 +832,13 @@ end subroutine deallocateGeometry
 !
 !  Input/output parameters
 !
-   type (tpGeometry),   intent(in)  :: geometry          !< structure with geometry data
-   real(kind=wp),       intent(in)  :: L0                !< wave length (m)
-   integer,             intent(out) :: NwideBerms        !< number of wide berms
-   type (tpGeometry),   intent(out) :: geometrySectionB  !< geometry data with wide berms to ordinary berms
-   type (tpGeometry),   intent(out) :: geometrySectionF  !< geometry data with wide berms to foreshores
-   logical,             intent(out) :: succes            !< flag for succes
-   character(len=*),    intent(out) :: errorMessage      !< error message
+   type (tpGeometry),   intent(in   ) :: geometry          !< structure with geometry data
+   real(kind=wp),       intent(in   ) :: L0                !< wave length (m)
+   integer,             intent(  out) :: NwideBerms        !< number of wide berms
+   type (tpGeometry),   intent(  out) :: geometrySectionB  !< geometry data with wide berms to ordinary berms
+   type (tpGeometry),   intent(  out) :: geometrySectionF  !< geometry data with wide berms to foreshores
+   logical,             intent(  out) :: succes            !< flag for succes
+   character(len=*),    intent(inout) :: errorMessage      !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -857,8 +851,7 @@ end subroutine deallocateGeometry
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
-      
+
    ! initialize the structures with geometry data for split cross sections
    call copyGeometry (geometry, geometrySectionB, succes, errorMessage)
    if (succes) call copyGeometry (geometry, geometrySectionF, succes, errorMessage)
@@ -925,8 +918,10 @@ end subroutine deallocateGeometry
    ! ---------------------------------------------------------------
 
    ! calculate the differences and segment slopes
-   if (succes) call calculateSegmentSlopes (geometrySectionB, succes, errorMessage)
-   if (succes) call calculateSegmentSlopes (geometrySectionF, succes, errorMessage)
+   if (NwideBerms > 0) then
+      if (succes) call calculateSegmentSlopes (geometrySectionB, succes, errorMessage)
+      if (succes) call calculateSegmentSlopes (geometrySectionF, succes, errorMessage)
+   end if
 
    ! type of segments and number of berm segments is NOT recalculated
 
@@ -943,12 +938,12 @@ end subroutine deallocateGeometry
 !
 !  Input/output parameters
 !
-   type (tpGeometry), intent(in)  :: geometry                             !< structure with geometry data
-   real(kind=wp),     intent(in)  :: yLower                               !< y-coord. lower bound (m+NAP)
-   real(kind=wp),     intent(in)  :: yUpper                               !< y-coord. upper bound (m+NAP)
-   real(kind=wp),     intent(out) :: horzLengths(geometry%nCoordinates-1) !< horizontal lengths segments (m)
-   logical,           intent(out) :: succes                               !< flag for succes
-   character(len=*),  intent(out) :: errorMessage                         !< error message
+   type (tpGeometry), intent(in   ) :: geometry                             !< structure with geometry data
+   real(kind=wp),     intent(in   ) :: yLower                               !< y-coord. lower bound (m+NAP)
+   real(kind=wp),     intent(in   ) :: yUpper                               !< y-coord. upper bound (m+NAP)
+   real(kind=wp),     intent(  out) :: horzLengths(geometry%nCoordinates-1) !< horizontal lengths segments (m)
+   logical,           intent(  out) :: succes                               !< flag for succes
+   character(len=*),  intent(inout) :: errorMessage                         !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -961,7 +956,6 @@ end subroutine deallocateGeometry
 
    ! initialize flag for succes and error message
    succes = .true.
-   errorMessage = ' '
 
    ! y-coordinate upper bound not lower than y-coordinate lower bound
    if (yUpper < yLower) then
@@ -1042,38 +1036,21 @@ end subroutine deallocateGeometry
    type (tpGeometry),   intent(in)     :: geometry       !< structure with geometry data
    real(kind=wp),       intent(in)     :: yLower         !< y-coordinate lower bound (m+NAP)
    real(kind=wp),       intent(in)     :: yUpper         !< y-coordinate upper bound (m+NAP)
-   real(kind=wp),       intent(out)    :: dx             !< horizontal distance between bounds (m)
+   real(kind=wp),       intent(inout)  :: dx             !< horizontal distance between bounds (m)
    logical,             intent(out)    :: succes         !< flag for succes
-   character(len=*),    intent(out)    :: errorMessage   !< error message
+   character(len=*),    intent(inout)  :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
-   real(kind=wp), allocatable :: horzLengths(:) !< horizontal lengths segments (m)
-   integer                    :: ierr           !< error code allocate
+   real(kind=wp) :: horzLengths(geometry%nCoordinates-1) !< horizontal lengths segments (m)
 
 ! ==========================================================================================================
 
-   ! allocate horizontal lengthsand check results
-   allocate(horzLengths(geometry%nCoordinates-1), stat=ierr)
-   succes = (ierr == 0)
-   if (.not. succes) then
-       write(errorMessage, GetOvertoppingFormat(allocateError)) geometry%nCoordinates-1
-   else
+   ! calculate horizontal lengths
+   call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, succes, errorMessage)
 
-       ! calculate horizontal lengths
-       call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, succes, errorMessage)
-       
-       ! calculate horizontal distance
-       if (succes) dx = sum(horzLengths)
-       
-       ! deallocate horizontal lengths
-       deallocate(horzLengths)
-       
-       ! determine possible error message
-       if (.not. succes) then
-          errorMessage = GetOvertoppingMessage(calc_horizontal_distance)
-       endif
-    endif
+   ! calculate horizontal distance
+   if (succes) dx = sum(horzLengths)
 
    end subroutine calculateHorzDistance
 

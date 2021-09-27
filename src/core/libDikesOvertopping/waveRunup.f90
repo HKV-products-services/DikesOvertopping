@@ -71,7 +71,7 @@ module waveRunup
    real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
    type(tLogging),            intent(in)     :: logging        !< logging struct
    logical,                   intent(out)    :: succes         !< flag for succes
-   character(len=*),          intent(out)    :: errorMessage   !< error message
+   character(len=*),          intent(inout)  :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
@@ -193,7 +193,7 @@ module waveRunup
    real(kind=wp),             intent(in)     :: s0                 !< wave steepness
    type (tpGeometry),         intent(in)     :: geometryFlatBerms  !< structure with geometry data with horizontal berms
    logical,                   intent(out)    :: succes             !< flag for succes
-   character(len=*),          intent(out)    :: errorMessage       !< error message
+   character(len=*),          intent(inout)  :: errorMessage       !< error message, only set in case of an error
    real(kind=wp)                             :: z2_end             !< 2% wave run-up at end of inner calculation
 !
 !  Local parameters

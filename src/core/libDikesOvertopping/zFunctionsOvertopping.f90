@@ -60,7 +60,7 @@ subroutine calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry,
     type (tpLoad),                 intent(in)    :: load           !< structure with load parameters
     type(tLogging),                intent(in)    :: logging        !< logging struct
     logical,                       intent(out)   :: succes         !< flag for succes
-    character(len=*),              intent(out)   :: errorMessage   !< error message
+    character(len=*),              intent(inout) :: errorMessage   !< error message, only set in case of an error
 
     integer                       :: nrCoordsAdjusted       !< number of coordinates of the adjusted profile
     real(kind=wp), pointer        :: xCoordsAdjusted(:)     !< vector with x-coordinates of the adjusted profile
@@ -73,7 +73,6 @@ subroutine calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry,
     !
     nullify(xCoordsAdjusted)
     nullify(zCoordsAdjusted)
-    errorMessage = ' '
 
     call profileInStructure(geometry%nCoordinates, geometry%xcoordinates, geometry%ycoordinates, dikeHeight, &
                             nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage)
@@ -84,6 +83,7 @@ subroutine calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry,
     endif
 
     if (succes) then
+        ! first time we use load
         call calculateOvertopping (geometryAdjusted, load, modelFactors, overtopping, logging, succes, errorMessage)
     endif
 

@@ -51,6 +51,7 @@
       real(kind=wp), pointer :: segmentSlopes(:)     => null()   !< vector with slopes dike segments
       integer, pointer       :: segmentTypes(:)                  !< vector with segment types (1=slope,2=berm,3=other)
       integer                :: NbermSegments                    !< number of berm segments
+      integer                :: copyNumber = 1
    end type tpGeometry
 
    !> tpLoad: structure with load parameters
