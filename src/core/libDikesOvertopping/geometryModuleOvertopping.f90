@@ -183,14 +183,14 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),       intent(in   ) :: psi                   !< dike normal (degree)
-   integer,             intent(in   ) :: nCoordinates          !< number of coordinates
-   real(kind=wp),       intent(in   ) :: xCoordinates    (:)   !< x-coordinates (m)
-   real(kind=wp),       intent(in   ) :: yCoordinates    (:)   !< y-coordinates (m+NAP)
-   real(kind=wp),       intent(in   ) :: roughnessFactors(:)   !< roughness factors
-   type (tpGeometry),   intent(  out) :: geometry              !< structure with geometry data
-   logical,             intent(  out) :: succes                !< flag for succes
-   character(len=*),    intent(inout) :: errorMessage          !< error message, only set in case of an error
+   real(kind=wp),       intent(in   ) :: psi                              !< dike normal (degree)
+   integer,             intent(in   ) :: nCoordinates                     !< number of coordinates
+   real(kind=wp),       intent(in   ) :: xCoordinates(nCoordinates)       !< x-coordinates (m)
+   real(kind=wp),       intent(in   ) :: yCoordinates(nCoordinates)       !< y-coordinates (m+NAP)
+   real(kind=wp),       intent(in   ) :: roughnessFactors(nCoordinates-1) !< roughness factors
+   type (tpGeometry),   intent(  out) :: geometry                         !< structure with geometry data
+   logical,             intent(  out) :: succes                           !< flag for succes
+   character(len=*),    intent(inout) :: errorMessage                     !< error message, only set in case of an error
 !
 !  local parameters
 !
