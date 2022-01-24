@@ -43,12 +43,13 @@
 !> Main entry for the dll DikesOvertopping
 !
 module dllOvertopping
-    use zFunctionsOvertopping,      only : calculateQoRTO, zFuncLogRatios
+    use zFunctionsOvertopping,      only : calculateQoHPC, zFuncLogRatios
     use geometryModuleOvertopping,  only : deallocateGeometry
     use precision,                  only : wp, set_nan
     use typeDefinitionsOvertopping, only : tpGeometry, tpLoad, tpOvertoppingInput
     use overtoppingInterface,       only : OvertoppingGeometryType, OvertoppingGeometryTypeF
     use versionInfo,                only : tpVersionStruct, getFileVersion
+    use mainModuleOvertopping,      only : initGeometries, cleanupGeometry
     use, intrinsic :: iso_c_binding
 
     implicit none
@@ -147,7 +148,7 @@ subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, 
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
     use ModuleLogging
-    type(OvertoppingGeometryTypeF), intent(in) :: geometryF      !< struct with geometry and roughness
+    type(OvertoppingGeometryTypeF), intent(inout) :: geometryF      !< struct with geometry and roughness
     type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
     real(kind=wp), intent(in)                  :: dikeHeight     !< dike height
     type(tpOvertoppingInput), intent(inout)    :: modelFactors   !< struct with modelFactors
@@ -156,16 +157,15 @@ subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, 
     character(len=*), intent(inout)            :: errorText      !< error message (only set if not successful)
     type(tLogging), intent(in)                 :: logging        !< logging struct
 !
-    type (tpGeometry)                          :: geometry       !< structure with geometry data
-!
-    call initializeGeometry(geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
-                             geometryF%roughness, geometry, success, errorText)
+    type (tpGeometry)                            :: geometry       !< structure with geometry data
 
+    call initGeometries(geometryF, geometry, success, errorText)
     if (success) then
-        call calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText)
-    endif
-
+        call calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometry%parent, logging, success, errorText)
+    end if
+    call cleanupGeometry(geometry%parent)
     call deallocateGeometry(geometry)
+
 end subroutine calculateQoF
 
 !>
@@ -322,8 +322,8 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 !
     type (tpGeometry)                          :: geometry            !< structure with geometry data
     integer                                    :: nrCoordsAdjusted    !< number of coordinates of the adjusted profile
-    real(kind=wp), pointer                     :: xCoordsAdjusted(:)  !< vector with x-coordinates of the adjusted profile
-    real(kind=wp), pointer                     :: zCoordsAdjusted(:)  !< vector with y-coordinates of the adjusted profile
+    real(kind=wp), allocatable                 :: xCoordsAdjusted(:)  !< vector with x-coordinates of the adjusted profile
+    real(kind=wp), allocatable                 :: zCoordsAdjusted(:)  !< vector with y-coordinates of the adjusted profile
     type (tpGeometry)                          :: geometryAdjusted    !< structure for the adjusted profile
     character(len=StrLenMessages)              :: errorText           !< local error or validation message
     integer, parameter                         :: maxErr = 32         !< max. number of validation messages
@@ -335,9 +335,6 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 !
     success = .true.
     errorText = ' '
-
-    nullify(xCoordsAdjusted)
-    nullify(zCoordsAdjusted)
 
     if (success) then
         call basicGeometryTest(geometryF, success, errorStruct)
@@ -382,8 +379,8 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
        call addMessage(errorStruct, msgStruct)
     enddo
 
-    if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
-    if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
+    if (allocated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
+    if (allocated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
 end subroutine ValidateInputF
 
 !>

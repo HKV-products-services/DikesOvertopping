@@ -674,8 +674,8 @@ subroutine TestProfileAdjustment
     integer                    :: nrCoordsAdjusted     ! number of coordinates
     real(kind=wp), allocatable :: xCoordinates(:)      ! x-coordinates (m)
     real(kind=wp), allocatable :: yCoordinates(:)      ! y-coordinates (m+NAP)
-    real(kind=wp), pointer     :: xCoordsAdjusted(:)   ! vector with x-coordinates of the adjusted profile
-    real(kind=wp), pointer     :: zCoordsAdjusted(:)   ! vector with y-coordinates of the adjusted profile
+    real(kind=wp), allocatable :: xCoordsAdjusted(:)   ! vector with x-coordinates of the adjusted profile
+    real(kind=wp), allocatable :: zCoordsAdjusted(:)   ! vector with y-coordinates of the adjusted profile
     logical                    :: succes               ! flag for succes
     character(len=255)         :: errorMessage         ! error message
     real(kind=wp)              :: dikeHeight           ! vector with x-coordinates of the adjusted profile
@@ -717,7 +717,6 @@ subroutine TestRoughnessIssue44A
 !
 !   Local parameters
 !
-    use dllOvertopping
     integer                        :: npoints        ! number of coordinates
     logical                        :: succes         ! flag for succes
     character(len=255)             :: errorMessage   ! error message
@@ -727,6 +726,12 @@ subroutine TestRoughnessIssue44A
     type(tpOvertoppingInput)       :: modelFactors
     type(tLogging)                 :: logging        !< logging struct
     type (tpOvertopping)           :: overtopping    !< structure with overtopping results
+    integer(kind=pntlen)           :: p
+
+    pointer(qq  , calculateQoF)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qq   = getprocaddress (p, "calculateQoF"C)
 
     npoints = 4
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
@@ -758,7 +763,6 @@ subroutine TestRoughnessIssue44B
 !
 !   Local parameters
 !
-    use dllOvertopping
     integer                        :: npoints        ! number of coordinates
     logical                        :: succes         ! flag for succes
     character(len=255)             :: errorMessage   ! error message
@@ -768,6 +772,12 @@ subroutine TestRoughnessIssue44B
     type(tpOvertoppingInput)       :: modelFactors
     type(tLogging)                 :: logging        !< logging struct
     type (tpOvertopping)           :: overtopping    !< structure with overtopping results
+    integer(kind=pntlen)           :: p
+
+    pointer(qq  , calculateQoF)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qq   = getprocaddress (p, "calculateQoF"C)
 
     npoints = 5
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
@@ -794,13 +804,22 @@ end subroutine TestRoughnessIssue44B
 
 !> check cause of unclear error message
 subroutine TestIssue45
-    use dllOvertopping
     integer                        :: npoints             ! number of coordinates
     real(kind=wp), parameter       :: dikeHeight = 6.5_wp
     type(OvertoppingGeometryTypeF) :: geometryF
     type(tpOvertoppingInput)       :: modelFactors
     type(TErrorMessages)           :: errorStruct
     character(len=2)               :: lang
+    integer(kind=pntlen)           :: p
+
+    pointer(qVal, ValidateInputF)
+    pointer(qGetLang, GetLanguage)
+    pointer(qSetLang, SetLanguage)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qVal = getprocaddress (p, "ValidateInputF"C)
+    qGetLang = getprocaddress (p, "GetLanguage"C)
+    qSetLang = getprocaddress (p, "SetLanguage"C)
 
     call GetLanguage(lang)
     call SetLanguage('NL')
@@ -1027,7 +1046,6 @@ end subroutine overtoppingDllTest2
 
 !> check output omkeervariant
 subroutine TestOmkeervar
-    use dllOvertopping
     integer                        :: npoints             ! number of coordinates
     real(kind=wp), parameter       :: dikeHeight = 0.2534_wp
     type(OvertoppingGeometryTypeF) :: geometryF
@@ -1038,6 +1056,14 @@ subroutine TestOmkeervar
     type (tpOvertopping)           :: overtopping    !< structure with overtopping results
     logical                        :: succes
     character(len=128)             :: errorMessage      !< error message
+    integer(kind=pntlen)           :: p
+
+    pointer(qVal, ValidateInputF)
+    pointer(qq  , calculateQoF)
+
+    p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
+    qVal = getprocaddress (p, "ValidateInputF"C)
+    qq   = getprocaddress (p, "calculateQoF"C)
 
     call init_modelfactors_and_load(modelFactors)
 

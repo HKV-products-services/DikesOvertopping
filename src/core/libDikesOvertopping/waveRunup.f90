@@ -75,7 +75,7 @@ module waveRunup
 !
 !  Local parameters
 !
-   type (tpGeometry) :: geometryFlatBerms        !< structure with geometry data with horizontal berms
+   type (tpGeometry), pointer :: geometryFlatBerms        !< structure with geometry data with horizontal berms
    real(kind=wp)     :: s0                       !< wave steepness
    integer           :: i                        !< counter iteration steps
    real(kind=wp)     :: z2_start  (z2_iter_max2) !< starting value 2% wave run-up for each iteration step
@@ -90,8 +90,9 @@ module waveRunup
 
    ! calculate wave steepness
    call calculateWaveSteepness (Hm0, Tm_10, s0, succes, errorMessage)
-   
+
    ! if applicable adjust non-horizontal berms
+   geometryFlatBerms => geometry%parent%geometryFlatBerms
    if (succes) then
       call adjustNonHorizontalBerms (geometry, geometryFlatBerms, succes, errorMessage)
    endif
@@ -159,8 +160,6 @@ module waveRunup
          convergence = .true.
       endif
    endif 
-
-   call deallocateGeometry(geometryFlatBerms)
 
    ! -----------------------
    ! end iteration procedure

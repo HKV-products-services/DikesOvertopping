@@ -37,8 +37,10 @@ use overtoppingInterface
 use ModuleLogging
 use zFunctionsOvertopping
 use OvertoppingMessages
+use mainModuleOvertopping, only : setupGeometries, cleanupGeometry
+
 use equalReals
-use vectorUtilities
+use errorMessages
 use precision, only : wp, set_nan
 implicit none
 
@@ -92,6 +94,9 @@ subroutine iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, 
         endif
 
         call deallocateGeometry(geometry )
+        if (associated(geometry%parent)) then
+            deallocate(geometry%parent)
+        end if
     endif
 end subroutine iterateToGivenDischarge
 
@@ -105,7 +110,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     use overtoppingInterface
     use ModuleLogging
     use zFunctionsOvertopping
-    type(tpGeometry), intent(in)               :: geometry       !< internal structure with geometry data
+    type(tpGeometry), intent(inout)            :: geometry       !< internal structure with geometry data
     type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
     real(kind=wp), intent(in)                  :: givenDischarge !< discharge to iterate to
     real(kind=wp), intent(out)                 :: dikeHeight     !< dike height
@@ -134,6 +139,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     real(kind=wp)                              :: Y(2)                  ! argument for logInterpolate
     logical                                    :: foundValue            ! flag for early succesfull return
     type(tOmkeer)                              :: omkeerProps           ! struct with derived properties
+    type(tMessage)                             :: error
 
     foundValue = .false.
     nPoints = geometry%nCoordinates
@@ -157,6 +163,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     !
     ! get discharge for end of slope segments:
     !
+    call setupGeometries(geometry%parent)
     do i = 1, nPoints
         nextDikeHeight = geometry%yCoordinates(i)
         omkeerProps%isValidZ(i) = nextDikeHeight >= load%H
@@ -165,7 +172,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
         endif
         if (omkeerProps%isValidZ(i)) then
             do j = 1, MaxItA
-                call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText )
+                call calculateQoHPC(nextDikeHeight, modelFactors, overtopping, load, geometry%parent, logging, success, errorText )
                 if (.not. success) return ! only in very exceptional cases
                 omkeerProps%ZProfile(i) = nextDikeHeight
                 omkeerProps%dischargeProfile(i) = overtopping%Qo
@@ -204,14 +211,14 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
         do i = 1, maxItB
             X = (/ dis1 , dis2 /)
             Y = (/ minDikeHeight , maxDikeHeight /)
-            nextDikeHeight = LogLinearInterpolate(X , Y , givenDischarge, ierr, errorText)
-            if (ierr /= 0) then
+            nextDikeHeight = LogLinearInterpolate(X , Y , givenDischarge, error)
+            if (error%errorCode /= 0) then
                 !
                 ! if loglinear fails, fall back on mean
                 !
                 nextDikeHeight = 0.5_wp * (minDikeHeight + maxDikeHeight)
             endif
-            call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText )
+            call calculateQoHPC(nextDikeHeight, modelFactors, overtopping, load, geometry%parent, logging, success, errorText )
         
             if (.not. success) return  ! only in very exceptional cases
         
@@ -241,12 +248,14 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
         endif
     endif
 
+    call cleanupGeometry(geometry%parent)
+
     deallocate(omkeerProps%isBerm, omkeerProps%dischargeProfile, omkeerProps%isValidZ, omkeerProps%ZProfile)
 
 end subroutine iterateToGivenDischargeValidProfile
 
 subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischarge, dikeHeight, omkeerProps, logging, iUp, iLow, dis1, dis2, minDikeHeight, maxDikeHeight, foundValue, success, errorText)
-    type(tpGeometry), intent(in)               :: geometry       !< internal structure with geometry data
+    type(tpGeometry), intent(inout)            :: geometry       !< internal structure with geometry data
     type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
     type(tpOvertoppingInput), intent(inout)    :: modelFactors   !< struct with modelFactors
     type(tpOvertopping), intent(inout)         :: overtopping    !< structure with overtopping results
@@ -267,12 +276,12 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
     ! locals
     !
     integer                  :: i               ! loop counter
-    integer                  :: ierr            ! error code
     integer                  :: nPoints         ! number of profile points
     real(kind=wp)            :: nextDikeheight  ! dike heigth for next calculation
     real(kind=wp)            :: X(2)            ! argument for logInterpolate
     real(kind=wp)            :: Y(2)            ! argument for logInterpolate
     real(kind=wp), parameter :: eps = 1e-4_wp   ! epsilon for waterlevel near berm
+    type(tMessage)                             :: error
     !
     ! check: possibly on berm
     !
@@ -287,7 +296,7 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
         do i = iLow + 1, iUp - 1
             if (.not. omkeerProps%isBerm(i) ) then
                 nextDikeHeight = geometry%yCoordinates(i) + xDiff_min * geometry%segmentSlopes(i)
-                call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText )
+                call calculateQoHPC(nextDikeHeight, modelFactors, overtopping, load, geometry%parent, logging, success, errorText )
                 if (.not. success) return ! only in very exceptional cases
                 omkeerProps%ZProfile(i) = nextDikeHeight
                 omkeerProps%dischargeProfile(i) = overtopping%Qo
@@ -298,15 +307,15 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
                         Y = (/ omkeerProps%ZProfile(iLow), omkeerProps%ZProfile(i) /)
                     else
                         nextDikeHeight = max(load%H + eps, omkeerProps%ZProfile(i) - minZberm)
-                        call calculateQoRTO(nextDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText )
+                        call calculateQoHPC(nextDikeHeight, modelFactors, overtopping, load, geometry%parent, logging, success, errorText )
                         if (.not. success) return ! only in very exceptional cases
                         X = (/ overtopping%Qo, omkeerProps%dischargeProfile(i) /)
                         Y = (/ nextDikeHeight, omkeerProps%ZProfile(i) /)
                     endif
                     X = max(X, tiny(X))
-                    dikeHeight = LogLinearInterpolate(X, Y, givenDischarge, ierr, errorText)
+                    dikeHeight = LogLinearInterpolate(X, Y, givenDischarge, error)
                     overtopping%Qo = givenDischarge
-                    success = ierr == 0
+                    success = error%errorCode == 0
                     foundValue = .true.
                 else
                     minDikeHeight = omkeerProps%ZProfile(i)
@@ -321,7 +330,7 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
         dis2 = omkeerProps%dischargeProfile(iUp)
     else if (iLow == nPoints + 1 ) then
         minDikeHeight = load%h
-        call calculateQoRTO(minDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText)
+        call calculateQoHPC(minDikeHeight, modelFactors, overtopping, load, geometry%parent, logging, success, errorText)
         if (.not. success) return ! only in very exceptional cases
         dis1 = overtopping%Qo
         if (dis1 < givenDischarge) then
@@ -342,7 +351,7 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
             endif
         else
             maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
-            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText)
+            call calculateQoHPC(maxDikeHeight, modelFactors, overtopping, load, geometry%parent, logging, success, errorText)
             if (.not. success) return ! only in very exceptional cases
             dis2 = overtopping%Qo
         endif
@@ -351,7 +360,7 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
         dis1 = omkeerProps%dischargeProfile(iLow)
         maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
         do
-            call calculateQoRTO(maxDikeHeight, modelFactors, overtopping, load, geometry, logging, success, errorText)
+            call calculateQoHPC(maxDikeHeight, modelFactors, overtopping, load, geometry%parent, logging, success, errorText)
             dis2 = overtopping%Qo
             
             if (.not. success) return ! only in very exceptional cases
@@ -365,8 +374,8 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
                 Y = (/ minDikeHeight , maxDikeHeight /)
                 minDikeHeight = maxDikeHeight
                 dis1 = dis2
-                maxDikeHeight = LogLinearInterpolate(X , Y , givenDischarge, ierr, errorText)
-                success = (ierr == 0)
+                maxDikeHeight = LogLinearInterpolate(X , Y , givenDischarge,  error)
+                success = (error%errorCode == 0)
             else
                 exit
             endif
@@ -374,5 +383,15 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
     endif
 
 end subroutine checkIfOnBerm
+
+function logLinearInterpolate( X, Y, xx, error )
+    use vectorUtilities,             only : logLinearInterpolate19 => logLinearInterpolate
+    real (kind=wp),   intent(in)    :: X(:)                  !< vector with independent elements X - may be unsorted
+    real (kind=wp),   intent(in)    :: Y(:)                  !< vector with dependent elements Y (depending on X)
+    real (kind=wp),   intent(in)    :: xx                    !< x-value for which the dependent variable is desired
+    type(tMessage), intent(inout)   :: error
+    real (kind=wp)                  :: logLinearInterpolate  !< value of the dependent variable associated with xx
+    logLinearInterpolate = logLinearInterpolate19(X, Y, xx, error%errorCode, error%message)
+end function logLinearInterpolate
 
 end module omkeerVariantModule

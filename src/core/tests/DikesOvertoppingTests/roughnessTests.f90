@@ -254,6 +254,9 @@ subroutine TestSeriesRoughness
     close(ounit)
 
     call deallocateGeometry(geometry)
+    if (associated(geometry%parent)) then
+        deallocate(geometry%parent)
+    end if
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
     !

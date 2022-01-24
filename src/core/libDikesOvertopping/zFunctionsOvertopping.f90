@@ -33,52 +33,54 @@
 module zFunctionsOvertopping
     use precision,                   only : wp
     use overtoppingInterface,        only : tpProfileCoordinate, varModelFactorCriticalOvertopping
-    use typeDefinitionsOvertopping,  only : xDiff_min, slope_min, tpGeometry, tpLoad, tpOvertoppingInput, tpOvertopping
-    use mainModuleOvertopping,       only : calculateOvertopping
+    use typeDefinitionsOvertopping,  only : xDiff_min, slope_min, tpGeometry, tpLoad, tpOvertoppingInput, tpOvertopping, &
+                                            tpGeometries
+    use mainModuleOvertopping,       only : calculateOvertopping, setupGeometries, cleanupGeometry
     use geometryModuleOvertopping,   only : initializeGeometry, deallocateGeometry
-    use vectorUtilities,             only : interpolateLine
     use OvertoppingMessages
     use ModuleLogging
+    use errorMessages
     use equalReals
 
     implicit none
 
     private
 
-    public :: calculateQoRTO, zFuncLogRatios, profileInStructure
+    public :: calculateQoHPC, zFuncLogRatios, profileInStructure
 
 contains
 
 !>
 !! Subroutine to calculate the overtopping discharge with the Overtopping dll
 !! @ingroup LibOvertopping
-subroutine calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry, logging, succes, errorMessage)
+subroutine calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometries, logging, succes, errorMessage)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"calculateQoHPC" :: calculateQoHPC
     real(kind=wp),                 intent(in)    :: dikeHeight     !< dike height
     type(tpOvertoppingInput),      intent(inout) :: modelFactors   !< struct with model factors
     type (tpOvertopping),          intent(out)   :: overtopping    !< structure with overtopping results
-    type (tpGeometry),             intent(in)    :: geometry       !< structure with geometry data
+    type (tpGeometries), target,   intent(inout) :: geometries     !< structure with geometry data
     type (tpLoad),                 intent(in)    :: load           !< structure with load parameters
     type(tLogging),                intent(in)    :: logging        !< logging struct
     logical,                       intent(out)   :: succes         !< flag for succes
     character(len=*),              intent(inout) :: errorMessage   !< error message, only set in case of an error
 
     integer                       :: nrCoordsAdjusted       !< number of coordinates of the adjusted profile
-    real(kind=wp), pointer        :: xCoordsAdjusted(:)     !< vector with x-coordinates of the adjusted profile
-    real(kind=wp), pointer        :: zCoordsAdjusted(:)     !< vector with y-coordinates of the adjusted profile
-    type (tpGeometry)             :: geometryAdjusted       !< structure for the adjusted profile
+    type (tpGeometry), pointer    :: geometryAdjusted       !< structure for the adjusted profile
+    type (tpGeometry), pointer    :: geometry               !< structure for the base profile
 
     ! ==========================================================================================================
     !
     !   Initialise
     !
-    nullify(xCoordsAdjusted)
-    nullify(zCoordsAdjusted)
+
+    geometryAdjusted => geometries%adjWithDikeHeight
+    geometry         => geometries%base
 
     call profileInStructure(geometry%nCoordinates, geometry%xcoordinates, geometry%ycoordinates, dikeHeight, &
-                            nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage)
+                            nrCoordsAdjusted, geometries%xCoordsAdjusted, geometries%zCoordsAdjusted, succes, errorMessage)
 
     if (succes) then
-        call initializeGeometry (geometry%psi, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, &
+        call initializeGeometry (geometry%psi, nrCoordsAdjusted, geometries%xCoordsAdjusted, geometries%zCoordsAdjusted, &
                                  geometry%roughnessFactors, geometryAdjusted, succes, errorMessage)
     endif
 
@@ -91,12 +93,9 @@ subroutine calculateQoRTO(dikeHeight, modelFactors, overtopping, load, geometry,
         overtopping%Qo = tiny(1.0d0)
         overtopping%z2 = 0d0
     endif
-    call deallocateGeometry(geometryAdjusted)
 
-    if (associated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
-    if (associated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
-
-end subroutine calculateQoRTO
+    geometries%geometryNoBerms(:)%nCoordinates = 0
+end subroutine calculateQoHPC
 
 !>
 !! Subroutine to fill the profile in a structure and call the adjustment function of the profile due to a desired dike height
@@ -108,8 +107,8 @@ subroutine profileInStructure(nrCoordinates, xcoordinates, ycoordinates, dikeHei
     real(kind=wp),      intent(in)          :: ycoordinates(nrCoordinates)  !< vector with y-coordinates of the profile
     real(kind=wp),      intent(in)          :: dikeHeight                   !< dike height
     integer,            intent(out)         :: nrCoordsAdjusted             !< number of coordinates in the adjusted profile
-    real(kind=wp),      pointer             :: xCoordsAdjusted(:)           !< vector with x-coordinates of the adjusted profile
-    real(kind=wp),      pointer             :: zCoordsAdjusted(:)           !< vector with y-coordinates of the adjusted profile
+    real(kind=wp),      allocatable         :: xCoordsAdjusted(:)           !< vector with x-coordinates of the adjusted profile
+    real(kind=wp),      allocatable         :: zCoordsAdjusted(:)           !< vector with y-coordinates of the adjusted profile
     logical,            intent(out)         :: succes                       !< flag for succes
     character(len=*),   intent(out)         :: errorMessage                 !< error message
 
@@ -133,10 +132,10 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
     type(tpProfileCoordinate),  intent(in)  :: coordinates(nrCoordinates)   !< structure for the profile
     real(kind=wp),              intent(in)  :: dikeHeight                   !< dike height
     integer,                    intent(out) :: nrCoordsAdjusted             !< number of coordinates in the adjusted profile
-    real(kind=wp),              pointer     :: xCoordsAdjusted(:)           !< vector with x-coordinates of the adjusted profile
-    real(kind=wp),              pointer     :: zCoordsAdjusted(:)           !< vector with y-coordinates of the adjusted profile
+    real(kind=wp),              allocatable :: xCoordsAdjusted(:)           !< vector with x-coordinates of the adjusted profile
+    real(kind=wp),              allocatable :: zCoordsAdjusted(:)           !< vector with y-coordinates of the adjusted profile
     logical,                    intent(out) :: succes                       !< flag for succes
-    character(len=*),           intent(out) :: errorMessage                 !< error message
+    character(len=*),           intent(inout) :: errorMessage                 !< error message
 
     ! locals
     !
@@ -145,12 +144,12 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
     real(kind=wp)     :: auxiliaryHeight        !< auxiliary height for the profile
     real(kind=wp)     :: slope                  !< slope of the profile
     integer           :: i                      !< do-loop counter
-    integer           :: ierr                   !< error code of allocate
     logical           :: previousWasBerm        !< previous segment is a berm
+    logical           :: succesAlloc            !< allocation is succesful
+    type(tMessage)    :: error
 
-    succes = .true.
+    succes = .false.
     if (nrCoordinates < 2) then
-        succes = .false.
         errorMessage = GetOvertoppingMessage(dimension_cross_section_less_than_2)
         return
     endif
@@ -158,23 +157,22 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
     ! the minimal distance between two x-coordinates of the cross section is xDiff_min 
     ! compute the height of the cross section on the point xDiff_min meters after the toe
 
-    auxiliaryHeightToe = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate + xDiff_min, ierr, errorMessage)
-    if (ierr /= 0) return
+    auxiliaryHeightToe = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate + xDiff_min, error)
+    if (error%errorCode /= 0) return
 
     ! First the situation where the new dike height is close to the dike toe
     if (dikeHeight <= auxiliaryHeightToe) then
         nrCoordsAdjusted = 2
-        allocate(xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=ierr)
-        if (ierr /= 0) then
-            write(errorMessage, GetOvertoppingFormat(allocateError)) 2*nrCoordsAdjusted
-            succes = .false.
-        else
+        succesAlloc = reallocAdjustedCoordinates(xCoordsAdjusted, zCoordsAdjusted, nrCoordsAdjusted, errorMessage)
+        if (succesAlloc) then
             zCoordsAdjusted(2) = dikeHeight
-            xCoordsAdjusted(2) = interpolateLine(coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, dikeHeight, ierr, errorMessage)
-            if (ierr /= 0) return
+            xCoordsAdjusted(2) = interpolateLine(coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, dikeHeight, error)
+            if (error%errorCode /= 0) return
             xCoordsAdjusted(1) = xCoordsAdjusted(2) - xDiff_min
-            zCoordsAdjusted(1) = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, xCoordsAdjusted(1), ierr, errorMessage)
-            if (ierr /= 0) return
+            zCoordsAdjusted(1) = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, xCoordsAdjusted(1), error)
+            if (error%errorCode /= 0) return
+        else
+            return
         endif
     else
         nrCoordsAdjusted = nrCoordinates
@@ -184,15 +182,15 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
             if (slope < slope_min .and. i < nrCoordinates - 1) then
                 !
                 ! the next segment of the cross section is a berm segment
-                auxiliaryHeightBerm = interpolateLine(coordinates(i+1)%xCoordinate, coordinates(i+2)%xCoordinate, coordinates(i+1)%zCoordinate, coordinates(i+2)%zCoordinate, coordinates(i+1)%xCoordinate + xDiff_min, ierr, errorMessage)
-                if (ierr /= 0) return
-                if (dikeHeight < auxiliaryHeightBerm) then 
+                auxiliaryHeightBerm = interpolateLine(coordinates(i+1)%xCoordinate, coordinates(i+2)%xCoordinate, coordinates(i+1)%zCoordinate, coordinates(i+2)%zCoordinate, coordinates(i+1)%xCoordinate + xDiff_min, error)
+                if (error%errorCode /= 0) return
+                if (dikeHeight < auxiliaryHeightBerm) then
                     nrCoordsAdjusted = merge(i-1, i, previousWasBerm)
                     exit
                 endif
             else
-                auxiliaryHeight = interpolateLine(coordinates(i-1)%xCoordinate, coordinates(i)%xCoordinate, coordinates(i-1)%zCoordinate, coordinates(i)%zCoordinate, coordinates(i-1)%xCoordinate + xDiff_min, ierr, errorMessage)
-                if (ierr /= 0) return
+                auxiliaryHeight = interpolateLine(coordinates(i-1)%xCoordinate, coordinates(i)%xCoordinate, coordinates(i-1)%zCoordinate, coordinates(i)%zCoordinate, coordinates(i-1)%xCoordinate + xDiff_min, error)
+                if (error%errorCode /= 0) return
                 if (dikeHeight < auxiliaryHeight) then
                     nrCoordsAdjusted = i - 1
                     exit
@@ -210,11 +208,8 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
         !
         ! allocate xCoordsAdjusted and zCoordsAdjusted and check result
         !
-        allocate(xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=ierr)
-        if (ierr /= 0) then
-            write(errorMessage, GetOvertoppingFormat(allocateError)) 2*nrCoordsAdjusted
-            succes = .false.
-        else
+        succesAlloc = reallocAdjustedCoordinates(xCoordsAdjusted, zCoordsAdjusted, nrCoordsAdjusted, errorMessage)
+        if (succesAlloc) then
 
             ! all segments of the profile except the last
             do i = 1, nrCoordsAdjusted - 1
@@ -225,17 +220,42 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
             ! last segment of the profile
             zCoordsAdjusted(nrCoordsAdjusted) = dikeHeight
             xCoordsAdjusted(nrCoordsAdjusted) = interpolateLine(coordinates(nrCoordsAdjusted-1)%zCoordinate, coordinates(nrCoordsAdjusted)%zCoordinate, &
-                coordinates(nrCoordsAdjusted-1)%xCoordinate, coordinates(nrCoordsAdjusted)%xCoordinate, dikeHeight, ierr, errorMessage)
-            if (ierr /= 0) return
+                coordinates(nrCoordsAdjusted-1)%xCoordinate, coordinates(nrCoordsAdjusted)%xCoordinate, dikeHeight, error)
+            if (error%errorCode /= 0) return
 
             if (xCoordsAdjusted(nrCoordsAdjusted) < xCoordsAdjusted(nrCoordsAdjusted-1)) then
-                succes = .false.
                 errorMessage = GetOvertoppingMessage(adjusted_xcoordinates)
+                return
             endif
+        else
+            return
         endif
     endif
-
+    succes = .true.
 end subroutine adjustProfile
+
+function reallocAdjustedCoordinates(xCoordsAdjusted, zCoordsAdjusted, nrCoordsAdjusted, errorMessage) result(succes)
+    real(kind=wp),    allocatable   :: xCoordsAdjusted(:), zCoordsAdjusted(:)
+    integer,          intent(in)    :: nrCoordsAdjusted
+    character(len=*), intent(inout) :: errorMessage                 !< error message
+    logical                         :: succes
+
+    integer :: ierr
+
+    succes = .true.
+    if (allocated(xCoordsAdjusted)) then
+        if (size(xCoordsAdjusted) == nrCoordsAdjusted) then
+            return
+        endif
+        deallocate(xCoordsAdjusted, zCoordsAdjusted)
+    end if
+
+    allocate(xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=ierr)
+    if (ierr /= 0) then
+        write(errorMessage, GetOvertoppingFormat(allocateError)) 2*nrCoordsAdjusted
+        succes = .false.
+    end if
+end function reallocAdjustedCoordinates
 
 !>
 !! Routine to compute the limit state value by using the logs of the overtopping discharges (computed and desired)
@@ -269,5 +289,17 @@ function zFuncLogRatios(qo, qc, mqo, mqc, success, errorMessage) result (z)
         endif
     endif
 end function ZFuncLogRatios
+
+function interpolateLine(x1, x2, f1, f2, x, error)
+    use vectorUtilities,             only : interpolateLine19 => interpolateLine
+    real (kind=wp), intent(in)      :: x1              !< first x-value
+    real (kind=wp), intent(in)      :: x2              !< second x-value
+    real (kind=wp), intent(in)      :: f1              !< first function-value
+    real (kind=wp), intent(in)      :: f2              !< second function-value
+    real (kind=wp), intent(in)      :: x               !< x-value for which the function value is desired
+    type(tMessage), intent(inout)   :: error
+    real (kind=wp)                  :: interpolateLine !< value of the dependent variable associated with xx
+    interpolateLine = interpolateLine19(x1, x2, f1, f2, x, error%errorCode, error%message)
+end function interpolateLine
 
 end module zFunctionsOvertopping

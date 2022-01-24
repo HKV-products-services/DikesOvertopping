@@ -40,6 +40,7 @@
    use typeDefinitionsOvertopping
    use formulaModuleOvertopping
    use geometryModuleOvertopping
+   use overtoppingInterface
    use waveRunup
    use OvertoppingMessages
    use ModuleLogging
@@ -51,6 +52,7 @@
    
    public :: calculateOvertopping, calculateOvertoppingSection, calculateWaveOvertopping
    public :: interpolateResultsSections, checkInputdata, checkModelFactors
+   public :: setupGeometries, cleanupGeometry, initGeometries
 
    contains
 !
@@ -65,7 +67,7 @@
 !
 !  Input/output parameters
 !
-   type (tpGeometry),         intent(in)  :: geometry       !< structure with geometry data
+   type (tpGeometry),         intent(inout) :: geometry       !< structure with geometry data
    type (tpLoad),             intent(in)  :: load           !< structure with load parameters
    type (tpOvertoppingInput), intent(in)  :: modelFactors   !< structure with model factors
    type (tpOvertopping),      intent(out) :: overtopping    !< structure with overtopping results
@@ -75,7 +77,6 @@
 !
 !  Local parameters
 !
-   type (tpGeometry)        :: geometryMergedBerms  !< structure with merged sequential berms
    real(kind=wp)            :: toe                  !< height of the dike toe (m+NAP)
    real(kind=wp)            :: crest                !< crest height (m+NAP)
    real(kind=wp)            :: h                    !< water level (m+NAP)
@@ -86,17 +87,30 @@
    real(kind=wp)            :: gammaBeta_o          !< influence factor angle of wave attack overtopping
    real(kind=wp)            :: L0                   !< wave length (m)
    integer                  :: NwideBerms           !< number of wide berms
-   type (tpGeometry)        :: geometrySectionB     !< geometry data with wide berms to ordinary berms
-   type (tpGeometry)        :: geometrySectionF     !< geometry data with wide berms to foreshores
    type (tpOvertopping)     :: overtoppingB         !< structure with overtopping results for ordinary berms
    type (tpOvertopping)     :: overtoppingF         !< structure with overtopping results for foreshores
    real(kind=wp), parameter :: tinyWaves = 1d-7     !< waves smaller than tinyWaves can be neglected
+
+   type (tpGeometry), pointer :: geometrySectionB     !< geometry data with wide berms to ordinary berms
+   type (tpGeometry), pointer :: geometrySectionF     !< geometry data with wide berms to foreshores
+   type (tpGeometry), pointer :: geometryMergedBerms  !< structure with merged sequential berms
+   logical                    :: needCleanUp
 
 ! ==========================================================================================================
 
    ! check load parameters and model factors
    call checkInputdata (geometry, load, modelFactors, succes, errorMessage)
-      
+
+   if ( .not. allocated (geometry%parent%geometryMergedBerms)) then
+       call setupGeometries(geometry%parent)
+       needCleanUp = .true.
+   else
+       needCleanUp = .false.
+   end if
+   geometryMergedBerms => geometry%parent%geometryMergedBerms
+   geometrySectionB    => geometry%parent%geometrySectionB
+   geometrySectionF    => geometry%parent%geometrySectionF
+
    if (succes) then
 
       toe   = geometry%yCoordinates(1)
@@ -131,7 +145,7 @@
 
          ! if applicable merge two sequential berms  TODO: liever eerder
          call mergeSequentialBerms (geometry, geometryMergedBerms, succes, errorMessage)
-         
+
          ! calculate the wave length
          if (succes) then
             call calculateWaveLength (Tm_10, L0)
@@ -174,13 +188,13 @@
                endif
             endif
          endif
-         call deallocateGeometry(geometryMergedBerms)
-         call deallocateGeometry(geometrysectionB)
-         call deallocateGeometry(geometrysectionF)
       endif
 
    endif
 
+   if (needCleanUp) then
+       call cleanupGeometry(geometry%parent)
+    end if
    end subroutine calculateOvertopping
 
 !> calculateOvertoppingSection:
@@ -217,7 +231,7 @@
    real(kind=wp)     :: z2max             !< maximum 2% wave run-up due to foreshore (m)
    real(kind=wp)     :: dH                !< water depth at the end of the foreshore (m)
    real(kind=wp)     :: Hm0_red           !< reduced significant wave height (m)
-   type (tpGeometry) :: geometryAdjusted  !< geometry with removed dike segments
+   type (tpGeometry), pointer :: geometryAdjusted  !< geometry with removed dike segments
 
 ! ==========================================================================================================
 
@@ -225,6 +239,8 @@
    succes = .true.
    overtopping%z2 = 0.0_wp
    overtopping%Qo = 0.0_wp
+
+   geometryAdjusted => geometry%parent%geometryRemoveDikeSegments
 
    ! initialize foreshore case
    foreshoreCase = 0
@@ -369,8 +385,6 @@
             endif
          endif
 
-         call deallocateGeometry(geometryAdjusted)
-
       ! ---------------------------------------------
       case (3) ! local water level between foreshores
       ! ---------------------------------------------
@@ -392,8 +406,6 @@
 
          ! wave overtopping discharge equals zero
          overtopping%Qo = 0.0d0
-
-         call deallocateGeometry(geometryAdjusted)
 
       ! ---------------------------------------
       case (4) ! local water level on foreshore
@@ -434,7 +446,7 @@
 !
 !  Local parameters
 !
-   type (tpGeometry) :: geometryFlatBerms !< structure with geometry data with horizontal berms
+   type (tpGeometry), pointer :: geometryFlatBerms !< structure with geometry data with horizontal berms
    real(kind=wp)     :: s0                !< wave steepness
    real(kind=wp)     :: tanAlpha          !< representative slope angle
    real(kind=wp)     :: ksi0              !< breaker parameter
@@ -448,8 +460,11 @@
    call calculateWaveSteepness (Hm0, Tm_10, s0, succes, errorMessage)
    
    ! if applicable adjust non-horizontal berms
+   geometryFlatBerms => geometry%parent%geometryFlatBerms
    if (succes) then
-      call adjustNonHorizontalBerms (geometry, geometryFlatBerms, succes, errorMessage)
+      if (geometryFlatBerms%nCoordinates == 0) then
+          call adjustNonHorizontalBerms (geometry, geometryFlatBerms, succes, errorMessage)
+      end if
    endif
 
    ! calculate representative slope angle
@@ -470,8 +485,6 @@
          gammaB = 1.0d0
       endif
    endif
-
-   call deallocateGeometry(geometryFlatBerms)
 
    ! calculate limit value breaker parameter
    if (succes) then
@@ -753,6 +766,60 @@
 
    end subroutine checkModelFactors
 
+   subroutine initGeometries(geometryF, geometry, success, errorText)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"initGeometries" :: initGeometries
+      type(OvertoppingGeometryTypeF), intent(inout) :: geometryF      !< struct with geometry and roughness
+      type(tpGeometry), intent(inout) :: geometry
+      logical, intent(out) :: success
+      character(len=*), intent(inout) :: errorText
+
+      call initializeGeometry(geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
+                             geometryF%roughness, geometry, success, errorText)
+      call setupGeometries(geometry%parent)
+   end subroutine initGeometries
+
+   subroutine setupGeometries(geometries)
+      type(tpGeometries), target, intent(inout) :: geometries
+
+      allocate(geometries%adjWithDikeHeight)
+      allocate(geometries%geometryMergedBerms)
+      allocate(geometries%geometrySectionB)
+      allocate(geometries%geometrySectionF)
+      allocate(geometries%geometryFlatBerms)
+      allocate(geometries%geometryNoBerms(2))
+      allocate(geometries%geometryRemoveDikeSegments)
+      geometries%adjWithDikeHeight%parent => geometries
+      geometries%geometrySectionB%parent => geometries
+      geometries%geometrySectionF%parent => geometries
+      geometries%geometryFlatBerms%parent => geometries
+      geometries%geometryRemoveDikeSegments%parent => geometries
+   end subroutine setupGeometries
+
+   subroutine cleanupGeometry(geometries)
+!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"cleanupGeometry" :: cleanupGeometry
+      type(tpGeometries), intent(inout) :: geometries
+
+      call deallocateGeometry(geometries%adjWithDikeHeight)
+      call deallocateGeometry(geometries%geometryMergedBerms)
+      call deallocateGeometry(geometries%geometrySectionB)
+      call deallocateGeometry(geometries%geometrySectionF)
+      call deallocateGeometry(geometries%geometryFlatBerms)
+      call deallocateGeometry(geometries%geometryNoBerms(1))
+      call deallocateGeometry(geometries%geometryNoBerms(2))
+      call deallocateGeometry(geometries%geometryRemoveDikeSegments)
+
+      deallocate(geometries%adjWithDikeHeight)
+      deallocate(geometries%geometryMergedBerms)
+      deallocate(geometries%geometrySectionB)
+      deallocate(geometries%geometrySectionF)
+      deallocate(geometries%geometryFlatBerms)
+      deallocate(geometries%geometryNoBerms)
+      deallocate(geometries%geometryRemoveDikeSegments)
+
+      if (allocated(geometries%xCoordsAdjusted)) deallocate(geometries%xCoordsAdjusted)
+      if (allocated(geometries%zCoordsAdjusted)) deallocate(geometries%zCoordsAdjusted)
+
+   end subroutine cleanupGeometry
 !***********************************************************************************************************
    end module mainModuleOvertopping
 !***********************************************************************************************************

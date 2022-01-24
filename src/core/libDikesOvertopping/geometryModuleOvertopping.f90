@@ -188,7 +188,7 @@
    real(kind=wp),       intent(in   ) :: xCoordinates(nCoordinates)       !< x-coordinates (m)
    real(kind=wp),       intent(in   ) :: yCoordinates(nCoordinates)       !< y-coordinates (m+NAP)
    real(kind=wp),       intent(in   ) :: roughnessFactors(nCoordinates-1) !< roughness factors
-   type (tpGeometry),   intent(  out) :: geometry                         !< structure with geometry data
+   type (tpGeometry), target, intent(inout) :: geometry                         !< structure with geometry data
    logical,             intent(  out) :: succes                           !< flag for succes
    character(len=*),    intent(inout) :: errorMessage                     !< error message, only set in case of an error
 !
@@ -245,6 +245,10 @@
       geometry%NbermSegments = count(geometry%segmentTypes == 2)
    endif
 
+   if ( .not. associated(geometry%parent)) then
+       allocate(geometry%parent)
+       geometry%parent%base => geometry
+   end if
    end subroutine initializeGeometry
 
 !> allocateVectorsGeometry:
@@ -266,9 +270,17 @@
 !  local parameters
 !
    integer                             :: ierr           !< error code allocate
-   integer                             :: size           !< total size of arrays to be allocated
+   integer                             :: sizeArrays     !< total size of arrays to be allocated
 
 ! ==========================================================================================================
+
+   if (allocated(geometry%xCoordinates)) then
+       if (size(geometry%xCoordinates) == nCoordinates) then
+           return
+       else
+           call deallocateGeometry(geometry)
+       end if
+   end if
 
                   allocate (geometry%xCoordinates     (nCoordinates  ), stat=ierr)
    if (ierr == 0) allocate (geometry%yCoordinates     (nCoordinates  ), stat=ierr)
@@ -280,8 +292,8 @@
 
    succes = (ierr == 0)
    if (ierr /= 0) then
-       size  = 2 * nCoordinates + 5 * (nCoordinates-1)
-       write(errorMessage, GetOvertoppingFormat(allocateError)) size
+       sizeArrays  = 2 * nCoordinates + 5 * (nCoordinates-1)
+       write(errorMessage, GetOvertoppingFormat(allocateError)) sizeArrays
    endif 
 
    end subroutine allocateVectorsGeometry
@@ -299,13 +311,13 @@ subroutine deallocateGeometry(geometry)
 !
 !   source
 !
-    if (associated(geometry%xCoordinates))     deallocate(geometry%xCoordinates)
-    if (associated(geometry%yCoordinates))     deallocate(geometry%yCoordinates)
-    if (associated(geometry%roughnessFactors)) deallocate(geometry%roughnessFactors)
-    if (associated(geometry%xCoordDiff))       deallocate(geometry%xCoordDiff)
-    if (associated(geometry%yCoordDiff))       deallocate(geometry%yCoordDiff)
-    if (associated(geometry%segmentSlopes))    deallocate(geometry%segmentSlopes)
-    if (associated(geometry%segmentTypes))     deallocate(geometry%segmentTypes)
+    if (allocated(geometry%xCoordinates))     deallocate(geometry%xCoordinates)
+    if (allocated(geometry%yCoordinates))     deallocate(geometry%yCoordinates)
+    if (allocated(geometry%roughnessFactors)) deallocate(geometry%roughnessFactors)
+    if (allocated(geometry%xCoordDiff))       deallocate(geometry%xCoordDiff)
+    if (allocated(geometry%yCoordDiff))       deallocate(geometry%yCoordDiff)
+    if (allocated(geometry%segmentSlopes))    deallocate(geometry%segmentSlopes)
+    if (allocated(geometry%segmentTypes))     deallocate(geometry%segmentTypes)
 
 end subroutine deallocateGeometry
 
@@ -415,7 +427,7 @@ end subroutine deallocateGeometry
 !! copy a geometry structure
 !!   @ingroup LibOvertopping
 !**********************************************************************************************************
-   subroutine copyGeometry (geometry, geometryCopy, succes, errorMessage)
+   subroutine copyGeometry (geometry, geometryCopy, succes, errorMessage, splitId)
 !***********************************************************************************************************
 !
    implicit none
@@ -426,6 +438,7 @@ end subroutine deallocateGeometry
    type (tpGeometry),   intent(inout)  :: geometryCopy   !< structure with geometry data copy
    logical,             intent(out)    :: succes         !< succes flag
    character(len=*),    intent(inout)  :: errorMessage   !< error message, only set in case of error
+   character, optional, intent(in)     :: splitId        !< B or F section
 !
 !  Local parameters
 !
@@ -438,7 +451,6 @@ end subroutine deallocateGeometry
 
    if (succes) then
    ! copy dike normal and number of coordinates to structure with geometry data copy
-      geometryCopy%copyNumber   = geometry%copyNumber + 1
       geometryCopy%psi          = geometry%psi
       geometryCopy%nCoordinates = geometry%nCoordinates
 
@@ -456,6 +468,12 @@ end subroutine deallocateGeometry
          geometryCopy%segmentSlopes(i)    = geometry%segmentSlopes(i)
          geometryCopy%segmentTypes(i)     = geometry%segmentTypes(i)
       enddo
+
+      if (present(splitId)) then
+         geometryCopy%splitId = splitId
+      else
+         geometryCopy%splitId = ' '
+      endif
 
       ! copy the number of berm segments to structure with geometry data copy
       geometryCopy%NbermSegments = geometry%NbermSegments
@@ -583,7 +601,7 @@ end subroutine deallocateGeometry
 !  Input/output parameters
 !
    type (tpGeometry),   intent(in   ) :: geometry          !< structure with geometry data
-   type (tpGeometry),   intent(  out) :: geometryFlatBerms !< geometry data with horizontal berms
+   type (tpGeometry),   intent(inout) :: geometryFlatBerms !< geometry data with horizontal berms
    logical,             intent(  out) :: succes            !< flag for succes
    character(len=*),    intent(inout) :: errorMessage      !< error message, only set in case of an error
 !
@@ -600,7 +618,7 @@ end subroutine deallocateGeometry
    succes = .true.
 
    ! initialize the structure with geometry data with horizontal berms
-   call copyGeometry (geometry, geometryFlatBerms, succes, errorMessage)
+   call copyGeometry (geometry, geometryFlatBerms, succes, errorMessage, geometry%splitId)
 
    if (succes) then
       ! loop over possible berm segments
@@ -671,7 +689,7 @@ end subroutine deallocateGeometry
 !  Input/output parameters
 !
    type (tpGeometry),   intent(in   ) :: geometry          !< structure with geometry data
-   type (tpGeometry),   intent(  out) :: geometryNoBerms   !< geometry data withouth berms
+   type (tpGeometry),   intent(inout) :: geometryNoBerms   !< geometry data withouth berms
    logical,             intent(  out) :: succes            !< flag for succes
    character(len=*),    intent(inout) :: errorMessage      !< error message, only set in case of an error
 !
@@ -771,7 +789,7 @@ end subroutine deallocateGeometry
 !
    type (tpGeometry),   intent(in)  :: geometry          !< structure with geometry data
    integer,             intent(in)  :: index             !< index starting point new cross section
-   type (tpGeometry),   intent(out) :: geometryAdjusted  !< geometry data with removed dike segments
+   type (tpGeometry),   intent(inout) :: geometryAdjusted  !< geometry data with removed dike segments
    logical,             intent(out) :: succes            !< flag for succes
    character(len=*),    intent(inout) :: errorMessage    !< error message
    
@@ -835,8 +853,8 @@ end subroutine deallocateGeometry
    type (tpGeometry),   intent(in   ) :: geometry          !< structure with geometry data
    real(kind=wp),       intent(in   ) :: L0                !< wave length (m)
    integer,             intent(  out) :: NwideBerms        !< number of wide berms
-   type (tpGeometry),   intent(  out) :: geometrySectionB  !< geometry data with wide berms to ordinary berms
-   type (tpGeometry),   intent(  out) :: geometrySectionF  !< geometry data with wide berms to foreshores
+   type (tpGeometry),   intent(inout) :: geometrySectionB  !< geometry data with wide berms to ordinary berms
+   type (tpGeometry),   intent(inout) :: geometrySectionF  !< geometry data with wide berms to foreshores
    logical,             intent(  out) :: succes            !< flag for succes
    character(len=*),    intent(inout) :: errorMessage      !< error message, only set in case of an error
 !
@@ -853,8 +871,8 @@ end subroutine deallocateGeometry
    succes = .true.
 
    ! initialize the structures with geometry data for split cross sections
-   call copyGeometry (geometry, geometrySectionB, succes, errorMessage)
-   if (succes) call copyGeometry (geometry, geometrySectionF, succes, errorMessage)
+   call copyGeometry (geometry, geometrySectionB, succes, errorMessage, 'B')
+   if (succes) call copyGeometry (geometry, geometrySectionF, succes, errorMessage, 'F')
 
    ! initialize number of wide berms
    NwideBerms = 0

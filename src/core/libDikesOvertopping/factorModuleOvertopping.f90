@@ -66,14 +66,15 @@
    real(kind=wp),       intent(in   ) :: h              !< local water level (m+NAP)
    real(kind=wp),       intent(in   ) :: Hm0            !< significant wave height (m)
    real(kind=wp),       intent(in   ) :: z2             !< 2% wave run-up (m)
-   type(tpGeometry),    intent(in   ) :: geometry       !< structure with geometry data
+   type(tpGeometry), target, intent(in   ) :: geometry       !< structure with geometry data
    real(kind=wp),       intent(  out) :: tanAlpha       !< representative slope angle
    logical,             intent(  out) :: succes         !< flag for succes
    character(len=*),    intent(inout) :: errorMessage   !< error message, only set in case of an error
 !
 !  Local parameters
 !
-   type(tpGeometry)  :: geometryNoBerms   !< geometry without berms
+   type(tpGeometry), pointer :: geometryNoBerms   !< geometry without berms
+   type(tpGeometry), pointer :: LocalGeometryNoBerms   !< geometry without berms, as in the computations
    real(kind=wp)     :: yLower            !< y-coordinate lower bound representative slope (m+NAP)
    real(kind=wp)     :: yUpper            !< y-coordinate upper bound representative slope (m+NAP)
    real(kind=wp)     :: dx                !< horizontal distance between lower and upper bound (m)
@@ -82,6 +83,12 @@
 
    ! initialize flag for succes and error message
    succes = .true.
+
+   if (geometry%splitId == 'B') then
+      geometryNoBerms => geometry%parent%geometryNoBerms(2)
+   else
+      geometryNoBerms => geometry%parent%geometryNoBerms(1)
+   end if
 
    ! local water level not lower than dike toe (first y-coordinate)
    if (h < geometry%yCoordinates(1)) then
@@ -95,25 +102,25 @@
 
    ! determine cross section without berms
    if (succes) then
-
       if (geometry%NbermSegments > 0) then
-         call removeBerms (geometry, geometryNoBerms, succes, errorMessage)
+         if (geometryNoBerms%nCoordinates == 0) then
+            call removeBerms (geometry, geometryNoBerms, succes, errorMessage)
+         endif
+         LocalGeometryNoBerms => geometryNoBerms
       else
-         call copyGeometry (geometry, geometryNoBerms, succes, errorMessage)
+         LocalGeometryNoBerms => geometry
       endif
-
    endif
 
    ! calculate representative slope angle
    if (succes) then
 
       ! determine y-coordinates lower and upper bound representative slope
-      yLower = max(h-1.5d0*Hm0, geometryNoBerms%yCoordinates(1))
-      yUpper = min(h+z2,      geometryNoBerms%yCoordinates(geometryNoBerms%nCoordinates))
-   
+      yLower = max(h-1.5d0*Hm0, LocalGeometryNoBerms%yCoordinates(1))
+      yUpper = min(h+z2,      LocalGeometryNoBerms%yCoordinates(LocalGeometryNoBerms%nCoordinates))
+
       ! calculate horizontal distance between lower and upper bound
-      call calculateHorzDistance (geometryNoBerms, yLower, yUpper, dx, succes, errorMessage)
-      
+      call calculateHorzDistance (LocalGeometryNoBerms, yLower, yUpper, dx, succes, errorMessage)
       ! calculate representative slope angle
       if (succes) then
          if (dx > 0.0) then
@@ -125,8 +132,6 @@
       endif
 
    endif
-
-   call deallocateGeometry(geometryNoBerms)
 
    end subroutine calculateTanAlpha
 
