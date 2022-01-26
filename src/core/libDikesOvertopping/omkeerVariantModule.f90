@@ -35,6 +35,7 @@ use geometryModuleOvertopping
 use typeDefinitionsOvertopping
 use overtoppingInterface
 use ModuleLogging
+use vectorUtilities, only : logLinearInterpolate
 use zFunctionsOvertopping
 use OvertoppingMessages
 use mainModuleOvertopping, only : setupGeometries, cleanupGeometry
@@ -383,15 +384,5 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
     endif
 
 end subroutine checkIfOnBerm
-
-function logLinearInterpolate( X, Y, xx, error )
-    use vectorUtilities,             only : logLinearInterpolate19 => logLinearInterpolate
-    real (kind=wp),   intent(in)    :: X(:)                  !< vector with independent elements X - may be unsorted
-    real (kind=wp),   intent(in)    :: Y(:)                  !< vector with dependent elements Y (depending on X)
-    real (kind=wp),   intent(in)    :: xx                    !< x-value for which the dependent variable is desired
-    type(tMessage), intent(inout)   :: error
-    real (kind=wp)                  :: logLinearInterpolate  !< value of the dependent variable associated with xx
-    logLinearInterpolate = logLinearInterpolate19(X, Y, xx, error%errorCode, error%message)
-end function logLinearInterpolate
 
 end module omkeerVariantModule

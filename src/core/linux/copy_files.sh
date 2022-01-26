@@ -2,7 +2,7 @@
 
 cp ../external/tools/precision.f90 .
 cp ../external/tools/utilities.f90 .
-cp ../external/feedback/feedback_parameters.f90 .
+cp ../external/feedback_dll/feedback_parameters.f90 .
 cp ../external/tools/errorMessages.f90 .
 cp ../external/tools/equalReals.f90 .
 # cp ../external/general/vectorUtilities.f90 .

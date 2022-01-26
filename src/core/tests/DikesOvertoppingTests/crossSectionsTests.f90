@@ -83,7 +83,7 @@ subroutine allCrossSectionsTests(nCrossSections, nBasicTestSeries)
 
     real(kind=wp)              :: waveSteepness          ! wave steepness
     real(kind=wp), allocatable :: phi(:)                 ! wave directions
-    integer                    :: ierr                   ! error code
+    type(tMessage)             :: error                  ! error struct
 !
 !   source
 !
@@ -102,8 +102,8 @@ subroutine allCrossSectionsTests(nCrossSections, nBasicTestSeries)
     waveSteepness = 0.04d0
     !
     ! compute the wave period
-    load%Tm_10 = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
-    call assert_equal(ierr, 0, errorMessage)
+    load%Tm_10 = computeWavePeriod(load%Hm0, waveSteepness, error)
+    call assert_equal(error%errorCode, 0, errorMessage)
 
     nWaveDirections = 2
     allocate (phi(nWaveDirections))

@@ -52,7 +52,7 @@ subroutine init_modelfactors_and_load(modelFactors, load, waveheight)
 
     real(kind=wp)                           :: waveSteepness
     character(len=128)                      :: errorMessage      !< error message
-    integer                                 :: ierr              !< error code
+    type(tMessage)                          :: error             !< error struct
 
     modelFactors%factorDeterminationQ_b_f_n = 2.3_wp
     modelFactors%factorDeterminationQ_b_f_b = 4.3_wp
@@ -71,8 +71,8 @@ subroutine init_modelfactors_and_load(modelFactors, load, waveheight)
         load%phi      = 50.00_wp
         load%Hm0      =  1.00_wp
         waveSteepness =  0.04_wp
-        load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
-        call assert_equal(ierr, 0, errorMessage)
+        load%Tm_10    = computeWavePeriod(load%Hm0, waveSteepness, error)
+        call assert_equal(error%errorCode, 0, errorMessage)
     endif
 end subroutine init_modelfactors_and_load
 

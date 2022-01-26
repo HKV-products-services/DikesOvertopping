@@ -43,6 +43,7 @@ module loadTests
     use moduleLogging
     use omkeerVariantModule
     use overtoppingInterface
+    use errorMessages, only : tMessage
     use precision, only : wp
 
     implicit none
@@ -137,9 +138,8 @@ subroutine testSeriesLoad
     character(len=250)       :: errorMessage         ! error message
     type(tLogging)           :: logging              ! logging struct
     character(len=120)       :: frozenFile           ! frozen copy of the output file of the testserie
-
+    type(tMessage)           :: error                ! error struct
     real(kind=wp), parameter :: margin = 1.0d-6      ! relative value for the margin
-    integer                  :: ierr                 ! error code
     real(kind=wp), parameter :: HBNdummy = -9.999    ! dummy value for HBN (in case of failure)
     integer                  :: ii
 !
@@ -230,12 +230,12 @@ subroutine testSeriesLoad
 
         !
         ! compute the wave period
-        load%Tm_10 = computeWavePeriod(load%Hm0, waveSteepness, ierr, errorMessage)
-        call assert_equal(ierr, 0, errorMessage)
+        load%Tm_10 = computeWavePeriod(load%Hm0, waveSteepness, error)
+        call assert_equal(error%errorCode, 0, errorMessage)
         !
         ! compute the angle of wave attack
-        beta = angleBetween2Directions(load%phi, geometry%psi, ierr, errorMessage)
-        call assert_equal(ierr, 0, errorMessage)
+        beta = angleBetween2Directions(load%phi, geometry%psi, error)
+        call assert_equal(error%errorCode, 0, errorMessage)
         !
         ! Compute the wave runup and the wave overtopping discharge with the Overtopping module
         call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, succes, errorMessage)

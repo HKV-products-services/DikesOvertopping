@@ -38,6 +38,7 @@ module zFunctionsOvertopping
     use mainModuleOvertopping,       only : calculateOvertopping, setupGeometries, cleanupGeometry
     use geometryModuleOvertopping,   only : initializeGeometry, deallocateGeometry
     use OvertoppingMessages
+    use vectorUtilities,             only : interpolateLine
     use ModuleLogging
     use errorMessages
     use equalReals
@@ -289,17 +290,5 @@ function zFuncLogRatios(qo, qc, mqo, mqc, success, errorMessage) result (z)
         endif
     endif
 end function ZFuncLogRatios
-
-function interpolateLine(x1, x2, f1, f2, x, error)
-    use vectorUtilities,             only : interpolateLine19 => interpolateLine
-    real (kind=wp), intent(in)      :: x1              !< first x-value
-    real (kind=wp), intent(in)      :: x2              !< second x-value
-    real (kind=wp), intent(in)      :: f1              !< first function-value
-    real (kind=wp), intent(in)      :: f2              !< second function-value
-    real (kind=wp), intent(in)      :: x               !< x-value for which the function value is desired
-    type(tMessage), intent(inout)   :: error
-    real (kind=wp)                  :: interpolateLine !< value of the dependent variable associated with xx
-    interpolateLine = interpolateLine19(x1, x2, f1, f2, x, error%errorCode, error%message)
-end function interpolateLine
 
 end module zFunctionsOvertopping
