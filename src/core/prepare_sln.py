@@ -1,19 +1,17 @@
 import argparse
+import re
 import os
 import glob
 import sys
 import shutil
 import subprocess
+
 if sys.version_info<(3,0,0):
    # To avoid problems with encoding:
    # - Use codecs.open instead of open (Python 2.x only)
    # - open files with encoding='utf-8' (Both Python 2.x and 3.x)
    # - Do not use str(line) on lines read from file
    from codecs import open as open
-   from Tkinter import *
-else:
-   from tkinter import *
-
 
 #
 # This script can be used to create/convert the VisualStudio solution and project files
@@ -42,6 +40,7 @@ chooseIfort = 1
 
 vs = -999
 fw = -999
+sdk = -999
 ifort = -999
 templateSolutionPath = ""
 
@@ -88,6 +87,10 @@ libdir["fortran1932"] = "$(IFORT_COMPILER19)\\compiler\\lib\\ia32"
 libdir["c1932"] = libdir["fortran1932"]
 libdir["fortran1964"] = "$(IFORT_COMPILER19)\\compiler\\lib\\intel64"
 libdir["c1964"] = libdir["fortran1964"]
+libdir["fortran2132"] = "$(IFORT_COMPILER21)\\compiler\\lib\\ia32"
+libdir["c2132"] = libdir["fortran2132"]
+libdir["fortran2164"] = "$(IFORT_COMPILER21)\\compiler\\lib\\intel64"
+libdir["c2164"] = libdir["fortran2164"]
 
 #
 #
@@ -133,6 +136,58 @@ redistdir["fortran1932"] = "$(IFORT_COMPILER19)redist\\ia32\\compiler\\&quot"
 redistdir["c1932"] = "$(IFORT_COMPILER19)redist\\ia32\\compiler\\"
 redistdir["fortran1964"] = "$(IFORT_COMPILER19)redist\\intel64\\compiler\\&quot"
 redistdir["c1964"] = "$(IFORT_COMPILER19)redist\\intel64\\compiler\\"
+redistdir["fortran2132"] = "$(IFORT_COMPILER21)redist\\ia32_win\\compiler\\&quot"
+redistdir["c2132"] = "$(IFORT_COMPILER21)redist\\ia32_win\\compiler\\"
+redistdir["fortran2164"] = "$(IFORT_COMPILER21)redist\\intel64_win\\compiler\\&quot"
+redistdir["c2164"] = "$(IFORT_COMPILER21)redist\\intel64_win\\compiler\\"
+
+
+# redistdir specifies the directory containing the ifort redistributable dlls
+# The string to be added can be set depending on:
+# - fortran/c project file to place it in
+# - ifort version
+# - 32/64 bit settings
+mkldir = {}
+mkldir["fortran1132"] = "$(IFORT_COMPILER11)redist\\ia32\\mkl\\&quot"
+mkldir["c1132"] = "$(IFORT_COMPILER11)redist\\ia32\\mkl\\"
+mkldir["fortran1164"] = "$(IFORT_COMPILER11)redist\\intel64\\mkl\\&quot"
+mkldir["c1164"] = "$(IFORT_COMPILER11)redist\\intel64\\mkl\\"
+mkldir["fortran1232"] = "$(IFORT_COMPILER12)redist\\ia32\\mkl\\&quot"
+mkldir["c1232"] = "$(IFORT_COMPILER12)redist\\ia32\\mkl\\"
+mkldir["fortran1264"] = "$(IFORT_COMPILER12)redist\\intel64\\mkl\\&quot"
+mkldir["c1264"] = "$(IFORT_COMPILER12)redist\\intel64\\mkl\\"
+mkldir["fortran1332"] = "$(IFORT_COMPILER13)redist\\ia32\\mkl\\&quot"
+mkldir["c1332"] = "$(IFORT_COMPILER13)redist\\ia32\\mkl\\"
+mkldir["fortran1364"] = "$(IFORT_COMPILER13)redist\\intel64\\mkl\\&quot"
+mkldir["c1364"] = "$(IFORT_COMPILER13)redist\\intel64\\mkl\\"
+mkldir["fortran1432"] = "$(IFORT_COMPILER14)redist\\ia32\\mkl\\&quot"
+mkldir["c1432"] = "$(IFORT_COMPILER14)redist\\ia32\\mkl\\"
+mkldir["fortran1464"] = "$(IFORT_COMPILER14)redist\\intel64\\mkl\\&quot"
+mkldir["c1464"] = "$(IFORT_COMPILER14)redist\\intel64\\mkl\\"
+mkldir["fortran1532"] = "$(IFORT_COMPILER15)redist\\ia32\\mkl\\&quot"
+mkldir["c1532"] = "$(IFORT_COMPILER15)redist\\ia32\\mkl\\"
+mkldir["fortran1564"] = "$(IFORT_COMPILER15)redist\\intel64\\mkl\\&quot"
+mkldir["c1564"] = "$(IFORT_COMPILER15)redist\\intel64\\mkl\\"
+mkldir["fortran1632"] = "$(IFORT_COMPILER16)redist\\ia32\\mkl\\&quot"
+mkldir["c1632"] = "$(IFORT_COMPILER16)redist\\ia32\\mkl\\"
+mkldir["fortran1664"] = "$(IFORT_COMPILER16)redist\\intel64\\mkl\\&quot"
+mkldir["c1664"] = "$(IFORT_COMPILER16)redist\\intel64\\mkl\\"
+mkldir["fortran1732"] = "$(IFORT_COMPILER17)redist\\ia32\\mkl\\&quot"
+mkldir["c1732"] = "$(IFORT_COMPILER17)redist\\ia32\\mkl\\"
+mkldir["fortran1764"] = "$(IFORT_COMPILER17)redist\\intel64\\mkl\\&quot"
+mkldir["c1764"] = "$(IFORT_COMPILER17)redist\\intel64\\mkl\\"
+mkldir["fortran1832"] = "$(IFORT_COMPILER18)redist\\ia32\\mkl\\&quot"
+mkldir["c1832"] = "$(IFORT_COMPILER18)redist\\ia32\\mkl\\"
+mkldir["fortran1864"] = "$(IFORT_COMPILER18)redist\\intel64\\mkl\\&quot"
+mkldir["c1864"] = "$(IFORT_COMPILER18)redist\\intel64\\mkl\\"
+mkldir["fortran1932"] = "$(IFORT_COMPILER19)redist\\ia32\\mkl\\&quot"
+mkldir["c1932"] = "$(IFORT_COMPILER19)redist\\ia32\\mkl\\"
+mkldir["fortran1964"] = "$(IFORT_COMPILER19)redist\\intel64\\mkl\\&quot"
+mkldir["c1964"] = "$(IFORT_COMPILER19)redist\\intel64\\mkl\\"
+mkldir["fortran2132"] = "$(ONEAPI_ROOT)mkl\\latest\\redist\\ia32\\&quot"
+mkldir["c2132"] = "$(ONEAPI_ROOT)mkl\\latest\\redist\\ia32\\"
+mkldir["fortran2164"] = "$(ONEAPI_ROOT)mkl\\latest\\redist\\intel64\\&quot"
+mkldir["c2164"] = "$(ONEAPI_ROOT)mkl\\latest\\redist\\intel64\\"
 
 #
 #
@@ -144,7 +199,8 @@ toolsversion[2013] = "12.0"
 toolsversion[2014] = "12.0"
 toolsversion[2015] = "14.0"
 toolsversion[2016] = "14.0"
-toolsversion[2017] = "14.0"
+toolsversion[2017] = "15.0"
+toolsversion[2019] = "15.0"
 
 #
 #
@@ -159,6 +215,11 @@ frameworkversion[46] = "4.6"
 frameworkversion[47] = "4.7"
 frameworkversion[48] = "4.8"
 
+# sdkversion specifies the .Net SDK number
+sdkversion = {}
+sdkversion[461] = "4.6.1"
+sdkversion[48] = "4.8"
+
 #
 #
 # platformtoolset specifies the vs platformtoolset version number
@@ -170,6 +231,7 @@ platformtoolset[2014] = "    <PlatformToolset>v120</PlatformToolset>"
 platformtoolset[2015] = "    <PlatformToolset>v140</PlatformToolset>"
 platformtoolset[2016] = "    <PlatformToolset>v140</PlatformToolset>"
 platformtoolset[2017] = "    <PlatformToolset>v141</PlatformToolset>"
+platformtoolset[2019] = "    <PlatformToolset>v142</PlatformToolset>"
 
 #
 #
@@ -185,6 +247,8 @@ ucrtlibdir["201532"] = "$(UniversalCRTSdkDir)Lib\\UCRTLIBDIRVERSIONNUMBER\\ucrt\
 ucrtlibdir["201564"] = "$(UniversalCRTSdkDir)Lib\\UCRTLIBDIRVERSIONNUMBER\\ucrt\\x64"
 ucrtlibdir["201732"] = "$(UniversalCRTSdkDir)Lib\\UCRTLIBDIRVERSIONNUMBER\\ucrt\\x86"
 ucrtlibdir["201764"] = "$(UniversalCRTSdkDir)Lib\\UCRTLIBDIRVERSIONNUMBER\\ucrt\\x64"
+ucrtlibdir["201932"] = "$(UniversalCRTSdkDir)Lib\\UCRTLIBDIRVERSIONNUMBER\\ucrt\\x86"
+ucrtlibdir["201964"] = "$(UniversalCRTSdkDir)Lib\\UCRTLIBDIRVERSIONNUMBER\\ucrt\\x64"
 
 #
 #
@@ -194,6 +258,7 @@ ucrtlibdir["201764"] = "$(UniversalCRTSdkDir)Lib\\UCRTLIBDIRVERSIONNUMBER\\ucrt\
 getucrtdir = {}
 getucrtdir["2015"] = '"' + str(os.environ.get("VS140COMNTOOLS")) + "..\\..\\VC\\vcvarsall.bat" + '" amd64&&set UniversalCRTSdkDir'
 getucrtdir["2017"] = '"' + str(os.environ.get("VS2017INSTALLDIR")) + "\\VC\\Auxiliary\\Build\\vcvarsall.bat" + '" amd64&&set UniversalCRTSdkDir'
+getucrtdir["2019"] = '"' + str(os.environ.get("VS2019INSTALLDIR")) + "\\VC\\Auxiliary\\Build\\vcvarsall.bat" + '" amd64&&set UniversalCRTSdkDir'
 
 #
 #
@@ -203,12 +268,14 @@ getucrtdir["2017"] = '"' + str(os.environ.get("VS2017INSTALLDIR")) + "\\VC\\Auxi
 # files are in fixed locations (see below).
 def process_solution_file(sln, slntemplate):
     global vs
+    global sdk
     global fw
     global ifort
     global templateSolutionPath
     global libdir
     global redistdir
     global toolsversion
+    global sdkversion
     global frameworkversion
     global platformtoolset
 
@@ -257,8 +324,10 @@ def process_solution_file(sln, slntemplate):
                     line = "Microsoft Visual Studio Solution File, Format Version 12.00\r\n"
                 elif vs == 2017:
                     line = "Microsoft Visual Studio Solution File, Format Version 12.00\r\n"
-                # else:
-                    # leave line unchanged
+                elif vs == 2019:
+                    line = "Microsoft Visual Studio Solution File, Format Version 12.00\r\n"
+                else:
+                    pass
             startpos = line.find("# Visual Studio")
             if startpos == 0:
                 if vs == 2010:
@@ -275,8 +344,10 @@ def process_solution_file(sln, slntemplate):
                     line = "# Visual Studio 2016\r\n"
                 elif vs == 2017:
                     line = "# Visual Studio 2017\r\n"
-                # else:
-                    # leave line unchanged
+                elif vs == 2019:
+                    line = "# Visual Studio 16\r\n"
+                else:
+                    pass
             filouthandle.write(line)
 
     # Process all project files referenced in the sln file
@@ -297,11 +368,13 @@ def process_solution_file(sln, slntemplate):
 # process a VisualStudio Project File
 def process_project_file(pfile):
     global vs
+    global sdk
     global fw
     global ifort
     global libdir
     global redistdir
     global toolsversion
+    global sdkversion
     global frameworkversion
     global platformtoolset
     global ucrtlibdir
@@ -329,9 +402,13 @@ def process_project_file(pfile):
     # Put the full file contents in filin_contents
     with open(pfile, "r", encoding='utf-8') as filinhandle:
         filin_contents = filinhandle.readlines()
+
+    sys.stdout.write("    %d lines in %s" % (len(filin_contents), pfile))
+
     #
     # Scan the contents and rewrite the full file
     configuration = 0
+    nlines = 0
     with open(pfile, "w", encoding='utf-8') as filouthandle:
         for line in filin_contents:
             #
@@ -351,9 +428,13 @@ def process_project_file(pfile):
             # FrameworkVersion
             # Skip this change when fw=0
             if fw != 0:
-                startpos = line.find("<TargetFrameworkVersion>")
-                if startpos != -1:
-                    line = line[:startpos+25] + frameworkversion[fw] + line[startpos+28:]
+                if 'TargetFrameworkVersion' in line:
+                    line = re.sub('\<TargetFrameworkVersion\>.*\<\/TargetFrameworkVersion\>',
+                              '<TargetFrameworkVersion>v'+frameworkversion[fw]+'</TargetFrameworkVersion>',
+                              line )
+            if sdk != 0:
+                if 'NETFXSDK' in line:
+                    line = re.sub('NETFXSDK\\\\.*?\\\\Lib', 'NETFXSDK\\\\'+sdkversion[sdk]+'\\\\Lib', line)
             #
             # PlatformToolSet:
             # Skip this change when vs=0
@@ -366,6 +447,7 @@ def process_project_file(pfile):
                     # such that it will be added after the CharacterSet line
                     if platformtoolset[vs] != "":
                         filouthandle.write(line)
+                        nlines += 1
                         # Conserve line endings
                         # Assumption: the ">" is the last character on this line, before the line ending character(s)
                         lineEndingStart = str(line).rfind(">")
@@ -395,17 +477,26 @@ def process_project_file(pfile):
                     if ptype == "c":
                         split_char = '"'
                     parts = line.split(split_char)
-                    added = False
                     i = 0
+                    lastFound = -1
+                    it = 0
                     for part in parts:
-                        if part.find("$(IFORT_COMPILER") != -1:
-                            if not added:
+                        lastFound = part.find("$(IFORT_COMPILER", lastFound + 1)
+                        if(lastFound!= -1):
+                            tempStr=""
+                            while (lastFound!=-1):
                                 key = ptype + str(ifort) + str(configuration)
-                                parts[i] = redistdir[key]
-                                added = True
-                                i += 1
-                            # else:
-                            # remove this part
+                                if it == 0:
+                                    tempStr += redistdir[key]
+                                    lastFound = part.find("$(IFORT_COMPILER", lastFound + 1)
+                                elif it == 1:
+                                    tempStr += mkldir[key]
+                                    lastFound = part.find("$(IFORT_COMPILER", lastFound + 1)
+                                elif it>1:
+                                    break
+                                it += 1
+                            parts[i] = tempStr
+                            i += 1
                         else:
                             parts[i] = part
                             i += 1
@@ -466,6 +557,15 @@ def process_project_file(pfile):
                     key = "-1"
                 line = line[:startpos] + ucrtlibdir[key] + line[endpos:]
             filouthandle.write(line)
+            nlines += 1
+
+    sys.stdout.write("    written %d lines to %s" % (nlines, pfile))
+    #sys.stdout.write("Contents of '%s':\n" %pfile)
+    #with open(pfile, "r") as filinhandle:
+    #    filin_contents = filinhandle.readlines()
+    #    for i,line in enumerate(filin_contents):
+    #        sys.stdout.write("    %03d" % i + line)
+    #sys.stdout.write("\n")
 
 
 #
@@ -478,23 +578,28 @@ def getUCRTVersionNumber():
     global ucrtlibdir
     # Only for VS2015 or higher
     if vs >= 2015:
-        # To get the ucrt directory: execute the matching getucrtdir string, 
+        # To get the ucrt directory: execute the matching getucrtdir string,
         # catch the stdout of that command,
         # check whether UniversalCRTSdkDir is in that string,
         # if so, get the value behind the '='-sign
         sys.stdout.write("Trying to execute: " + getucrtdir[str(vs)] + " ...\n")
         try:
             result = subprocess.check_output(getucrtdir[str(vs)], shell=True)
-        except:
+            result = result.decode('utf-8')
+        except Exception as e:
             result = ""
-            sys.stdout.write("Execution failed; is VisualStudio " + str(vs) + " installed?\n")
-        result = result.decode('utf-8')
-        if result.find("UniversalCRTSdkDir") == -1:
+            sys.stdout.write("\n\n *** ERROR:Execution failed; is VisualStudio " + str(vs) + " installed?")
+            sys.stdout.write("Python reported: " + str(e))
+            sys.stdout.write("The ucrtdir is: " + getucrtdir[str(vs)])
+            sys.stdout.write("\n\n\n")
+
+        ucrtpos = result.rfind("UniversalCRTSdkDir=")
+        if ucrtpos == -1:
             # Fallback: it should be this:
             sys.stdout.write("ucrtdir not found; set to default value\n")
-            ucrtdir = "c:\\Program Files (x86)\\Windows Kits\\10\\Lib\\"
+            ucrtdir = "c:\\Program Files (x86)\\Windows Kits\\10\\Lib"
         else:
-            ucrtdir = result[19:]
+            ucrtdir = result[ucrtpos+19:]
             # Remove the trailing slash and the newline-character behind it
             lastslash = ucrtdir.rfind("\\")
             if lastslash != -1:
@@ -532,6 +637,7 @@ def exit_button_pressed():
 # Process the selected vs and intel version
 def do_work():
     global vs
+    global sdk
     global fw
     global ifort
     global libdir
@@ -542,6 +648,7 @@ def do_work():
     if vs == -999 or ifort == -999:
         vs = vs_gui.get()
         ifort = ifort_gui.get()
+        sdk = sdk_gui.get()
         fw = fw_gui.get()
     if fw == -999:
         # fw does not have to be set. Use a proper guess
@@ -554,6 +661,7 @@ def do_work():
     sys.stdout.write("Visual Studio  Version : " + str(vs) + "\n")
     sys.stdout.write(".Net Framework Version : " + str(fw) + "\n")
     sys.stdout.write("Intel Fortran  Version : " + str(ifort) + "\n")
+    sys.stdout.write(".Net SDK       Version : " + str(sdk) + "\n")
     sys.stdout.write("Solution path : " + templateSolutionPath + "\n")
 
     # Needed for VS2015 and higher:
@@ -580,29 +688,31 @@ def do_work():
 def build_gui():
     global vs_gui
     global fw_gui
+    global sdk_gui
     global ifort_gui
     global root
-    global chooseIfort
 
     root = Tk(className="Choose IDE and compiler")
     root.geometry("750x350")
-    
+
     vs_gui = IntVar()
     fw_gui = IntVar()
+    sdk_gui = IntVar()
     ifort_gui = IntVar()
-    
+
     Label(text="Visual Studio Version:", relief=RIDGE, width=20).grid(row=0, column=0)
-    
-    Radiobutton(root, text="VS 2017                           ", variable=vs_gui, value=2017).grid(row=1, column=0, sticky=W)
-    Radiobutton(root, text="VS 2015, Update 3                 ", variable=vs_gui, value=2015).grid(row=2, column=0, sticky=W)
-    Radiobutton(root, text="VS 2013                           ", variable=vs_gui, value=2013).grid(row=3, column=0, sticky=W)
-    Radiobutton(root, text="VS 2012                           ", variable=vs_gui, value=2012).grid(row=4, column=0, sticky=W)
-    Radiobutton(root, text="VS 2010                           ", variable=vs_gui, value=2010).grid(row=5, column=0, sticky=W)
+
+    Radiobutton(root, text="VS 2019                           ", variable=vs_gui, value=2019).grid(row=1, column=0, sticky=W)
+    Radiobutton(root, text="VS 2017                           ", variable=vs_gui, value=2017).grid(row=2, column=0, sticky=W)
+    Radiobutton(root, text="VS 2015, Update 3                 ", variable=vs_gui, value=2015).grid(row=3, column=0, sticky=W)
+    Radiobutton(root, text="VS 2013                           ", variable=vs_gui, value=2013).grid(row=4, column=0, sticky=W)
+    Radiobutton(root, text="VS 2012                           ", variable=vs_gui, value=2012).grid(row=5, column=0, sticky=W)
+    Radiobutton(root, text="VS 2010                           ", variable=vs_gui, value=2010).grid(row=6, column=0, sticky=W)
     # default value
     vs_gui.set(2015)
-    
-    Label(text=".Net Framwork Version:", relief=RIDGE, width=20).grid(row=0, column=1)
-    
+
+    Label(text=".Net Framework Version:", relief=RIDGE, width=20).grid(row=0, column=1)
+
     Radiobutton(root, text=".Net Framework 4.8", variable=fw_gui, value=48).grid(row=1, column=1, sticky=W)
     Radiobutton(root, text=".Net Framework 4.7", variable=fw_gui, value=47).grid(row=2, column=1, sticky=W)
     Radiobutton(root, text=".Net Framework 4.6", variable=fw_gui, value=46).grid(row=3, column=1, sticky=W)
@@ -612,32 +722,37 @@ def build_gui():
     Radiobutton(root, text=".Net Framework 4.2", variable=fw_gui, value=42).grid(row=7, column=1, sticky=W)
     Radiobutton(root, text=".Net Framework 4.0", variable=fw_gui, value=40).grid(row=8, column=1, sticky=W)
     # default value
-    fw_gui.set(40)
-    
+    fw_gui.set(45)
+
     if chooseIfort == 1:
         Label(text="IFORT Version:", relief=RIDGE, width=20).grid(row=0, column=2)
-        Radiobutton(root, text="IFORT19: (not tested yet)                      ", variable=ifort_gui, value=19).grid(row=1, column=2, sticky=W)
-        Radiobutton(root, text="IFORT18: Intel Parallel Studio XE 2018 Update 3", variable=ifort_gui, value=18).grid(row=2, column=2, sticky=W)
-        Radiobutton(root, text="IFORT17: (Not Recommended)                     ", variable=ifort_gui, value=17).grid(row=3, column=2, sticky=W)
-        Radiobutton(root, text="IFORT16: Intel Parallel Studio XE 2016 Update 4", variable=ifort_gui, value=16).grid(row=4, column=2, sticky=W)
-        Radiobutton(root, text="IFORT15: Intel Parallel Studio XE 2015 Update 6", variable=ifort_gui, value=15).grid(row=5, column=2, sticky=W)
-        Radiobutton(root, text="IFORT14: Intel Visual Fortran Composer XE 2014 ", variable=ifort_gui, value=14).grid(row=6, column=2, sticky=W)
-        Radiobutton(root, text="IFORT13: Intel Visual Fortran Composer XE 2013 ", variable=ifort_gui, value=13).grid(row=7, column=2, sticky=W)
-        Radiobutton(root, text="IFORT12: Intel Visual Fortran Composer XE 2011 ", variable=ifort_gui, value=12).grid(row=8, column=2, sticky=W)
+        Radiobutton(root, text="IFORT21: Intel oneAPI HPC 2021                 ", variable=ifort_gui, value=21).grid(row=1, column=2, sticky=W)
+        Radiobutton(root, text="IFORT19: Intel Parallel Studio XE 2019         ", variable=ifort_gui, value=19).grid(row=2, column=2, sticky=W)
+        Radiobutton(root, text="IFORT18: Intel Parallel Studio XE 2018 Update 4", variable=ifort_gui, value=18).grid(row=3, column=2, sticky=W)
+        Radiobutton(root, text="IFORT17: (Not Recommended)                     ", variable=ifort_gui, value=17).grid(row=4, column=2, sticky=W)
+        Radiobutton(root, text="IFORT16: Intel Parallel Studio XE 2016 Update 4", variable=ifort_gui, value=16).grid(row=5, column=2, sticky=W)
+        Radiobutton(root, text="IFORT15: Intel Parallel Studio XE 2015 Update 6", variable=ifort_gui, value=15).grid(row=6, column=2, sticky=W)
+        Radiobutton(root, text="IFORT14: Intel Visual Fortran Composer XE 2014 ", variable=ifort_gui, value=14).grid(row=7, column=2, sticky=W)
+        Radiobutton(root, text="IFORT13: Intel Visual Fortran Composer XE 2013 ", variable=ifort_gui, value=13).grid(row=8, column=2, sticky=W)
+        Radiobutton(root, text="IFORT12: Intel Visual Fortran Composer XE 2011 ", variable=ifort_gui, value=12).grid(row=9, column=2, sticky=W)
         # default value
         ifort_gui.set(16)
     else:
         ifort_gui.set(-999)
-    
-    Label(text=" ").grid(row=8)
-    if chooseIfort == 1:
-        Label(text="Choose your Visual Studio version, .Net Framework version and IFORT version and click 'Apply'").grid(row=9, column=0, columnspan=3)
-    else:
-        Label(text="Choose your Visual Studio version and click 'Apply'").grid(row=9, column=0, columnspan=3)
-    
-    b1 = Button(root, text="Apply", width=20, command=do_work).grid(row=10, column=0, sticky=W)
-    b2 = Button(root, text="Exit", width=20, command=exit_button_pressed).grid(row=10, column=2, sticky=E)
-    
+
+    Label(text=" ").grid(row=10)
+
+    Label(text=".NET SDK Version:", relief=RIDGE, width=20).grid(row=0, column=3)
+    Radiobutton(root, text=".Net SDK 4.8",   variable=sdk_gui, value=48).grid(row=1, column=3, sticky=W)
+    Radiobutton(root, text=".Net SDK 4.6.1", variable=sdk_gui, value=461).grid(row=2, column=3, sticky=W)
+    # default value
+    sdk_gui.set(461)
+
+    Label(text="Choose your Visual Studio version, .Net Framework version and IFORT version and click 'Apply'").grid(row=11, column=0, columnspan=3)
+
+    b1 = Button(root, text="Apply", width=20, command=do_work).grid(row=13, column=0, sticky=W)
+    b2 = Button(root, text="Exit", width=20, command=exit_button_pressed).grid(row=13, column=2, sticky=E)
+
     # To keep GUI window running
     root.mainloop()
 
@@ -650,6 +765,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create sln file and change project files')
     parser.add_argument('-vs', '--visualstudio',
                               help='Specify VisualStudio version')
+    parser.add_argument('-sdk', '--sdk',
+                              help='Specify .Net SDK version')
     parser.add_argument('-fw', '--framework',
                               help='Specify .Net Framework version')
     parser.add_argument('-ifort', '--ifort',
@@ -661,6 +778,8 @@ if __name__ == "__main__":
         vs = int(args.visualstudio)
     if args.framework:
         fw = int(args.framework)
+    if args.sdk:
+        sdk = int(args.sdk)
     if args.ifort:
         ifort = int(args.ifort)
     if args.templatePath:
@@ -669,6 +788,10 @@ if __name__ == "__main__":
     # Both vs and ifort defined via command line arguments: do_work
     # Else: Create GUI to select them
     if vs == -999 or ifort == -999:
+        if sys.version_info<(3,0,0):
+            from Tkinter import *
+        else:
+            from tkinter import *
         build_gui()
     else:
         do_work()
