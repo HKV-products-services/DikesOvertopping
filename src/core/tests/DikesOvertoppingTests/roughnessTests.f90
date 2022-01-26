@@ -1,4 +1,4 @@
-! Copyright (C) Stichting Deltares 2019. All rights reserved.
+! Copyright (C) Stichting Deltares 2022. All rights reserved.
 !
 ! This file is part of the Dikes Overtopping Kernel.
 !
@@ -84,7 +84,6 @@ subroutine allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
 
     real(kind=wp), allocatable :: phi(:)               ! wave directions
     real(kind=wp)              :: waveSteepness        ! wave steepness
-    integer                    :: ierr                 ! error code
     type(tMessage)             :: error                ! error struct
 !
 !   source
