@@ -3,6 +3,9 @@ SRCS = \
 precision.f90 \
 utilities.f90 \
 feedback_parameters.f90 \
+feedbackDLL.f90 \
+feedbackDLL_implementation.f90 \
+feedback.f90 \
 errorMessages.f90 \
 equalReals.f90 \
 vectorUtilities.f90 \

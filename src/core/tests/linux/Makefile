@@ -1,4 +1,4 @@
 FCOMP = ifort
-FCFLAGS = -O2 -fpp
+FCFLAGS = -O2 -fpp -DmaxParallelThreads=8
 
 include make.inc

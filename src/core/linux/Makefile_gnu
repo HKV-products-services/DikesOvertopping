@@ -1,4 +1,4 @@
 FCOMP = gfortran
-FCFLAGS = -O2 -cpp -ffree-line-length-none -fopenmp -fPIC -fcray-pointer
+FCFLAGS = -O2 -cpp -DmaxParallelThreads=8 -ffree-line-length-none -fopenmp -fPIC -fcray-pointer
 
 include make.inc
