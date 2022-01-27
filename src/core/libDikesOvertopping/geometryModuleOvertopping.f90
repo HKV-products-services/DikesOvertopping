@@ -340,21 +340,26 @@ end subroutine deallocateGeometry
 
    ! initialize flag for succes and error message
    succes = .true.
-
-   ! calculate horizontal distances
-   geometry%xCoordDiff = geometry%xCoordinates(2:geometry%nCoordinates  ) - &
-                         geometry%xCoordinates(1:geometry%nCoordinates-1) 
-
-   ! calculate vertical distances
-   geometry%yCoordDiff = geometry%yCoordinates(2:geometry%nCoordinates  ) - &
-                         geometry%yCoordinates(1:geometry%nCoordinates-1) 
-
-   ! calculate the segment slopes
-   if (minval(geometry%xCoordDiff) > 0.0d0) then
-      geometry%segmentSlopes = geometry%yCoordDiff / geometry%xCoordDiff
+   if (geometry%nCoordinates < 2) then
+       succes = .false.
+       errorMessage = GetOvertoppingMessage(dimension_cross_section_less_than_2)
    else
-      succes = .false.
-      errorMessage = GetOvertoppingMessage(slope_negative)
+
+      ! calculate horizontal distances
+      geometry%xCoordDiff = geometry%xCoordinates(2:geometry%nCoordinates  ) - &
+                            geometry%xCoordinates(1:geometry%nCoordinates-1) 
+
+      ! calculate vertical distances
+      geometry%yCoordDiff = geometry%yCoordinates(2:geometry%nCoordinates  ) - &
+                            geometry%yCoordinates(1:geometry%nCoordinates-1) 
+
+      ! calculate the segment slopes
+      if (minval(geometry%xCoordDiff) > 0.0d0) then
+         geometry%segmentSlopes = geometry%yCoordDiff / geometry%xCoordDiff
+      else
+         succes = .false.
+         errorMessage = GetOvertoppingMessage(slope_negative)
+      endif
    endif
 
    end subroutine calculateSegmentSlopes
