@@ -39,7 +39,7 @@
 				<Tool Name="VFLinkerTool" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.10586.0\ucrt\x64;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x64" IgnoreDefaultLibraryNames="MSCRT;UCRT" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
-				<Tool Name="VFCustomBuildTool" CommandLine="copy teamcity_build\x64\feedbackDLL.dll bin\Release\feedbackDLL.dll&#xA;copy teamcity_build\x64\feedbackDLL.lib Release\feedbackDLL.lib" Outputs="bin\Release\feedbackDLL.dll;Release\feedbackDLL.lib"/>
+				<Tool Name="VFCustomBuildTool" CommandLine="copy teamcity_build\x64\feedbackDLL.dll bin\x64\Release\feedbackDLL.dll&#xA;copy teamcity_build\x64\feedbackDLL.lib Release\feedbackDLL.lib" Outputs="bin\x64\Release\feedbackDLL.dll;Release\feedbackDLL.lib"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool" CommandLine="call external\svnutils\update_version.cmd .\external\feedback_dll\feedback_version_number.vn.rc .\ external\version_number.ini"/>
 				<Tool Name="VFPostBuildEventTool"/>
