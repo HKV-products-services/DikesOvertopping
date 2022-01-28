@@ -84,13 +84,13 @@ enum, bind(c)
     enumerator :: diffx_too_small
     enumerator :: diffy_too_small
     enumerator :: diffx_negative
-! parameters :
-    enumerator :: par_fB
-    enumerator :: par_fN
-    enumerator :: par_fS
-    enumerator :: par_2percent_wave_runup
-    enumerator :: reductionFactorForeshore
 end enum
+! parameters :
+    integer, parameter :: par_fB = 1
+    integer, parameter :: par_fN = 2
+    integer, parameter :: par_fS = 3
+    integer, parameter :: par_2percent_wave_runup  = 4
+    integer, parameter :: reductionFactorForeshore = 5
 
 contains
 
@@ -338,39 +338,19 @@ end function GetOvertoppingFormat
 !! @ingroup LibOvertopping
 character(len=maxpar) function GetOvertoppingParameter(ID)
 integer, intent(in) :: ID  !< identification number of string
+character(len=*), dimension(10), parameter :: string_msg = [&
+        'fB (breaking waves)       ', &
+        'fN (non-breaking waves)   ', &
+        'fS (shallow waves)        ', &
+        '2% wave runup             ', &
+        'reduction factor foreshore', &
+        'fB (brekende golven)      ', &
+         'fN (niet brekende golven)', &
+        'fS (ondiepe golven)       ', &
+        '2% golf oploop            ', &
+        'reductie factor vooroever ']
 
-select case(language)
-    case(languageUK)
-        select case (ID)
-            case (par_fB)
-                GetOvertoppingParameter = 'fB (breaking waves)'
-            case (par_fN)
-                GetOvertoppingParameter = 'fN (non-breaking waves)'
-            case (par_fS)
-                GetOvertoppingParameter = 'fS (shallow waves)'
-            case (par_2percent_wave_runup)
-                GetOvertoppingParameter = '2% wave runup'
-            case (reductionFactorForeshore)
-                GetOvertoppingParameter = 'reduction factor foreshore'
-            case default
-                write(GetOvertoppingParameter,*) '(Internal error, ID = ', ID, ')'
-        end select
-    case default
-        select case (ID)
-            case (par_fB)
-                GetOvertoppingParameter = 'fB (brekende golven)'
-            case (par_fN)
-                GetOvertoppingParameter = 'fN (niet brekende golven)'
-            case (par_fS)
-                GetOvertoppingParameter = 'fS (ondiepe golven)'
-            case (par_2percent_wave_runup)
-                GetOvertoppingParameter = '2% golf oploop'
-            case (reductionFactorForeshore)
-                GetOvertoppingParameter = 'reductie factor vooroever'
-            case default
-                write(GetOvertoppingParameter,*) '(Interne fout, ID = ', ID, ')'
-        end select
- end select
+        GetOvertoppingParameter = string_msg(ID + 5*(language - 1))
 end function GetOvertoppingParameter
 
 ! new implementation: one subroutine for each message (avoids internal error)
