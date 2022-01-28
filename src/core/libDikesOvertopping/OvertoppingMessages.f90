@@ -34,8 +34,9 @@ module OvertoppingMessages
 implicit none
 
 integer, parameter :: maxmsg = 128, maxpar=32
-
-character(len=2) :: language = 'NL'   !< default : Dutch
+integer, parameter :: LanguageNL = 2
+integer, parameter :: LanguageUK = 1
+integer :: language = LanguageNL   !< default : Dutch
 
 private :: maxmsg, maxpar, language
 
@@ -99,6 +100,7 @@ contains
 !!
 !! @ingroup LibOvertopping
 subroutine SetLanguage(lang)
+use feedback
 use utilities, only : to_upper
 character(len=*), intent(in) :: lang   !< new language ID to be used
 
@@ -107,8 +109,12 @@ character(len=len(lang)) :: langUpper
 langUpper = to_upper(lang)
 
 select case (langUpper)
-    case ('NL', 'UK')
-        language = langUpper
+    case ('NL')
+        language = languageNL
+    case ('UK')
+        language = languageUK
+    case default
+        call fatalError("Language " // lang // " not supported")
 end select
 end subroutine SetLanguage
 
@@ -119,7 +125,7 @@ end subroutine SetLanguage
 subroutine GetLanguage(lang)
 character(len=*), intent(out) :: lang   !< filled with current language ID
 
-lang = language
+lang = merge( "NL", "UK", language == languageNL)
 end subroutine GetLanguage
 
 !>
@@ -130,7 +136,7 @@ character(len=maxmsg) function GetOvertoppingMessage(ID)
 integer, intent(in) :: ID  !< identification number of string
 
 select case(language)
-    case('UK')
+    case(languageUK)
         select case (ID)
             case (errorIndicator)
                 GetOvertoppingMessage = 'ERROR'
@@ -272,7 +278,7 @@ character(len=maxmsg) function GetOvertoppingFormat(ID)
 integer, intent(in) :: ID  !< identification number of string
 
 select case(language)
-    case('UK')
+    case(languageUK)
         select case (ID)
             case (model_factor_smaller_than)
                 GetOvertoppingFormat = '("Model factor ",a," smaller than ",F6.3)'
@@ -334,7 +340,7 @@ character(len=maxpar) function GetOvertoppingParameter(ID)
 integer, intent(in) :: ID  !< identification number of string
 
 select case(language)
-    case('UK')
+    case(languageUK)
         select case (ID)
             case (par_fB)
                 GetOvertoppingParameter = 'fB (breaking waves)'
@@ -371,65 +377,65 @@ end function GetOvertoppingParameter
 
 subroutine GetMSG_calculateGammaFtoLow(message)
 character(len=*), intent(out) :: message
-if (language == 'UK') then
-    message = 'calculateGammaF: local water level lower than dike toe'
-else
-    message = 'calculateGammaF: waterstand lager dan teen'
-endif
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'calculateGammaF: local water level lower than dike toe', &
+        'calculateGammaF: waterstand lager dan teen            ']
+
+    message = trim(string_msg(language))
 end subroutine GetMSG_calculateGammaFtoLow
 
 subroutine GetMSG_calculateGammaFtoHigh(message)
 character(len=*), intent(out) :: message
-if (language == 'UK') then
-    message = 'calculateGammaF: local water level higher than crest level'
-else
-    message = 'calculateGammaF: waterstand hoger dan kruin'
-endif
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'calculateGammaF: local water level higher than crest level', &
+        'calculateGammaF: waterstand hoger dan kruin               ']
+
+    message = trim(string_msg(language))
 end subroutine GetMSG_calculateGammaFtoHigh
 
 subroutine GetMSG_calc_influence_roughness(message)
 character(len=*), intent(out) :: message
-if (language == 'UK') then
-    message = 'Error in calculation influence roughness'
-else
-    message = 'Fout in berekening invloed ruwheid'
-endif
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error in calculation influence roughness', &
+        'Fout in berekening invloed ruwheid      ']
+
+    message = trim(string_msg(language))
 end subroutine GetMSG_calc_influence_roughness
 
 subroutine GetMSG_first_segment_berm(message)
 character(len=*), intent(out) :: message
-if (language == 'UK') then
-    message = 'First or last segment is a berm. This is not allowed.'
-else
-    message = 'Eerste segment is een berm. Dat is niet toegestaan.'
-endif
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'First or last segment is a berm. This is not allowed.', &
+        'Eerste segment is een berm. Dat is niet toegestaan.  ']
+
+    message = trim(string_msg(language))
 end subroutine GetMSG_first_segment_berm
 
 subroutine GetMSG_last_segment_berm(message)
 character(len=*), intent(out) :: message
-if (language == 'UK') then
-    message = 'Last segment is a berm. This is not allowed.'
-else
-    message = 'Laatste segment is een berm. Dat is niet toegestaan.'
-endif
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Last segment is a berm. This is not allowed.        ', &
+        'Laatste segment is een berm. Dat is niet toegestaan.']
+
+    message = trim(string_msg(language))
 end subroutine GetMSG_last_segment_berm
 
 subroutine GetFormatTooManyBerms(cfmt)
 character(len=*), intent(out) :: cfmt
-if (language == 'UK') then
-    cfmt = '("Found ",i0, " berm segments. Maximum is number of berm segments is 2.")'
-else
-    cfmt = '("Er zijn ",i0, " berm segmenten gevonden. Het maximaal aantal berm segmenten is 2.")'
-endif
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("Found ",i0, " berm segments. Maximum is number of berm segments is 2.")            ', &
+        '("Er zijn ",i0, " berm segmenten gevonden. Het maximaal aantal berm segmenten is 2.")']
+
+    cfmt = trim(string_msg(language))
 end subroutine GetFormatTooManyBerms
 
 subroutine GetMSGRemoveNonHorizontalBerm(message)
 character(len=*), intent(out) :: message
-if (language == 'UK') then
-    message = 'Try to remove a non horizontal berm'
-else
-    message = 'Probeer een niet-horizontale berm te verwijderen'
-endif
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Try to remove a non horizontal berm             ', &
+        'Probeer een niet-horizontale berm te verwijderen']
+
+    message = trim(string_msg(language))
 end subroutine GetMSGRemoveNonHorizontalBerm
 
 end module OvertoppingMessages
