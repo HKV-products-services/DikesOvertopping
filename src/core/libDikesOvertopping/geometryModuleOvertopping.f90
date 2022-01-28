@@ -358,7 +358,7 @@ end subroutine deallocateGeometry
          geometry%segmentSlopes = geometry%yCoordDiff / geometry%xCoordDiff
       else
          succes = .false.
-         errorMessage = GetOvertoppingMessage(slope_negative)
+         call GetMSGslope_negative(errorMessage)
       endif
    endif
 

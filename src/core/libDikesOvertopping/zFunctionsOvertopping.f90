@@ -225,7 +225,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
             if (error%errorCode /= 0) return
 
             if (xCoordsAdjusted(nrCoordsAdjusted) < xCoordsAdjusted(nrCoordsAdjusted-1)) then
-                errorMessage = GetOvertoppingMessage(adjusted_xcoordinates)
+                call GetMSGadjusted_xcoordinates(errorMessage)
                 return
             endif
         else

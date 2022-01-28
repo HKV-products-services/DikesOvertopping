@@ -224,9 +224,9 @@ subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, erro
     else
         do i = 1, nMessages
             if (errorStruct%messages(i)%severity == severityError) then
-                msgtype = GetOvertoppingMessage(errorIndicator)
+                call GetMSGerrorIndicator(msgtype)
             else
-                msgtype = GetOvertoppingMessage(warningIndicator)
+                call GetMSGwarningIndicator(msgtype)
             endif
 
             if (i == 1) then
@@ -285,9 +285,9 @@ subroutine ValidateInputJ(x, y, roughness, normal, nPoints, dikeHeight, modelFac
         else
             do i = 1, nMessages
                 if (errorStruct%messages(i)%severity == severityError) then
-                    msgtype = GetOvertoppingMessage(errorIndicator)
+                    call GetMSGerrorIndicator(msgtype)
                 else
-                    msgtype = GetOvertoppingMessage(warningIndicator)
+                    call GetMSGwarningIndicator(msgtype)
                 endif
 
                 if (i == 1) then

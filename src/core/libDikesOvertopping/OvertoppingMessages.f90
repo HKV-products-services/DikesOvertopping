@@ -43,11 +43,6 @@ private :: maxmsg, maxpar, language
 !> IDs for the strings in this module:
 enum, bind(c)
 ! messages:
-    enumerator :: errorIndicator
-    enumerator :: warningIndicator
-    enumerator :: validation_only_for_type_runup1
-    enumerator :: adjusted_xcoordinates
-    enumerator :: slope_negative
     enumerator :: split_cross_section_seq_berm
     enumerator :: adjust_non_horizontal_seq_berm
     enumerator :: merging_seq_berm
@@ -127,16 +122,6 @@ integer, intent(in) :: ID  !< identification number of string
 select case(language)
     case(languageUK)
         select case (ID)
-            case (errorIndicator)
-                GetOvertoppingMessage = 'ERROR'
-            case (warningIndicator)
-                GetOvertoppingMessage = 'WARNING'
-            case (validation_only_for_type_runup1)
-                GetOvertoppingMessage = 'Validation only implemented for typeRunup=1'
-            case (adjusted_xcoordinates)
-                GetOvertoppingMessage = 'Error in calculation of adjusted x-coordinates'
-            case (slope_negative)
-                GetOvertoppingMessage = 'Error in calculating slope (dx <= 0)'
             case (split_cross_section_seq_berm)
                 GetOvertoppingMessage = 'Error in splitting cross section: sequential berms'
             case (adjust_non_horizontal_seq_berm)
@@ -192,16 +177,6 @@ select case(language)
         end select
     case default
         select case (ID)
-            case (errorIndicator)
-                GetOvertoppingMessage = 'FOUT'
-            case (warningIndicator)
-                GetOvertoppingMessage = 'WAARSCHUWING'
-            case (validation_only_for_type_runup1)
-                GetOvertoppingMessage = 'Validatie alleen geimplementeerd voor typeRunup=1'
-            case (adjusted_xcoordinates)
-                GetOvertoppingMessage = 'Fout in bepaling van gecorrigeerde x-coordinaten'
-            case (slope_negative)
-                GetOvertoppingMessage = 'Fout in berekening helling (dx <= 0)'
             case (split_cross_section_seq_berm)
                 GetOvertoppingMessage = 'Fout in opsplitsen doorsnede: sequentiele bermen'  ! check
             case (adjust_non_horizontal_seq_berm)
@@ -272,7 +247,7 @@ character(len=*), dimension(10), parameter :: string_msg = [&
         '2% wave runup             ', &
         'reduction factor foreshore', &
         'fB (brekende golven)      ', &
-         'fN (niet brekende golven)', &
+        'fN (niet brekende golven) ', &
         'fS (ondiepe golven)       ', &
         '2% golf oploop            ', &
         'reductie factor vooroever ']
@@ -344,6 +319,39 @@ character(len=*), dimension(2), parameter :: string_msg = [&
 
     message = trim(string_msg(language))
 end subroutine GetMSGRemoveNonHorizontalBerm
+
+subroutine GetMSGerrorIndicator(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [ 'ERROR', 'FOUT ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGerrorIndicator
+
+subroutine GetMSGwarningIndicator(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [ 'WARNING     ', 'WAARSCHUWING']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGwarningIndicator
+
+subroutine GetMSGadjusted_xcoordinates(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error in calculation of adjusted x-coordinates  ', &
+        'Fout in bepaling van gecorrigeerde x-coordinaten']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGadjusted_xcoordinates
+
+subroutine GetMSGslope_negative(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error in calculating slope (dx <= 0)', &
+        'Fout in berekening helling (dx <= 0)']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGslope_negative
+
 
 function GetFMTmodel_factor_smaller_than() result (message)
 character(len=maxmsg) :: message
