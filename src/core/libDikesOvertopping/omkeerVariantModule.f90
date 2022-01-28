@@ -148,7 +148,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
              omkeerProps%ZProfile(nPoints), stat=ierr)
     if (ierr /= 0) then
         success = .false.
-        write(errorText, GetOvertoppingFormat(allocateError)) 4*nPoints-1
+        write(errorText, GetFMTallocateError()) 4*nPoints-1
         return
     endif
     

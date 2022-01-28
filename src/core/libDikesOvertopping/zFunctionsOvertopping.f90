@@ -253,7 +253,7 @@ function reallocAdjustedCoordinates(xCoordsAdjusted, zCoordsAdjusted, nrCoordsAd
 
     allocate(xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=ierr)
     if (ierr /= 0) then
-        write(errorMessage, GetOvertoppingFormat(allocateError)) 2*nrCoordsAdjusted
+        write(errorMessage, GetFMTallocateError()) 2*nrCoordsAdjusted
         succes = .false.
     end if
 end function reallocAdjustedCoordinates
@@ -283,10 +283,10 @@ function zFuncLogRatios(qo, qc, mqo, mqc, success, errorMessage) result (z)
     else
         success = .false.
         if (mqc <= 0.0d0) then
-            write(errorMessage, GetOvertoppingFormat(zero_or_negative_varModelFactorCriticalOvertopping)) &
+            write(errorMessage, GetFMTzero_or_negative_varModelFactorCriticalOvertopping()) &
                varModelFactorCriticalOvertopping
         else ! qc <=0.0d0
-            write(errorMessage, GetOvertoppingFormat(zero_or_negative_critical_overtopping)) qc
+            write(errorMessage, GetFMTzero_or_negative_critical_overtopping()) qc
         endif
     endif
 end function ZFuncLogRatios

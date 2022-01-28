@@ -756,9 +756,9 @@
          if ((par < par_min) .or. (par > par_max)) then
             ierr = ierr + 1
             if (par_max == huge(par_max)) then
-               write (errorMessages(ierr), GetOvertoppingFormat(model_factor_smaller_than)) trim(par_txt), par_min
+               write (errorMessages(ierr), GetFMTmodel_factor_smaller_than()) trim(par_txt), par_min
             else
-               write (errorMessages(ierr), GetOvertoppingFormat(model_factor_not_between)) trim(par_txt), par_min, par_max
+               write (errorMessages(ierr), GetFMTmodel_factor_not_between()) trim(par_txt), par_min, par_max
             endif
          endif
       endif

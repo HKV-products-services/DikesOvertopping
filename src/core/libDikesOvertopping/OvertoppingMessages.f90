@@ -73,17 +73,6 @@ enum, bind(c)
     enumerator :: wl_above_crest
     enumerator :: wave_height_or_periode_less_zero
     enumerator :: wave_direction_not_in_range
-! formats :
-    enumerator :: model_factor_smaller_than
-    enumerator :: model_factor_not_between
-    enumerator :: roughnessfactors_out_of_range
-    enumerator :: allocateError
-    enumerator :: xcoordinates_must_increase
-    enumerator :: zero_or_negative_varModelFactorCriticalOvertopping
-    enumerator :: zero_or_negative_critical_overtopping
-    enumerator :: diffx_too_small
-    enumerator :: diffy_too_small
-    enumerator :: diffx_negative
 end enum
 ! parameters :
     integer, parameter :: par_fB = 1
@@ -271,68 +260,6 @@ select case(language)
 end function GetOvertoppingMessage
 
 !>
-!! Subroutine that returns a Fortran format string with the corresponding ID in the current language
-!!
-!! @ingroup LibOvertopping
-character(len=maxmsg) function GetOvertoppingFormat(ID)
-integer, intent(in) :: ID  !< identification number of string
-
-select case(language)
-    case(languageUK)
-        select case (ID)
-            case (model_factor_smaller_than)
-                GetOvertoppingFormat = '("Model factor ",a," smaller than ",F6.3)'
-            case (model_factor_not_between)
-                GetOvertoppingFormat = '("Model factor ",a," not between ",F6.3," and ",F6.3)'
-            case (roughnessfactors_out_of_range)
-                GetOvertoppingFormat = '("Roughnessfactors must be in range ",F3.1," ... ",F3.1,"; found: ",F5.2)'
-            case (allocateError)
-                GetOvertoppingFormat = '("Memory allocation error for array(s) with total size: ",I0)'
-            case (xcoordinates_must_increase)
-                GetOvertoppingFormat = '("x-coordinates must increase with dx >= ",F4.1," m")'
-            case (zero_or_negative_varModelFactorCriticalOvertopping)
-                GetOvertoppingFormat = '("Negative or zero variance of critical overtopping uncertainty model; variable number: ",I0)'
-            case (zero_or_negative_critical_overtopping)
-                GetOvertoppingFormat = '("Negative or zero critical overtopping: ",G)'
-            case (diffx_too_small)
-                GetOvertoppingFormat = '("X-coordinates must differ at least ",F4.2,".",F8.3," and ",F8.3," are too close to each other.")'
-            case (diffy_too_small)
-                GetOvertoppingFormat = '("Coordinates in vertical direction must be non-decreasing.",F7.2," and ",F7.2," are not.")'
-            case (diffx_negative)
-                GetOvertoppingFormat = '("X-coordinates must increase at least with ",F4.2,".",F8.3," and ",F8.3," do not meet this condition.")'
-            case default
-                write(GetOvertoppingFormat,*) '(Internal error, ID = ', ID, ')'
-        end select
-    case default
-        select case (ID)
-            case (model_factor_smaller_than)
-                GetOvertoppingFormat = '("Model factor ",a," kleiner dan ",F6.3)'
-            case (model_factor_not_between)
-                GetOvertoppingFormat = '("Model factor ",a," niet tussen ",F6.3," en ",F6.3)'
-            case (roughnessfactors_out_of_range)
-                GetOvertoppingFormat = '("Ruwheidsfactoren moeten liggen tussen ",F3.1," ... ",F3.1,"; gevonden: ",F5.2)'
-            case (allocateError)
-                GetOvertoppingFormat = '("Geheugen allocatie fout voor array(s) met totale grootte: ",I0)'
-            case (xcoordinates_must_increase)
-                GetOvertoppingFormat = '("x-coordinaten moeten toenemen met dx >= ",F4.1," m")'
-            case (zero_or_negative_varModelFactorCriticalOvertopping)
-                GetOvertoppingFormat = '("Negatieve of nul variantie van kritieke overtopping model onzekerheid; variabel nummer: ",I0)'
-            case (zero_or_negative_critical_overtopping)
-                GetOvertoppingFormat = '("Negatieve of nul kritiek overtopping debiet: ",G)'
-            case (diffx_too_small)
-                GetOvertoppingFormat = '("X-coordinaten moeten ten minste ",F4.2," van elkaar verschillen.",F8.3," en ",F8.3," ligt te dicht bij elkaar.")'
-            case (diffy_too_small)
-                GetOvertoppingFormat = '("Verticale coordinaten mogen niet afnemen.",F7.2," en ",F7.2," doen dat wel.")'
-            case (diffx_negative)
-                GetOvertoppingFormat = '("X-coordinaten moeten ten minste met ",F4.2," toenemen.",F8.3," en ",F8.3," voldoen hier niet aan.")'
-            case default
-                write(GetOvertoppingFormat,*) '(Interne fout, ID = ', ID, ')'
-        end select
-    end select
-
-end function GetOvertoppingFormat
-
-!>
 !! Subroutine that returns the name of an input parameter with the corresponding ID in the current language
 !!
 !! @ingroup LibOvertopping
@@ -417,5 +344,95 @@ character(len=*), dimension(2), parameter :: string_msg = [&
 
     message = trim(string_msg(language))
 end subroutine GetMSGRemoveNonHorizontalBerm
+
+function GetFMTmodel_factor_smaller_than() result (message)
+character(len=maxmsg) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("Model factor ",a," smaller than ",F6.3)', &
+        '("Model factor ",a," kleiner dan ",F6.3) ']
+
+    message = trim(string_msg(language))
+end function GetFMTmodel_factor_smaller_than
+
+function GetFMTmodel_factor_not_between() result (message)
+character(len=maxmsg) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("Model factor ",a," not between ",F6.3," and ",F6.3)', &
+        '("Model factor ",a," niet tussen ",F6.3," en ",F6.3) ']
+
+    message = trim(string_msg(language))
+end function GetFMTmodel_factor_not_between
+
+function GetFMTroughnessfactors_out_of_range() result (message)
+character(len=maxmsg) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("Roughnessfactors must be in range ",F3.1," ... ",F3.1,"; found: ",F5.2)       ', &
+        '("Ruwheidsfactoren moeten liggen tussen ",F3.1," ... ",F3.1,"; gevonden: ",F5.2)']
+
+    message = trim(string_msg(language))
+end function GetFMTroughnessfactors_out_of_range
+
+function GetFMTallocateError() result (message)
+character(len=maxmsg) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("Memory allocation error for array(s) with total size: ",I0)    ', &
+        '("Geheugen allocatie fout voor array(s) met totale grootte: ",I0)']
+
+    message = trim(string_msg(language))
+end function GetFMTallocateError
+
+function GetFMTxcoordinates_must_increase() result (message)
+character(len=maxmsg) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("x-coordinates must increase with dx >= ",F4.1," m") ', &
+        '("x-coordinaten moeten toenemen met dx >= ",F4.1," m")']
+
+    message = trim(string_msg(language))
+end function GetFMTxcoordinates_must_increase
+
+function GetFMTzero_or_negative_varModelFactorCriticalOvertopping() result (message)
+character(len=maxmsg) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("Negative or zero variance of critical overtopping uncertainty model; variable number: ",I0)  ', &
+        '("Negatieve of nul variantie van kritieke overtopping model onzekerheid; variabel nummer: ",I0)']
+
+    message = trim(string_msg(language))
+end function GetFMTzero_or_negative_varModelFactorCriticalOvertopping
+
+function GetFMTzero_or_negative_critical_overtopping() result (message)
+character(len=maxmsg) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("Negative or zero critical overtopping: ",G)      ', &
+        '("Negatieve of nul kritiek overtopping debiet: ",G)']
+
+    message = trim(string_msg(language))
+end function GetFMTzero_or_negative_critical_overtopping
+
+function GetFMTdiffx_too_small() result (message)
+character(len=maxmsg) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("X-coordinates must differ at least ",F4.2,".",F8.3," and ",F8.3," are too close to each other.")                ', &
+        '("X-coordinaten moeten ten minste ",F4.2," van elkaar verschillen.",F8.3," en ",F8.3," ligt te dicht bij elkaar.")']
+
+    message = trim(string_msg(language))
+end function GetFMTdiffx_too_small
+
+function GetFMTdiffy_too_small() result (message)
+character(len=maxmsg) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("Coordinates in vertical direction must be non-decreasing.",F7.2," and ",F7.2," are not.")', &
+        '("Verticale coordinaten mogen niet afnemen.",F7.2," en ",F7.2," doen dat wel.")            ']
+
+    message = trim(string_msg(language))
+end function GetFMTdiffy_too_small
+
+function GetFMTdiffx_negative() result (message)
+character(len=maxmsg) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        '("X-coordinates must increase at least with ",F4.2,".",F8.3," and ",F8.3," do not meet this condition.")', &
+         '("X-coordinaten moeten ten minste met ",F4.2," toenemen.",F8.3," en ",F8.3," voldoen hier niet aan.")  ']
+
+    message = trim(string_msg(language))
+end function GetFMTdiffx_negative
 
 end module OvertoppingMessages

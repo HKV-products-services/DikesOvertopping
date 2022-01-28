@@ -108,7 +108,7 @@
    if (succes) then
       if (minval(geometry%xCoordDiff) < xDiff_min - marginDiff) then
          succes = .false.
-         write (errorMessage, GetOvertoppingFormat(xcoordinates_must_increase)) xDiff_min
+         write (errorMessage, GetFMTxcoordinates_must_increase()) xDiff_min
       endif
    endif
 
@@ -129,11 +129,11 @@
       if (any(geometry%roughnessFactors < rFactor_min)) then
          succes = .false.
          rFactor = minval(geometry%roughnessFactors)
-         write (errorMessage,GetOvertoppingFormat(roughnessfactors_out_of_range)) rFactor_min, rFactor_max, rFactor
+         write (errorMessage,GetFMTroughnessfactors_out_of_range()) rFactor_min, rFactor_max, rFactor
       else if (any(geometry%roughnessFactors > rFactor_max)) then
          succes = .false.
          rFactor = maxval(geometry%roughnessFactors)
-         write (errorMessage,GetOvertoppingFormat(roughnessfactors_out_of_range)) rFactor_min, rFactor_max, rFactor
+         write (errorMessage,GetFMTroughnessfactors_out_of_range()) rFactor_min, rFactor_max, rFactor
       endif
    endif
 
@@ -230,10 +230,10 @@
        do i = 1, geometry%nCoordinates - 1
            if (geometry%Roughnessfactors(i) < rFactor_min .or. geometry%Roughnessfactors(i) > rFactor_max) then
                succes = .false.
-               write(errorMessage, GetOvertoppingFormat(roughnessfactors_out_of_range), iostat=ierr) &
+               write(errorMessage, GetFMTroughnessfactors_out_of_range(), iostat=ierr) &
                    rFactor_min, rFactor_max, geometry%Roughnessfactors(i)
                if (ierr /= 0) then
-                   errorMessage = GetOvertoppingFormat(roughnessfactors_out_of_range)
+                   errorMessage = GetFMTroughnessfactors_out_of_range()
                endif
                exit
            endif
@@ -293,7 +293,7 @@
    succes = (ierr == 0)
    if (ierr /= 0) then
        sizeArrays  = 2 * nCoordinates + 5 * (nCoordinates-1)
-       write(errorMessage, GetOvertoppingFormat(allocateError)) sizeArrays
+       write(errorMessage, GetFMTallocateError()) sizeArrays
    endif 
 
    end subroutine allocateVectorsGeometry
@@ -1114,32 +1114,32 @@ end subroutine deallocateGeometry
        diffy           = ynext - yi
        if (diffx < 0) then
            success = .false.
-           message%errorcode = diffx_negative
+           message%errorcode = -1
            message%severity = severityError
-           formatstr = GetOvertoppingFormat(diffx_negative)
+           formatstr = GetFMTdiffx_negative()
            write(message%message, formatstr) xDiff_min, xi, xnext
            call addMessage(errorStruct, message)
        else if (diffx < xDiff_min - tol) then
            success = .false.
-           message%errorcode = diffx_too_small
+           message%errorcode = -1
            message%severity = severityError
-           formatstr = GetOvertoppingFormat(diffx_too_small)
+           formatstr = GetFMTdiffx_too_small()
            write(message%message, formatstr) xDiff_min, xi, xnext
            call addMessage(errorStruct, message)
        endif
        if (diffy < 0d0) then
            success = .false.
-           message%errorcode = diffy_too_small
+           message%errorcode = -1
            message%severity = severityError
-           formatstr = GetOvertoppingFormat(diffy_too_small)
+           formatstr = GetFMTdiffy_too_small()
            write(message%message, formatstr) yi, ynext
            call addMessage(errorStruct, message)
        endif
        if (roughnessFactor < rFactor_min .or. roughnessFactor > rFactor_max) then
            success = .false.
-           message%errorcode = roughnessfactors_out_of_range
+           message%errorcode = -1
            message%severity = severityError
-           formatstr = GetOvertoppingFormat(roughnessfactors_out_of_range)
+           formatstr = GetFMTroughnessfactors_out_of_range()
            write (message%message, formatstr) rFactor_min, rFactor_max, roughnessFactor
            call addMessage(errorStruct, message)
        endif
