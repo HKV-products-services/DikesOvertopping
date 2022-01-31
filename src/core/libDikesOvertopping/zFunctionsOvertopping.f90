@@ -151,7 +151,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
 
     succes = .false.
     if (nrCoordinates < 2) then
-        errorMessage = GetOvertoppingMessage(dimension_cross_section_less_than_2)
+        call GetMSGdimension_cross_section_less_than_2(errorMessage)
         return
     endif
 

@@ -40,36 +40,7 @@ integer :: language = LanguageNL   !< default : Dutch
 
 private :: maxmsg, maxpar, language
 
-!> IDs for the strings in this module:
-enum, bind(c)
-! messages:
-    enumerator :: split_cross_section_seq_berm
-    enumerator :: adjust_non_horizontal_seq_berm
-    enumerator :: merging_seq_berm
-    enumerator :: calc_horizontal_lengths
-    enumerator :: calc_horizontal_distance
-    enumerator :: remove_dike_segments_index
-    enumerator :: calc_representative_slope_angle
-    enumerator :: calc_influence_berms
-    enumerator :: calc_influence_factors
-    enumerator :: calc_wave_overtopping_discharge
-    enumerator :: breaker_param_is_zero
-    enumerator :: calc_wave_steepness_period_is_zero
-    enumerator :: calc_breaker_param_steepness_is_zero
-    enumerator :: calc_roots_cubic_function
-    enumerator :: psi_not_in_range
-    enumerator :: dimension_cross_section_less_than_2
-    enumerator :: ycoordinates_must_be_nondecreasing
-    enumerator :: dike_segment_mismatches
-    enumerator :: max2berm_segments
-    enumerator :: first_and_last_must_be_slope
-    enumerator :: wl_above_crest_not_allowed
-    enumerator :: interpolation_error_split_cross_sections
-    enumerator :: wl_above_crest
-    enumerator :: wave_height_or_periode_less_zero
-    enumerator :: wave_direction_not_in_range
-end enum
-! parameters :
+!> IDs for the strings/parameters in this module:
     integer, parameter :: par_fB = 1
     integer, parameter :: par_fN = 2
     integer, parameter :: par_fS = 3
@@ -111,128 +82,6 @@ character(len=*), intent(out) :: lang   !< filled with current language ID
 
 lang = merge( "NL", "UK", language == languageNL)
 end subroutine GetLanguage
-
-!>
-!! Subroutine that returns a message with the corresponding ID in the current language
-!!
-!! @ingroup LibOvertopping
-character(len=maxmsg) function GetOvertoppingMessage(ID)
-integer, intent(in) :: ID  !< identification number of string
-
-select case(language)
-    case(languageUK)
-        select case (ID)
-            case (split_cross_section_seq_berm)
-                GetOvertoppingMessage = 'Error in splitting cross section: sequential berms'
-            case (adjust_non_horizontal_seq_berm)
-                GetOvertoppingMessage = 'Error adjusting non-horizontal berms: sequential berms'
-            case (merging_seq_berm)
-                GetOvertoppingMessage = 'Error in merging sequential berms (B=0)'
-            case (calc_horizontal_lengths)
-                GetOvertoppingMessage = 'Error in calculation horizontal lengths'
-            case (calc_horizontal_distance)
-                GetOvertoppingMessage = 'Error in calculation horizontal distance'
-            case (remove_dike_segments_index)
-                GetOvertoppingMessage = 'Error removing dike segments: incorrect index'
-            case (calc_representative_slope_angle)
-                GetOvertoppingMessage = 'Error in calculation representative slope angle'
-            case (calc_influence_berms)
-                GetOvertoppingMessage = 'Error in calculation influence berms'
-            case (calc_influence_factors)
-                GetOvertoppingMessage = 'Error in adjustment of influence factors'
-            case (calc_wave_overtopping_discharge)
-                GetOvertoppingMessage = 'Error calculating wave overtopping discharge'
-            case (breaker_param_is_zero)
-                GetOvertoppingMessage = 'Error calculating 2% wave run-up: breaker parameter equals zero'
-            case (calc_wave_steepness_period_is_zero)
-                GetOvertoppingMessage = 'Error calculating wave steepness: wave period equals zero'
-            case (calc_breaker_param_steepness_is_zero)
-                GetOvertoppingMessage = 'Error calculating breaker parameter: wave steepness equals zero'
-            case (calc_roots_cubic_function)
-                GetOvertoppingMessage = 'Error calculating roots general cubic function'
-            case (psi_not_in_range)
-                GetOvertoppingMessage = 'Dike normal (psi) not between 0 and 360 degree'
-            case (dimension_cross_section_less_than_2)
-                GetOvertoppingMessage = 'Number of coordinates cross section less than 2'
-            case (ycoordinates_must_be_nondecreasing)
-                GetOvertoppingMessage = 'Coordinates in the vertical direction must be non-decreasing'
-            case (dike_segment_mismatches)
-                GetOvertoppingMessage = 'Dike segment mismatches berm segment or slope segment'
-            case (max2berm_segments)
-                GetOvertoppingMessage = 'A maximum of two berm segments is allowed'
-            case (first_and_last_must_be_slope)
-                GetOvertoppingMessage = 'First and last dike segment must be a slope segment'
-            case (wl_above_crest_not_allowed)
-                GetOvertoppingMessage = 'In the overtopping freeboard routine is a local water level below crest not allowed.'
-            case (interpolation_error_split_cross_sections)
-                GetOvertoppingMessage = 'Error in interpolation between results for split cross sections'
-            case (wl_above_crest)
-                GetOvertoppingMessage = 'local water level above the crest level'
-            case (wave_height_or_periode_less_zero)
-                GetOvertoppingMessage = 'Wave height and/or wave period less than zero'
-            case (wave_direction_not_in_range)
-                GetOvertoppingMessage = 'Wave direction not between 0 and 360 degree'
-            case default
-                write(GetOvertoppingMessage,*) 'Internal error, ID = ', ID
-        end select
-    case default
-        select case (ID)
-            case (split_cross_section_seq_berm)
-                GetOvertoppingMessage = 'Fout in opsplitsen doorsnede: sequentiele bermen'  ! check
-            case (adjust_non_horizontal_seq_berm)
-                GetOvertoppingMessage = 'Fout bij aanpassing niet-horizontale bermen: sequentiele bermen' ! check
-            case (merging_seq_berm)
-                GetOvertoppingMessage = 'Fout in samenvoegen sequentiele bermen (B=0)' ! check
-            case (calc_horizontal_lengths)
-                GetOvertoppingMessage = 'Fout in berekening horizontale lengtes'
-            case (calc_horizontal_distance)
-                GetOvertoppingMessage = 'Error in berekening horizontale afstanden'
-            case (remove_dike_segments_index)
-                GetOvertoppingMessage = 'Fout bij verwijderen dijk secties: foute index'
-            case (calc_representative_slope_angle)
-                GetOvertoppingMessage = 'Fout in berekening representatieve hellingshoek'
-            case (calc_influence_berms)
-                GetOvertoppingMessage = 'Fout in berekening invloed bermen'
-            case (calc_influence_factors)
-                GetOvertoppingMessage = 'Error in berekening van invloedsfactoren'
-            case (calc_wave_overtopping_discharge)
-                GetOvertoppingMessage = 'Fout in berekening golf overslag debiet'
-            case (breaker_param_is_zero)
-                GetOvertoppingMessage = 'Fout in berekening 2% golf oploop: brekerparameter is nul'
-            case (calc_wave_steepness_period_is_zero)
-                GetOvertoppingMessage = 'Fout in berekening golf steilte: golf periode is nul'
-            case (calc_breaker_param_steepness_is_zero)
-                GetOvertoppingMessage = 'Fout in berekening brekerparameter: golf steilte is nul'
-            case (calc_roots_cubic_function)
-                GetOvertoppingMessage = 'Fout in berekening van wortel 3e graads functie'
-            case (psi_not_in_range)
-                GetOvertoppingMessage = 'Dijk normaal (psi) ligt niet tussen 0 en 360 graden'
-            case (dimension_cross_section_less_than_2)
-                GetOvertoppingMessage = 'Aantal coordinaten dijk doorsnede is kleiner dan 2'
-            case (ycoordinates_must_be_nondecreasing)
-                GetOvertoppingMessage = 'Verticale coordinaten mogen niet afnemen'
-            case (dike_segment_mismatches)
-                GetOvertoppingMessage = 'Dijk segment is van ander type dan berm segment of helling segment'
-            case (max2berm_segments)
-                GetOvertoppingMessage = 'Maximum van twee berm segmenten overschreden'
-            case (first_and_last_must_be_slope)
-                GetOvertoppingMessage = 'Eerste en laatste dijk segment moeten een helling segment zijn'
-            case (wl_above_crest_not_allowed)
-                GetOvertoppingMessage = 'In the overtopping module is een lokale waterstand boven de kruin niet toegestaan.'
-            case (interpolation_error_split_cross_sections)
-                GetOvertoppingMessage = 'Fout in interpolatie tussen resultaten for split cross sections'
-            case (wl_above_crest)
-                GetOvertoppingMessage = 'Lokale waterstand boven de kruin'
-            case (wave_height_or_periode_less_zero)
-                GetOvertoppingMessage = 'Golf hoogte en/of golf periode kleiner dan nul'
-            case (wave_direction_not_in_range)
-                GetOvertoppingMessage = 'Golf hoek niet tussen 0 and 360 graden'
-            case default
-                write(GetOvertoppingMessage,*) 'Interne fout, ID = ', ID
-        end select
-    end select
-
-end function GetOvertoppingMessage
 
 !>
 !! Subroutine that returns the name of an input parameter with the corresponding ID in the current language
@@ -352,6 +201,221 @@ character(len=*), dimension(2), parameter :: string_msg = [&
     message = trim(string_msg(language))
 end subroutine GetMSGslope_negative
 
+subroutine GetMSGsplit_cross_section_seq_berm(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error in splitting cross section: sequential berms', &
+        'Fout in opsplitsen doorsnede: sequentiele bermen  ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGsplit_cross_section_seq_berm
+
+subroutine GetMSGadjust_non_horizontal_seq_berm(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error adjusting non-horizontal berms: sequential berms         ', &
+        'Fout bij aanpassing niet-horizontale bermen: sequentiele bermen']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGadjust_non_horizontal_seq_berm
+
+subroutine GetMSGmerging_seq_berm(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error in merging sequential berms (B=0)     ', &
+        'Fout in samenvoegen sequentiele bermen (B=0)']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGmerging_seq_berm
+
+subroutine GetMSGcalc_horizontal_lengths(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error in calculation horizontal lengths', &
+        'Fout in berekening horizontale lengtes ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGcalc_horizontal_lengths
+
+subroutine GetMSGremove_dike_segments_index(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error removing dike segments: incorrect index ', &
+        'Fout bij verwijderen dijk secties: foute index']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGremove_dike_segments_index
+
+subroutine GetMSGcalc_representative_slope_angle(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error in calculation representative slope angle', &
+        'Fout in berekening representatieve hellingshoek']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGcalc_representative_slope_angle
+
+subroutine GetMSGcalc_influence_berms(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error in calculation influence berms', &
+        'Fout in berekening invloed bermen   ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGcalc_influence_berms
+
+subroutine GetMSGcalc_influence_factors(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error in adjustment of influence factors', &
+        'Error in berekening van invloedsfactoren']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGcalc_influence_factors
+
+subroutine GetMSGcalc_wave_overtopping_discharge(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error calculating wave overtopping discharge', &
+        'Fout in berekening golf overslag debiet     ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGcalc_wave_overtopping_discharge
+
+subroutine GetMSGbreaker_param_is_zero(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error calculating 2% wave run-up: breaker parameter equals zero', &
+        'Fout in berekening 2% golf oploop: brekerparameter is nul      ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGbreaker_param_is_zero
+
+subroutine GetMSGcalc_wave_steepness_period_is_zero(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error calculating wave steepness: wave period equals zero', &
+        'Fout in berekening golf steilte: golf periode is nul     ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGcalc_wave_steepness_period_is_zero
+
+subroutine GetMSGcalc_breaker_param_steepness_is_zero(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error calculating breaker parameter: wave steepness equals zero', &
+        'Fout in berekening brekerparameter: golf steilte is nul        ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGcalc_breaker_param_steepness_is_zero
+
+subroutine GetMSGcalc_roots_cubic_function(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error calculating roots general cubic function ', &
+        'Fout in berekening van wortel 3e graads functie']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGcalc_roots_cubic_function
+
+subroutine GetMSGpsi_not_in_range(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Dike normal (psi) not between 0 and 360 degrees    ', &
+        'Dijk normaal (psi) ligt niet tussen 0 en 360 graden']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGpsi_not_in_range
+
+subroutine GetMSGdimension_cross_section_less_than_2(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Number of coordinates cross section less than 2   ', &
+        'Aantal coordinaten dijk doorsnede is kleiner dan 2']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGdimension_cross_section_less_than_2
+
+subroutine GetMSGycoordinates_must_be_nondecreasing(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Coordinates in the vertical direction must be non-decreasing', &
+        'Verticale coordinaten mogen niet afnemen                    ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGycoordinates_must_be_nondecreasing
+
+subroutine GetMSGdike_segment_mismatches(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Dike segment mismatches berm segment or slope segment             ', &
+        'Dijk segment is van ander type dan berm segment of helling segment']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGdike_segment_mismatches
+
+subroutine GetMSGmax2berm_segments(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'A maximum of two berm segments is allowed   ', &
+        'Maximum van twee berm segmenten overschreden']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGmax2berm_segments
+
+subroutine GetMSGfirst_and_last_must_be_slope(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'First and last dike segment must be a slope segment           ', &
+        'Eerste en laatste dijk segment moeten een helling segment zijn']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGfirst_and_last_must_be_slope
+
+subroutine GetMSGwl_above_crest_not_allowed(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'In the overtopping freeboard routine is a local water level below crest not allowed.', &
+        'In the overtopping module is een lokale waterstand boven de kruin niet toegestaan.  ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGwl_above_crest_not_allowed
+
+subroutine GetMSGinterpolation_error_split_cross_sections(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Error in interpolation between results for split cross sections', &
+        'Fout in interpolatie tussen resultaten for split cross sections']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGinterpolation_error_split_cross_sections
+
+subroutine GetMSGwl_above_crest(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'local water level above the crest level', &
+        'Lokale waterstand boven de kruin       ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGwl_above_crest
+
+subroutine GetMSGwave_height_or_periode_less_zero(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Wave height and/or wave period less than zero ', &
+        'Golf hoogte en/of golf periode kleiner dan nul']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGwave_height_or_periode_less_zero
+
+subroutine GetMSGwave_direction_not_in_range(message)
+character(len=*), intent(out) :: message
+character(len=*), dimension(2), parameter :: string_msg = [&
+        'Wave direction not between 0 and 360 degree', &
+        'Golf hoek niet tussen 0 and 360 graden     ']
+
+    message = trim(string_msg(language))
+end subroutine GetMSGwave_direction_not_in_range
 
 function GetFMTmodel_factor_smaller_than() result (message)
 character(len=maxmsg) :: message

@@ -90,7 +90,7 @@
          z2 = Hm0 * gammaF * gammaBeta * (fRunup2 - fRunup3/sqrt(ksi0))
          z2 = max(z2, 0.0d0)
       else
-         errorMessage = GetOvertoppingMessage(breaker_param_is_zero)
+         call GetMSGbreaker_param_is_zero(errorMessage)
          succes = .false.
          z2 = 0d0
       endif
@@ -192,7 +192,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = GetOvertoppingMessage(calc_wave_overtopping_discharge)
+      call GetMSGcalc_wave_overtopping_discharge(errorMessage)
    endif
 
    end subroutine calculateWaveOvertoppingDischarge
@@ -252,7 +252,7 @@
       s0 = Hm0/L0
    else
       succes = .false.
-      errorMessage = GetOvertoppingMessage(calc_wave_steepness_period_is_zero)
+      call GetMSGcalc_wave_steepness_period_is_zero(errorMessage)
    endif
 
    end subroutine calculateWaveSteepness
@@ -284,7 +284,7 @@
       ksi0 = tanAlpha/sqrt(s0)
    else
       succes = .false.
-      errorMessage = GetOvertoppingMessage(calc_breaker_param_steepness_is_zero)
+      call GetMSGcalc_breaker_param_steepness_is_zero(errorMessage)
    endif
 
    end subroutine calculateBreakerParameter
@@ -478,7 +478,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = GetOvertoppingMessage(calc_influence_factors)
+      call GetMSGcalc_influence_factors(errorMessage)
    endif
 
    end subroutine adjustInfluenceFactors
@@ -586,7 +586,7 @@
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = GetOvertoppingMessage(calc_roots_cubic_function)
+      call GetMSGcalc_roots_cubic_function(errorMessage)
    endif
 
    end subroutine rootsGeneralCubic

@@ -537,7 +537,7 @@
    freeBoard = load%h - geometry%yCoordinates(geometry%nCoordinates)
    if (freeBoard <= 0.0d0) then 
       succes = .false.
-      errorMessage = GetOvertoppingMessage(wl_above_crest_not_allowed)
+      call GetMSGwl_above_crest_not_allowed(errorMessage)
    else
       overtoppingOverflow = 0.6d0 * sqrt(gravityConstant * (freeBoard ** 3))
       overtopping%Qo = overtopping%Qo + overtoppingOverflow
@@ -621,7 +621,7 @@
       overtopping%z2 = overtoppingB%z2 + interpFactor * (overtoppingF%z2 - overtoppingB%z2)
       overtopping%Qo = overtoppingB%Qo + interpFactor * (overtoppingF%Qo - overtoppingB%Qo)
    else
-      errorMessage = GetOvertoppingMessage(interpolation_error_split_cross_sections)
+      call GetMSGinterpolation_error_split_cross_sections(errorMessage)
    endif
 
    end subroutine interpolateResultsSections
@@ -659,7 +659,7 @@
          errorMessage = 'load%h is NaN'
       else if (load%h > geometry%yCoordinates(geometry%nCoordinates)) then 
          succes = .false.
-         errorMessage = GetOvertoppingMessage(wl_above_crest)
+         call GetMSGwl_above_crest(errorMessage)
       endif
    endif
 
@@ -668,7 +668,7 @@
       if (load%Hm0   < 0.0d0 .or. isnan(load%Hm0)) succes = .false.
       if (load%Tm_10 < 0.0d0 .or. isnan(load%Tm_10)) succes = .false.
       if (.not. succes) then
-         errorMessage = GetOvertoppingMessage(wave_height_or_periode_less_zero)
+         call GetMSGwave_height_or_periode_less_zero(errorMessage)
       endif
    endif
 
@@ -676,7 +676,7 @@
    if (succes) then
       if ((load%phi < 0.0d0) .or. (load%phi > 360.0d0) .or. isnan(load%phi)) then
          succes = .false.
-         errorMessage = GetOvertoppingMessage(wave_direction_not_in_range)
+         call GetMSGwave_direction_not_in_range(errorMessage)
       endif
    endif
 

@@ -86,7 +86,7 @@
    if (succes) then
       if ((psi < 0.0d0) .or. (psi > 360.0d0)) then
          succes = .false.
-         errorMessage = GetOvertoppingMessage(psi_not_in_range)
+         call GetMSGpsi_not_in_range(errorMessage)
       endif
    endif
 
@@ -94,7 +94,7 @@
    if (succes) then
       if (nCoordinates < 2) then
          succes = .false.
-         errorMessage = GetOvertoppingMessage(dimension_cross_section_less_than_2)
+         call GetMSGdimension_cross_section_less_than_2(errorMessage)
       endif
    endif
 
@@ -116,7 +116,7 @@
    if (succes) then
       if (minval(geometry%yCoordDiff) < 0.0d0) then
          succes = .false.
-         errorMessage = GetOvertoppingMessage(ycoordinates_must_be_nondecreasing)
+         call GetMSGycoordinates_must_be_nondecreasing(errorMessage)
       endif
    endif
 
@@ -150,14 +150,14 @@
    ! check segment types
    if (count(geometry%segmentTypes == 3) > 0d0) then
       success = .false.
-      errorMessage = GetOvertoppingMessage(dike_segment_mismatches)
+      call GetMSGdike_segment_mismatches(errorMessage)
    endif
 
    ! check number of berm segments
    if (success) then
       if (geometry%NbermSegments > 2) then
          success = .false.
-         errorMessage = GetOvertoppingMessage(max2berm_segments)
+         call GetMSGmax2berm_segments(errorMessage)
       endif
    endif
 
@@ -166,7 +166,7 @@
       if ((geometry%segmentTypes(1) == 2) .or. &
           (geometry%segmentTypes(geometry%nCoordinates-1) == 2)) then
          success = .false.
-         errorMessage = GetOvertoppingMessage(first_and_last_must_be_slope)
+         call GetMSGfirst_and_last_must_be_slope(errorMessage)
       endif
    endif
    end subroutine checkSegmentTypes
@@ -342,7 +342,7 @@ end subroutine deallocateGeometry
    succes = .true.
    if (geometry%nCoordinates < 2) then
        succes = .false.
-       errorMessage = GetOvertoppingMessage(dimension_cross_section_less_than_2)
+       call GetMSGdimension_cross_section_less_than_2(errorMessage)
    else
 
       ! calculate horizontal distances
@@ -576,7 +576,7 @@ end subroutine deallocateGeometry
             geometryMergedBerms%roughnessFactors(index)  = (B1*rFactor1 + B2*rFactor2) / (B1+B2)
          else
             succes = .false.
-            errorMessage = GetOvertoppingMessage(merging_seq_berm)
+            call GetMSGmerging_seq_berm(errorMessage)
          endif
          geometryMergedBerms%roughnessFactors(index+1:)  = geometry%roughnessFactors(index+2:)
       endif
@@ -656,7 +656,7 @@ end subroutine deallocateGeometry
 
             ! determine possible error message
             if (.not. succes) then
-               errorMessage = GetOvertoppingMessage(adjust_non_horizontal_seq_berm)
+               call GetMSGadjust_non_horizontal_seq_berm(errorMessage)
                exit ! exit loop
             endif
 
@@ -806,7 +806,7 @@ end subroutine deallocateGeometry
    ! check index starting point new cross section
    if ((index < 1) .or. (index > geometry%nCoordinates-1)) then
       succes = .false.
-      errorMessage = GetOvertoppingMessage(remove_dike_segments_index)
+      call GetMSGremove_dike_segments_index(errorMessage)
    endif
 
    if (succes) then
@@ -916,11 +916,11 @@ end subroutine deallocateGeometry
                else
                   horzShift = 0.0d0 
                   succes = .false. ! previous dike segment has a gradient <= zero
-                  errorMessage = GetOvertoppingMessage(split_cross_section_seq_berm)
+                  call GetMSGsplit_cross_section_seq_berm(errorMessage)
                endif
                if (horzShift < 0.0d0) then
                   succes = .false. ! previous dike segment has a more gentle slope
-                  errorMessage = GetOvertoppingMessage(split_cross_section_seq_berm)
+                  call GetMSGsplit_cross_section_seq_berm(errorMessage)
                endif
                geometrySectionB%xCoordinates(1:i-1) = geometrySectionB%xCoordinates(1:i-1) + horzShift
 
@@ -1040,8 +1040,8 @@ end subroutine deallocateGeometry
 
    ! determine possible error message
    if (.not. succes) then
-      errorMessage = GetOvertoppingMessage(calc_horizontal_lengths)
-   endif   
+      call GetMSGcalc_horizontal_lengths(errorMessage)
+   endif
 
    end subroutine calculateHorzLengths
 

@@ -127,7 +127,7 @@
             tanAlpha = (yUpper - yLower) / dx
          else
             succes = .false.
-            errorMessage = GetOvertoppingMessage(calc_representative_slope_angle)
+            call GetMSGcalc_representative_slope_angle(errorMessage)
          endif
       endif
 
@@ -480,7 +480,7 @@
    ! determine possible error message
    if (.not. succes) then
       if (errorMessage == ' ') then
-         errorMessage = GetOvertoppingMessage(calc_influence_berms)
+         call GetMSGcalc_influence_berms(errorMessage)
       endif
    endif
 
