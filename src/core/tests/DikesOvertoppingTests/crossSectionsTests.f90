@@ -131,7 +131,7 @@ subroutine allCrossSectionsTests(nCrossSections, nBasicTestSeries)
                 ModuleErrorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
 
                 call testWithLevel(TestSeriesCrossSections, "Trends; Series (A) of varying geometry with the dll in test series " // &
-                                           trim(testSerieNumber) // " for cross section " // crossSectionNumber, 1)
+                                           trim(testSerieNumber) // " for cross section " // crossSectionNumber, 3)
 
             enddo
         enddo
@@ -158,7 +158,7 @@ subroutine allCrossSectionsTests(nCrossSections, nBasicTestSeries)
                 write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', numberTestSerie, 'berm.txt'
                 ModuleErrorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
                 call testWithLevel(TestSeriesCrossSections, "Trends; Series (B) of varying geometry with the dll in test series " // &
-                                           trim(testSerieNumber) // " for cross section " // crossSectionNumber, 1)
+                                           trim(testSerieNumber) // " for cross section " // crossSectionNumber, 3)
 
             enddo
         enddo

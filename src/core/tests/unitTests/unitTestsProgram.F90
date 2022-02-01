@@ -38,7 +38,9 @@ program unitTestsProgram
     use, intrinsic :: ieee_exceptions
 
     implicit none
-    character(len=16) :: version
+    character(len=16)  :: version
+    character(len=128) :: arg
+    integer            :: testLevel, i, ierr
 #if defined _WIN32 || defined _WIN64
     pointer            (qv, versionNumber)
     integer(kind=pntlen)           :: p
@@ -60,7 +62,14 @@ program unitTestsProgram
 
     call runtests_init
 
-    call setRunTestLevel(3) ! should be 3
+    testLevel = 3 ! should be 3
+    do i = 1, command_argument_count()
+        call get_command_argument( i, arg, status = ierr )
+        if (ierr /= 0) exit
+        if (arg == '/s') cycle
+        read(arg, '(i)', iostat=ierr) testLevel  ! try to parse argument as number
+    enddo
+    call setRunTestLevel(testLevel)
 
     call runtests(allOvertoppingTests)
 

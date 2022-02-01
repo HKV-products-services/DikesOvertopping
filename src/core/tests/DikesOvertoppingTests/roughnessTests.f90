@@ -129,7 +129,7 @@ subroutine allCrossSectionRoughnessTests(nCrossSections, nBasicTestSeries)
                 write (testSerieNumber,   '(I2)') numberTestSerie
 
                 call testWithLevel(TestSeriesRoughness, "Trends; Series of varying roughness with the dll in test series " // &
-                                           trim(testSerieNumber) // " for cross section " // crossSectionNumber, 1)
+                                           trim(testSerieNumber) // " for cross section " // crossSectionNumber, 3)
 
             enddo
             deallocate (roughness)

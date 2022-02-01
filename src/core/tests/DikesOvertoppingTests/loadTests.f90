@@ -93,7 +93,7 @@ subroutine allLoadTests(nCrossSections, nBasicTestSeries)
             write (crossSectionNumber,'(I1)') i
             write (testSerieNumber,   '(I2)') j
             call testWithLevel(testSeriesLoad, "Trends; Series of varying load with the dll in test series " // &
-                                           trim(testSerieNumber) // " for cross section " // crossSectionNumber, 1)
+                                           trim(testSerieNumber) // " for cross section " // crossSectionNumber, 3)
         enddo
     enddo
 
