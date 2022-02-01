@@ -67,7 +67,7 @@ program unitTestsProgram
         call get_command_argument( i, arg, status = ierr )
         if (ierr /= 0) exit
         if (arg == '/s') cycle
-        read(arg, '(i)', iostat=ierr) testLevel  ! try to parse argument as number
+        read(arg, '(i1)', iostat=ierr) testLevel  ! try to parse argument as number
     enddo
     call setRunTestLevel(testLevel)
 
