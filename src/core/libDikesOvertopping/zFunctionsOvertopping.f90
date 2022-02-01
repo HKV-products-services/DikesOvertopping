@@ -54,14 +54,13 @@ contains
 !>
 !! Subroutine to calculate the overtopping discharge with the Overtopping dll
 !! @ingroup LibOvertopping
-subroutine calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometries, logging, error)
+subroutine calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometries, error)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"calculateQoHPC" :: calculateQoHPC
     real(kind=wp),                 intent(in)    :: dikeHeight     !< dike height
     type(tpOvertoppingInput),      intent(inout) :: modelFactors   !< struct with model factors
     type (tpOvertopping),          intent(out)   :: overtopping    !< structure with overtopping results
     type (tpGeometries), target,   intent(inout) :: geometries     !< structure with geometry data
     type (tpLoad),                 intent(in)    :: load           !< structure with load parameters
-    type(tLogging),                intent(in)    :: logging        !< logging struct
     type(tMessage),                intent(inout) :: error          !< error struct
 
     integer                       :: nrCoordsAdjusted       !< number of coordinates of the adjusted profile
@@ -86,7 +85,7 @@ subroutine calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometrie
 
     if (error%errorCode == 0) then
         ! first time we use load
-        call calculateOvertopping (geometryAdjusted, load, modelFactors, overtopping, logging, error)
+        call calculateOvertopping (geometryAdjusted, load, modelFactors, overtopping, error)
     endif
 
     if (error%errorCode /= 0) then

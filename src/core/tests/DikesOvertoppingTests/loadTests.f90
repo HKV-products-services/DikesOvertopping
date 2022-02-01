@@ -134,7 +134,6 @@ subroutine testSeriesLoad
     type(OvertoppingGeometryTypeF) :: geometryF
     type (tpLoad)            :: load                 ! structure with load data
     type (tpOvertopping)     :: overtopping          ! structure with overtopping results
-    type(tLogging)           :: logging              ! logging struct
     character(len=120)       :: frozenFile           ! frozen copy of the output file of the testserie
     type(tMessage)           :: error                ! error struct
     real(kind=wp), parameter :: margin = 1.0d-6      ! relative value for the margin
@@ -236,21 +235,21 @@ subroutine testSeriesLoad
         call assert_equal(error%errorCode, 0, error%Message)
         !
         ! Compute the wave runup and the wave overtopping discharge with the Overtopping module
-        call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, error)
+        call calculateOvertopping (geometry, load, modelFactors, overtopping, error)
         if (error%errorCode /= 0) then
             write(ounit, '(2a)') 'Failure: ', trim(error%Message)
         else
             z2   = overtopping%z2
             q0   = overtopping%Qo
-            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, error, logging)
+            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, error)
             if (error%errorCode /= 0) then
                HBN_4 = HBNdummy
             end if
-            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, error, logging)
+            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, error)
             if (error%errorCode /= 0) then
                HBN_3 = HBNdummy
             end if
-            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, error, logging)
+            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, error)
             if (error%errorCode /= 0) then
                HBN_2 = HBNdummy
             end if

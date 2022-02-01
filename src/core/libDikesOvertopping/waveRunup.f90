@@ -56,7 +56,7 @@ module waveRunup
 !! iteration for the wave runup
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine iterationWaveRunup (geometry, h, Hm0, Tm_10, gammaBeta_z, modelFactors, z2, logging, error)
+   subroutine iterationWaveRunup (geometry, h, Hm0, Tm_10, gammaBeta_z, modelFactors, z2, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -70,7 +70,6 @@ module waveRunup
    real(kind=wp),             intent(inout)  :: gammaBeta_z    !< influence factor angle wave attack 2% run-up
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
-   type(tLogging),            intent(in)     :: logging        !< logging struct
    type(tMessage),            intent(inout)  :: error          !< error struct
 !
 !  Local parameters
@@ -156,7 +155,7 @@ module waveRunup
 
       enddo
       if ((error%errorCode == 0) .and. (.not. convergence)) then
-         call convergedWithResidu(z2_start, z2_end, logging)
+         call convergedWithResidu(z2_start, z2_end)
          convergence = .true.
       endif
    endif 
@@ -368,7 +367,7 @@ module waveRunup
 !! if logging is enabled, it writes a small message to the logfile
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine convergedWithResidu(z2_start, z2_end, logging)
+   subroutine convergedWithResidu(z2_start, z2_end)
 !***********************************************************************************************************
    implicit none
 !
@@ -376,23 +375,15 @@ module waveRunup
 !
    real(kind=wp), intent(in)    :: z2_start(:)  !< array with z2 values at the start of the iteration i
    real(kind=wp), intent(inout) :: z2_end(:)    !< array with z2 values at the end of iteration i
-   type(tLogging), intent(in)   :: logging      !< logging struct
 
 !
 !  Local parameters
 !
-   integer :: iunit  ! logical unit for log file
    integer :: k      ! index with lowest residu
-   
 ! ==========================================================================================================
 
    k = findSmallestResidu(z2_start, z2_end)
    z2_end(z2_iter_max2) = (z2_end(k) + z2_start(k)) * 0.5_wp
-   if (logging%fileName /= ' ') then
-       open(newunit=iunit, file = logging%fileName, position = 'append')
-       write(iunit,'(a,f8.4)') 'residu in 2% wave run-up:', abs(z2_start(k) - z2_end(k))
-       close(iunit)
-   endif
 
    end subroutine convergedWithResidu
 

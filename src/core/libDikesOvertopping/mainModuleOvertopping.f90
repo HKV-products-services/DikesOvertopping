@@ -61,7 +61,7 @@
 !! calculate the overtopping
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateOvertopping (geometry, load, modelFactors, overtopping, logging, error)
+   subroutine calculateOvertopping (geometry, load, modelFactors, overtopping, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -72,7 +72,6 @@
    type (tpLoad),             intent(in)    :: load           !< structure with load parameters
    type (tpOvertoppingInput), intent(in)    :: modelFactors   !< structure with model factors
    type (tpOvertopping),      intent(  out) :: overtopping    !< structure with overtopping results
-   type(tLogging),            intent(in)    :: logging        !< logging struct
    type(tMessage),            intent(inout) :: error          !< error struct
 !
 !  Local parameters
@@ -165,19 +164,19 @@
                ! no wide berms (geometrySectionB = geometrySectionF)
                call calculateOvertoppingSection (geometrySectionB, h, Hm0, Tm_10, L0,       &
                                                  gammaBeta_z, gammaBeta_o, modelFactors,    &
-                                                 overtopping, logging, error)
+                                                 overtopping, error)
             else
 
                ! geometrySectionB equals geometry with all wide berms reduced to B=L0/4
                call calculateOvertoppingSection (geometrySectionB, h, Hm0, Tm_10, L0,       &
                                                  gammaBeta_z, gammaBeta_o, modelFactors,    &
-                                                 overtoppingB, logging, error)
+                                                 overtoppingB, error)
 
                ! geometrySectionF equals geometry with all wide berms extended B=L0
                if (error%errorCode == 0) then
                   call calculateOvertoppingSection (geometrySectionF, h, Hm0, Tm_10, L0,    &
                                                     gammaBeta_z, gammaBeta_o, modelFactors, &
-                                                    overtoppingF, logging, error)
+                                                    overtoppingF, error)
                endif
                
                ! interpolation of results for both cross sections
@@ -201,7 +200,7 @@
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
    subroutine calculateOvertoppingSection (geometry, h, Hm0, Tm_10, L0, gammaBeta_z, gammaBeta_o, &
-                                           modelFactors, overtopping, logging, error)
+                                           modelFactors, overtopping, error)
 !***********************************************************************************************************
 !   implicit none
 !
@@ -216,7 +215,6 @@
    real(kind=wp),             intent(inout)  :: gammaBeta_o    !< influence angle wave attack overtopping
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    type (tpOvertopping),      intent(out)    :: overtopping    !< structure with overtopping results
-   type(tLogging),            intent(in)     :: logging        !< logging struct
    type(tMessage),            intent(inout)  :: error          !< error struct
 !
 !  Local parameters
@@ -326,7 +324,7 @@
 
          ! calculate 2% wave run-up
          call iterationWaveRunup (geometry, h, Hm0, Tm_10, gammaBeta_z, &
-                                  modelFactors, overtopping%z2, logging, error)
+                                  modelFactors, overtopping%z2, error)
 
          ! calculate wave overtopping discharge
          if (error%errorCode == 0) then
@@ -344,7 +342,7 @@
 
          ! calculate 2% wave run-up
          call iterationWaveRunup (geometry, h, Hm0, Tm_10, gammaBeta_z, &
-                                  modelFactors, overtopping%z2, logging, error)
+                                  modelFactors, overtopping%z2, error)
 
          if (error%errorCode == 0) then
 
@@ -369,7 +367,7 @@
          ! calculate 2% wave run-up
          if (error%errorCode == 0) then
             call iterationWaveRunup (geometryAdjusted, h, Hm0_red, Tm_10, gammaBeta_z, &
-                                     modelFactors, overtopping%z2, logging, error)
+                                     modelFactors, overtopping%z2, error)
          endif
 
          ! calculate wave overtopping discharge
@@ -395,7 +393,7 @@
          ! calculate 2% wave run-up
          if (error%errorCode == 0) then
             call iterationWaveRunup (geometryAdjusted, h, Hm0_red, Tm_10, gammaBeta_z, &
-                                     modelFactors, overtopping%z2, logging, error)
+                                     modelFactors, overtopping%z2, error)
          endif
 
          ! 2% wave run-up is limited due to foreshore

@@ -163,7 +163,6 @@ subroutine TestSeriesRoughness
 
     type (tpGeometry)    :: geometry             ! structure with geometry data
     type (tpOvertopping) :: overtopping          ! structure with overtopping results
-    type(tLogging)       :: logging              ! logging struct
     character(len=120)   :: frozenFile           ! frozen copy of the output file of the testserie
     type(tMessage)       :: error                ! error struct
 
@@ -222,21 +221,21 @@ subroutine TestSeriesRoughness
 
         !
         ! compute the wave runup and the wave overtopping discharge with the overtopping module
-        call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, error)
+        call calculateOvertopping (geometry, load, modelFactors, overtopping, error)
         if (error%errorCode /= 0) then
             write(ounit, '(2a)') 'Failure: ', trim(error%Message)
         else
             z2   = overtopping%z2
             q0   = overtopping%Qo
-            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, error, logging)
+            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, error)
             if (error%errorCode /= 0) then
                HBN_4 = HBNdummy
             end if
-            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, error, logging)
+            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, error)
             if (error%errorCode /= 0) then
                HBN_3 = HBNdummy
             end if
-            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, error, logging)
+            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, error)
             if (error%errorCode /= 0) then
                HBN_2 = HBNdummy
             end if

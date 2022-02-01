@@ -142,7 +142,6 @@ subroutine omkeerVariantTestWithHighDischarge
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -163,7 +162,7 @@ subroutine omkeerVariantTestWithHighDischarge
     ! test actual computations in iterateToGivenDischarge for waterlevel < dikeheight
     !
     givenDischarge = 0.2d0
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 5.522_wp, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 1.5_wp, 0.1_wp, 'z2 from omkeer variant')
@@ -184,7 +183,6 @@ subroutine omkeerVariantTestWithDikeHeigthInProfile
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -205,7 +203,7 @@ subroutine omkeerVariantTestWithDikeHeigthInProfile
     ! test actual computations in iterateToGivenDischarge for waterlevel < dikeheight
     !
     givenDischarge = 1.568D-4  ! exact : 1.565674960996936D-004
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 7.025_wp, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 1.5_wp, 0.1_wp, 'z2 from omkeer variant')
@@ -226,7 +224,6 @@ subroutine omkeerVariantTestWithBerm
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -249,7 +246,7 @@ subroutine omkeerVariantTestWithBerm
     ! test actual computations in iterateToGivenDischarge for waterlevel < dikeheight
     !
     givenDischarge = 0.2d0
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 5.522_wp, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 1.5_wp, 0.1_wp, 'z2 from omkeer variant')
@@ -270,7 +267,6 @@ subroutine omkeerVariantTestWithBermAndDikeHeightJustAboveBerm1
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -294,7 +290,7 @@ subroutine omkeerVariantTestWithBermAndDikeHeightJustAboveBerm1
     ! test actual computations in iterateToGivenDischarge for waterlevel < dikeheight
     !
     givenDischarge = 0.2d0
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 5.522_wp, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 1.5_wp, 0.1_wp, 'z2 from omkeer variant')
@@ -316,7 +312,6 @@ subroutine omkeerVariantTestWithBermAndDikeHeightJustAboveBerm2
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -340,7 +335,7 @@ subroutine omkeerVariantTestWithBermAndDikeHeightJustAboveBerm2
     ! test actual computations in iterateToGivenDischarge for waterlevel < dikeheight
     !
     givenDischarge = 1.763396051957844D-004
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 7.000_wp, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 1.5_wp, 0.1_wp, 'z2 from omkeer variant')
@@ -361,7 +356,6 @@ subroutine omkeerVariantTestWith1_15BermAndDikeHeightHalfwayBerm
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     real(kind=wp)                  :: bermLength
     real(kind=wp)                  :: dy
@@ -389,7 +383,7 @@ subroutine omkeerVariantTestWith1_15BermAndDikeHeightHalfwayBerm
     ! test actual computations in iterateToGivenDischarge for waterlevel < dikeheight
     !
     givenDischarge = 8.005817025697209D-5
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 7.166_wp, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 1.5_wp, 0.1_wp, 'z2 from omkeer variant')
@@ -410,7 +404,6 @@ subroutine omkeerVariantTestWithVerySmallDischarge
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     real(kind=wp)                  :: bermLength
     real(kind=wp)                  :: dy
@@ -438,7 +431,7 @@ subroutine omkeerVariantTestWithVerySmallDischarge
     ! test actual computations in iterateToGivenDischarge for waterlevel < dikeheight
     !
     givenDischarge = 1d-20
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 14.86_wp, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 1.5_wp, 0.1_wp, 'z2 from omkeer variant')
@@ -460,7 +453,6 @@ subroutine omkeerVariantTestWithWaterlevelBelowToe
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     real(kind=wp)                  :: bermLength
     real(kind=wp)                  :: dy
@@ -488,7 +480,7 @@ subroutine omkeerVariantTestWithWaterlevelBelowToe
     ! test actual computations in iterateToGivenDischarge for waterlevel < toe
     !
     givenDischarge = 2d-4
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, load%h, 1d-15, 'dikeHeight from omkeer variant')
 
@@ -508,7 +500,6 @@ subroutine omkeerVariantTestWithExpectedDikeheightHalfwaySlope
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     real(kind=wp)                  :: bermLength
     real(kind=wp)                  :: dy
@@ -536,7 +527,7 @@ subroutine omkeerVariantTestWithExpectedDikeheightHalfwaySlope
     ! test actual computations in iterateToGivenDischarge for waterlevel < dikeheight
     !
     givenDischarge = 3d-6
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 7.856_wp, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 1.5_wp, 0.1_wp, 'z2 from omkeer variant')
@@ -557,7 +548,6 @@ subroutine omkeerVariantIssue34A
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -582,7 +572,7 @@ subroutine omkeerVariantIssue34A
     ! test actual computations in iterateToGivenDischarge
     !
     givenDischarge = 1D-3
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, load%h + 0.269, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 0.492_wp, 0.001_wp, 'z2 from omkeer variant')
@@ -603,7 +593,6 @@ subroutine omkeerVariantIssue34B
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -628,7 +617,7 @@ subroutine omkeerVariantIssue34B
     ! test actual computations in iterateToGivenDischarge
     !
     givenDischarge = 1D-3
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, load%h + 0.269, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 0.492_wp, 0.001_wp, 'z2 from omkeer variant')
@@ -649,7 +638,6 @@ subroutine omkeerVariantIssue34C
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -674,7 +662,7 @@ subroutine omkeerVariantIssue34C
     ! test actual computations in iterateToGivenDischarge
     !
     givenDischarge = 1D-3
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 0.50165_wp, 1d-4, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 0.0519253_wp, 0.0001_wp, 'z2 from omkeer variant')
@@ -748,7 +736,6 @@ subroutine omkeerVariantIssue35(load, normal)
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -769,7 +756,7 @@ subroutine omkeerVariantIssue35(load, normal)
     ! test actual computations in iterateToGivenDischarge; no waves
     !
     givenDischarge = 1D-3
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, load%h, 1d-4, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 0.0_wp, 0.0001_wp, 'z2 from omkeer variant')
@@ -788,7 +775,6 @@ subroutine omkeerVariantIssue36A
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -814,7 +800,7 @@ subroutine omkeerVariantIssue36A
     ! test actual computations in iterateToGivenDischarge; ...
     !
     givenDischarge = 5d-3
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 8.97_wp, 0.01_wp, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 0.92_wp, 0.01_wp, 'z2 from omkeer variant')
@@ -833,7 +819,6 @@ subroutine omkeerVariantIssue36B
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -859,7 +844,7 @@ subroutine omkeerVariantIssue36B
     ! test actual computations in iterateToGivenDischarge; ...
     !
     givenDischarge = 5d-3
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 8.97_wp, 0.01_wp, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 0.92_wp, 0.01_wp, 'z2 from omkeer variant')
@@ -877,7 +862,6 @@ subroutine omkeerVariantIssue42A
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -902,7 +886,7 @@ subroutine omkeerVariantIssue42A
     ! test actual computations in iterateToGivenDischarge; ...
     !
     givenDischarge = 1d-3
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 5.0001_wp, 1e-4_wp, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 0.020386_wp, 1e-4_wp, 'z2 from omkeer variant')
@@ -920,7 +904,6 @@ subroutine omkeerVariantIssue42B
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -945,7 +928,7 @@ subroutine omkeerVariantIssue42B
     ! test actual computations in iterateToGivenDischarge; ...
     !
     givenDischarge = 1d-3
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 5.13584_wp, 1e-4_wp, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 1.405_wp, 1e-4_wp, 'z2 from omkeer variant')
@@ -962,7 +945,6 @@ subroutine omkeerVariantIssue51A
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -987,7 +969,7 @@ subroutine omkeerVariantIssue51A
     ! test actual computations in iterateToGivenDischarge; ...
     !
     givenDischarge = 1d-3
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 1.88_wp, 1e-4_wp, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 0.0_wp, 1e-4_wp, 'z2 from omkeer variant')
@@ -1004,7 +986,6 @@ subroutine omkeerVariantLoadTests
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -1030,7 +1011,7 @@ subroutine omkeerVariantLoadTests
     load%phi      = 270.0_wp
     load%Hm0      =   0.8_wp
     load%Tm_10    =   3.3_wp
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, -4.5_wp, 1e-4_wp,    'dikeHeight from omkeer variant, low water')
     call assert_comparable(overtopping%z2, 0.0_wp, 1e-4_wp, 'z2 from omkeer variant        , low water')
@@ -1040,7 +1021,7 @@ subroutine omkeerVariantLoadTests
     load%phi      = 270.0_wp
     load%Hm0      =   0.8_wp
     load%Tm_10    =   3.3_wp
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 0.2534_wp, 1e-4_wp,    'dikeHeight from omkeer variant, intermediate water')
     call assert_comparable(overtopping%z2, 1.52108_wp, 1e-4_wp, 'z2 from omkeer variant        , intermediate water')
@@ -1050,7 +1031,7 @@ subroutine omkeerVariantLoadTests
     load%phi      = 270.0_wp
     load%Hm0      =   0.8_wp
     load%Tm_10    =   3.3_wp
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 5.7534_wp, 1e-4_wp,    'dikeHeight from omkeer variant, high water')
     call assert_comparable(overtopping%z2, 1.52108_wp, 1e-4_wp, 'z2 from omkeer variant        , high water')
@@ -1060,7 +1041,7 @@ subroutine omkeerVariantLoadTests
     load%phi      = 270.0_wp
     load%Hm0      =   0.0_wp
     load%Tm_10    =   3.3_wp
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, -1.0_wp, 1e-4_wp,    'dikeHeight from omkeer variant, wave height zero')
     call assert_comparable(overtopping%z2, 0.0_wp, 1e-4_wp, 'z2 from omkeer variant        , wave height zero')
@@ -1070,7 +1051,7 @@ subroutine omkeerVariantLoadTests
     load%phi      =  90.0_wp
     load%Hm0      =   0.8_wp
     load%Tm_10    =   3.3_wp
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, -1.0_wp, 1e-4_wp,    'dikeHeight from omkeer variant, offshore directed waves')
     call assert_comparable(overtopping%z2, 0.0_wp, 1e-4_wp, 'z2 from omkeer variant        , offshore directed waves')
@@ -1089,7 +1070,6 @@ subroutine omkeerVariantIssue52
     type(OvertoppingGeometryTypeF) :: geometryF
     real(kind=wp)                  :: dikeHeight
     type(tpOvertoppingInput)       :: modelFactors
-    type(tLogging)                 :: logging
     real(kind=wp)                  :: givenDischarge    !< discharge to iterate to
     type(tMessage)                 :: error
 
@@ -1113,7 +1093,7 @@ subroutine omkeerVariantIssue52
     ! test actual computations in iterateToGivenDischarge
     !
     givenDischarge = 1D-3
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     call assert_equal(error%errorCode, 0, error%Message)
     call assert_comparable(dikeHeight, 5.9821_wp, 1d-3, 'dikeHeight from omkeer variant')
     call assert_comparable(overtopping%z2, 2.9140_wp, 0.001_wp, 'z2 from omkeer variant')

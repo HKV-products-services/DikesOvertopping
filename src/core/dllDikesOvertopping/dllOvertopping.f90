@@ -164,7 +164,7 @@ subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, 
 
     call initGeometries(geometryF, geometry, error)
     if (error%errorCode == 0) then
-        call calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometry%parent, logging, error)
+        call calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometry%parent, error)
     end if
     call cleanupGeometry(geometry%parent)
     call deallocateGeometry(geometry)
@@ -466,7 +466,7 @@ subroutine omkeerVariantC(load, discharge, geometryInput, modelFactors, dikeHeig
     logging%verbosity = verbosity
     logging%filename = logFile
 
-    call iterateToGivenDischarge(load, geometry, discharge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometry, discharge, dikeHeight, modelFactors, overtopping, error)
 
     success = (error%errorCode == 0)
     if (.not. success) then
@@ -496,7 +496,7 @@ subroutine omkeerVariantF(load, geometryF, givenDischarge, dikeHeight, modelFact
     type(tLogging), intent(in)                 :: logging        !< logging struct
     type(tMessage)                             :: error          !< error struct
 
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error)
     success = (error%errorCode == 0)
     if (.not. success) then
         errorText = error%message
