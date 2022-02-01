@@ -502,7 +502,7 @@ function GetFMTdiffx_negative() result (message)
 character(len=maxmsg) :: message
 character(len=*), dimension(2), parameter :: string_msg = [&
         '("X-coordinates must increase at least with ",F4.2,".",F8.3," and ",F8.3," do not meet this condition.")', &
-         '("X-coordinaten moeten ten minste met ",F4.2," toenemen.",F8.3," en ",F8.3," voldoen hier niet aan.")  ']
+        '("X-coordinaten moeten ten minste met ",F4.2," toenemen.",F8.3," en ",F8.3," voldoen hier niet aan.")   ']
 
     message = trim(string_msg(language))
 end function GetFMTdiffx_negative
