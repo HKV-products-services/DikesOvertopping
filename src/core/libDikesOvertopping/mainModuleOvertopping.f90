@@ -44,6 +44,7 @@
    use waveRunup
    use OvertoppingMessages
    use ModuleLogging
+   use errorMessages
    use precision
 
    implicit none
@@ -60,7 +61,7 @@
 !! calculate the overtopping
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateOvertopping (geometry, load, modelFactors, overtopping, logging, succes, errorMessage)
+   subroutine calculateOvertopping (geometry, load, modelFactors, overtopping, logging, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -68,12 +69,11 @@
 !  Input/output parameters
 !
    type (tpGeometry),         intent(inout) :: geometry       !< structure with geometry data
-   type (tpLoad),             intent(in)  :: load           !< structure with load parameters
-   type (tpOvertoppingInput), intent(in)  :: modelFactors   !< structure with model factors
-   type (tpOvertopping),      intent(out) :: overtopping    !< structure with overtopping results
-   type(tLogging),            intent(in)  :: logging        !< logging struct
-   logical,                   intent(out) :: succes         !< flag for succes
-   character(len=*),          intent(out) :: errorMessage   !< error message
+   type (tpLoad),             intent(in)    :: load           !< structure with load parameters
+   type (tpOvertoppingInput), intent(in)    :: modelFactors   !< structure with model factors
+   type (tpOvertopping),      intent(  out) :: overtopping    !< structure with overtopping results
+   type(tLogging),            intent(in)    :: logging        !< logging struct
+   type(tMessage),            intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
@@ -99,7 +99,7 @@
 ! ==========================================================================================================
 
    ! check load parameters and model factors
-   call checkInputdata (geometry, load, modelFactors, succes, errorMessage)
+   call checkInputdata (geometry, load, modelFactors, error)
 
    if ( .not. allocated (geometry%parent%geometryMergedBerms)) then
        call setupGeometries(geometry%parent)
@@ -111,7 +111,7 @@
    geometrySectionB    => geometry%parent%geometrySectionB
    geometrySectionF    => geometry%parent%geometrySectionF
 
-   if (succes) then
+   if (error%errorCode == 0) then
 
       toe   = geometry%yCoordinates(1)
       crest = geometry%yCoordinates(geometry%nCoordinates)
@@ -144,47 +144,46 @@
       else
 
          ! if applicable merge two sequential berms  TODO: liever eerder
-         call mergeSequentialBerms (geometry, geometryMergedBerms, succes, errorMessage)
+         call mergeSequentialBerms (geometry, geometryMergedBerms, error)
 
          ! calculate the wave length
-         if (succes) then
+         if (error%errorCode == 0) then
             call calculateWaveLength (Tm_10, L0)
          endif
          
          ! if applicable split cross section
-         if (succes) then
+         if (error%errorCode == 0) then
             call splitCrossSection (geometryMergedBerms, L0, NwideBerms, &
-                                    geometrysectionB, geometrysectionF, succes, errorMessage)
+                                    geometrysectionB, geometrysectionF, error)
          endif
 
          ! start calculation for each cross section
-         if (succes) then
+         if (error%errorCode == 0) then
 
             if (NwideBerms == 0) then
 
                ! no wide berms (geometrySectionB = geometrySectionF)
                call calculateOvertoppingSection (geometrySectionB, h, Hm0, Tm_10, L0,       &
                                                  gammaBeta_z, gammaBeta_o, modelFactors,    &
-                                                 overtopping, logging, succes, errorMessage)
+                                                 overtopping, logging, error)
             else
 
                ! geometrySectionB equals geometry with all wide berms reduced to B=L0/4
                call calculateOvertoppingSection (geometrySectionB, h, Hm0, Tm_10, L0,       &
                                                  gammaBeta_z, gammaBeta_o, modelFactors,    &
-                                                 overtoppingB, logging, succes, errorMessage)
+                                                 overtoppingB, logging, error)
 
                ! geometrySectionF equals geometry with all wide berms extended B=L0
-               if (succes) then
+               if (error%errorCode == 0) then
                   call calculateOvertoppingSection (geometrySectionF, h, Hm0, Tm_10, L0,    &
                                                     gammaBeta_z, gammaBeta_o, modelFactors, &
-                                                    overtoppingF, logging, succes, errorMessage)
+                                                    overtoppingF, logging, error)
                endif
                
                ! interpolation of results for both cross sections
-               if (succes) then
+               if (error%errorCode == 0) then
                   call interpolateResultsSections (geometryMergedBerms, L0, NwideBerms,     &
-                                                   overtoppingB, overtoppingF, overtopping, &
-                                                   succes, errorMessage)
+                                                   overtoppingB, overtoppingF, overtopping, error)
                endif
             endif
          endif
@@ -202,7 +201,7 @@
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
    subroutine calculateOvertoppingSection (geometry, h, Hm0, Tm_10, L0, gammaBeta_z, gammaBeta_o, &
-                                           modelFactors, overtopping, logging, succes, errorMessage)
+                                           modelFactors, overtopping, logging, error)
 !***********************************************************************************************************
 !   implicit none
 !
@@ -218,8 +217,7 @@
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    type (tpOvertopping),      intent(out)    :: overtopping    !< structure with overtopping results
    type(tLogging),            intent(in)     :: logging        !< logging struct
-   logical,                   intent(out)    :: succes         !< flag for succes
-   character(len=*),          intent(inout)  :: errorMessage   !< error message, only set in case of an error
+   type(tMessage),            intent(inout)  :: error          !< error struct
 !
 !  Local parameters
 !
@@ -236,7 +234,7 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
    overtopping%z2 = 0.0_wp
    overtopping%Qo = 0.0_wp
 
@@ -328,13 +326,13 @@
 
          ! calculate 2% wave run-up
          call iterationWaveRunup (geometry, h, Hm0, Tm_10, gammaBeta_z, &
-                                  modelFactors, overtopping%z2, logging, succes, errorMessage)
+                                  modelFactors, overtopping%z2, logging, error)
 
          ! calculate wave overtopping discharge
-         if (succes) then
+         if (error%errorCode == 0) then
             if (overtopping%z2 > 0.0d0) then
                call calculateWaveOvertopping (geometry, h, Hm0, Tm_10, overtopping%z2, gammaBeta_o, &
-                                              modelFactors, overtopping%Qo, succes, errorMessage)
+                                              modelFactors, overtopping%Qo, error)
             else
                overtopping%Qo = 0.0d0
             endif
@@ -346,9 +344,9 @@
 
          ! calculate 2% wave run-up
          call iterationWaveRunup (geometry, h, Hm0, Tm_10, gammaBeta_z, &
-                                  modelFactors, overtopping%z2, logging, succes, errorMessage)
+                                  modelFactors, overtopping%z2, logging, error)
 
-         if (succes) then
+         if (error%errorCode == 0) then
 
             ! 2% wave run-up is limited due to foreshore
             overtopping%z2 = min(overtopping%z2, z2max)
@@ -363,23 +361,22 @@
       ! -----------------------------------------------
 
          ! remove dike segments below local water level
-         call removeDikeSegments (geometry, index, geometryAdjusted, succes, errorMessage)
+         call removeDikeSegments (geometry, index, geometryAdjusted, error)
 
          ! significant wave height is reduced due to foreshore
          Hm0_red = min(Hm0, dH * modelFactors%reductionFactorForeshore)
 
          ! calculate 2% wave run-up
-         if (succes) then
+         if (error%errorCode == 0) then
             call iterationWaveRunup (geometryAdjusted, h, Hm0_red, Tm_10, gammaBeta_z, &
-                                     modelFactors, overtopping%z2, logging, succes, errorMessage)
+                                     modelFactors, overtopping%z2, logging, error)
          endif
 
          ! calculate wave overtopping discharge
-         if (succes) then
+         if (error%errorCode == 0) then
             if (overtopping%z2 > 0.0d0) then
                call calculateWaveOvertopping (geometryAdjusted, h, Hm0_red, Tm_10, overtopping%z2, &
-                                              gammaBeta_o, modelFactors, overtopping%Qo, &
-                                              succes, errorMessage)
+                                              gammaBeta_o, modelFactors, overtopping%Qo, error)
             else
                overtopping%Qo = 0.0d0
             endif
@@ -390,17 +387,17 @@
       ! ---------------------------------------------
 
          ! remove dike segments below local water level
-         call removeDikeSegments (geometry, index, geometryAdjusted, succes, errorMessage)
+         call removeDikeSegments (geometry, index, geometryAdjusted, error)
 
          ! significant wave height is reduced due to foreshore
          Hm0_red = min(Hm0, dH * modelFactors%reductionFactorForeshore)
 
          ! calculate 2% wave run-up
-         if (succes) then
+         if (error%errorCode == 0) then
             call iterationWaveRunup (geometryAdjusted, h, Hm0_red, Tm_10, gammaBeta_z, &
-                                     modelFactors, overtopping%z2, logging, succes, errorMessage)
+                                     modelFactors, overtopping%z2, logging, error)
          endif
-                     
+
          ! 2% wave run-up is limited due to foreshore
          overtopping%z2 = min(overtopping%z2, z2max)
 
@@ -426,7 +423,7 @@
 !! calculate wave overtopping
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateWaveOvertopping (geometry, h, Hm0, Tm_10, z2, gammaBeta_o, modelFactors, Qo, succes, errorMessage)
+   subroutine calculateWaveOvertopping (geometry, h, Hm0, Tm_10, z2, gammaBeta_o, modelFactors, Qo, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -441,8 +438,7 @@
    real(kind=wp),             intent(inout)  :: gammaBeta_o    !< influence angle wave attack overtopping
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    real(kind=wp),             intent(out)    :: Qo             !< wave overtopping discharge (m3/m per s)
-   logical,                   intent(out)    :: succes         !< flag for succes
-   character(len=*),          intent(out)    :: errorMessage   !< error message
+   type(tMessage),            intent(inout)  :: error          !< error struct
 !
 !  Local parameters
 !
@@ -457,55 +453,55 @@
 ! ==========================================================================================================
 
    ! calculate wave steepness
-   call calculateWaveSteepness (Hm0, Tm_10, s0, succes, errorMessage)
+   call calculateWaveSteepness (Hm0, Tm_10, s0, error)
    
    ! if applicable adjust non-horizontal berms
    geometryFlatBerms => geometry%parent%geometryFlatBerms
-   if (succes) then
+   if (error%errorCode == 0) then
       if (geometryFlatBerms%nCoordinates == 0) then
-          call adjustNonHorizontalBerms (geometry, geometryFlatBerms, succes, errorMessage)
+          call adjustNonHorizontalBerms (geometry, geometryFlatBerms, error)
       end if
    endif
 
    ! calculate representative slope angle
-   if (succes) then
-      call calculateTanAlpha (h, Hm0, z2, geometryFlatBerms, tanAlpha, succes, errorMessage)
+   if (error%errorCode == 0) then
+      call calculateTanAlpha (h, Hm0, z2, geometryFlatBerms, tanAlpha, error)
    endif
 
    ! calculate breaker parameter
-   if (succes) then
-      call calculateBreakerParameter (tanAlpha, s0, ksi0, succes, errorMessage)
+   if (error%errorCode == 0) then
+      call calculateBreakerParameter (tanAlpha, s0, ksi0, error)
    endif
 
    ! calculate influence factor berms (gammaB)
-   if (succes) then
+   if (error%errorCode == 0) then
       if (geometry%NbermSegments > 0) then
-         call calculateGammaB (h, Hm0, z2, geometryFlatBerms, gammaB, succes, errorMessage)
+         call calculateGammaB (h, Hm0, z2, geometryFlatBerms, gammaB, error)
       else
          gammaB = 1.0d0
       endif
    endif
 
    ! calculate limit value breaker parameter
-   if (succes) then
-      call calculateBreakerLimit (gammaB, ksi0Limit, succes, errorMessage)
+   if (error%errorCode == 0) then
+      call calculateBreakerLimit (gammaB, ksi0Limit, error)
    endif
 
    ! calculate influence factor roughness (gammaF)
-   if (succes) then
-      call calculateGammaF (h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, succes, errorMessage)
+   if (error%errorCode == 0) then
+      call calculateGammaF (h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
    endif
-   
+
    ! if applicable adjust influence factors
-   if (succes) then
-      call adjustInfluenceFactors (gammaB, gammaF, gammaBeta_o, 2, ksi0, ksi0Limit, succes, errorMessage)
+   if (error%errorCode == 0) then
+      call adjustInfluenceFactors (gammaB, gammaF, gammaBeta_o, 2, ksi0, ksi0Limit, error)
    endif
 
    ! calculate wave overtopping discharge
-   if (succes) then
+   if (error%errorCode == 0) then
       call calculateWaveOvertoppingDischarge (h, Hm0, tanAlpha, gammaB, gammaF, gammaBeta_o, ksi0, &
                                               geometry%yCoordinates(geometry%nCoordinates),        &
-                                              modelFactors, Qo, succes, errorMessage)
+                                              modelFactors, Qo, error)
    endif
 
    end subroutine calculateWaveOvertopping
@@ -549,22 +545,20 @@
 !! interpolate results for split cross sections
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine interpolateResultsSections (geometry, L0, NwideBerms, overtoppingB, overtoppingF, &
-                                          overtopping, succes, errorMessage)
+   subroutine interpolateResultsSections (geometry, L0, NwideBerms, overtoppingB, overtoppingF, overtopping, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   type (tpGeometry),      intent(in)  :: geometry       !< structure with geometry data
-   real(kind=wp),          intent(in)  :: L0             !< wave length (m)
-   integer,                intent(in)  :: NwideBerms     !< number of wide berms
-   type (tpOvertopping),   intent(in)  :: overtoppingB   !< structure with overtopping results ordinary berms
-   type (tpOvertopping),   intent(in)  :: overtoppingF   !< structure with overtopping results foreshores
-   type (tpOvertopping),   intent(out) :: overtopping    !< structure with combined overtopping results
-   logical,                intent(out) :: succes         !< flag for succes
-   character(len=*),       intent(inout) :: errorMessage   !< error message, only set in case of an error
+   type (tpGeometry),      intent(in   ) :: geometry       !< structure with geometry data
+   real(kind=wp),          intent(in   ) :: L0             !< wave length (m)
+   integer,                intent(in   ) :: NwideBerms     !< number of wide berms
+   type (tpOvertopping),   intent(in   ) :: overtoppingB   !< structure with overtopping results ordinary berms
+   type (tpOvertopping),   intent(in   ) :: overtoppingF   !< structure with overtopping results foreshores
+   type (tpOvertopping),   intent(  out) :: overtopping    !< structure with combined overtopping results
+   type (tMessage),        intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
@@ -576,7 +570,7 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! -------------------------------------------
    ! calculate the total width of the wide berms
@@ -610,18 +604,18 @@
    ! calculate interpolation factor
    if ((NwideBerms > 0) .and. (L0 > 0.0d0)) then
       interpFactor = (Bsum - NwideBerms * 0.25d0*L0) / (NwideBerms * 0.75d0*L0)
-      if (interpFactor < 0.0d0) succes = .false.
-      if (interpFactor > 1.0d0) succes = .false.
+      if (interpFactor < 0.0d0) error%errorCode = 1
+      if (interpFactor > 1.0d0) error%errorCode = 1
    else
-      succes = .false.
+      error%errorCode = 1
    endif
 
    ! interpolate results
-   if (succes) then
+   if (error%errorCode == 0) then
       overtopping%z2 = overtoppingB%z2 + interpFactor * (overtoppingF%z2 - overtoppingB%z2)
       overtopping%Qo = overtoppingB%Qo + interpFactor * (overtoppingF%Qo - overtoppingB%Qo)
    else
-      call GetMSGinterpolation_error_split_cross_sections(errorMessage)
+      call GetMSGinterpolation_error_split_cross_sections(error%Message)
    endif
 
    end subroutine interpolateResultsSections
@@ -630,7 +624,7 @@
 !! check the input data
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine checkInputdata (geometry, load, modelFactors, succes, errorMessage)
+   subroutine checkInputdata (geometry, load, modelFactors, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -640,50 +634,44 @@
    type (tpGeometry)    ,     intent(in   ) :: geometry       !< structure with geometry data
    type (tpLoad)        ,     intent(in   ) :: load           !< structure with load parameters
    type (tpOvertoppingInput), intent(in   ) :: modelFactors   !< structure with model factors
-   logical,                   intent(  out) :: succes         !< flag for succes
-   character(len=*),          intent(inout) :: errorMessage   !< error message, only set in case of an error
-!
-!  local parameters
-!
-   integer                                :: ierr           !< number of validation messages
+   type (tMessage),           intent(inout) :: error          !< error struct
 
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! check local water level
-   if (succes) then
+   if (error%errorCode == 0) then
       if (isnan(load%h)) then
-         succes = .false.
-         errorMessage = 'load%h is NaN'
+         error%errorCode = 1
+         error%Message = 'load%h is NaN'
       else if (load%h > geometry%yCoordinates(geometry%nCoordinates)) then 
-         succes = .false.
-         call GetMSGwl_above_crest(errorMessage)
+         error%errorCode = 1
+         call GetMSGwl_above_crest(error%Message)
       endif
    endif
 
    ! check wave height and period
-   if (succes) then
-      if (load%Hm0   < 0.0d0 .or. isnan(load%Hm0)) succes = .false.
-      if (load%Tm_10 < 0.0d0 .or. isnan(load%Tm_10)) succes = .false.
-      if (.not. succes) then
-         call GetMSGwave_height_or_periode_less_zero(errorMessage)
+   if (error%errorCode == 0) then
+      if (load%Hm0   < 0.0d0 .or. isnan(load%Hm0)) error%errorCode = 1
+      if (load%Tm_10 < 0.0d0 .or. isnan(load%Tm_10)) error%errorCode = 1
+      if (error%errorCode /= 0) then
+         call GetMSGwave_height_or_periode_less_zero(error%Message)
       endif
    endif
 
    ! check wave direction
-   if (succes) then
+   if (error%errorCode == 0) then
       if ((load%phi < 0.0d0) .or. (load%phi > 360.0d0) .or. isnan(load%phi)) then
-         succes = .false.
-         call GetMSGwave_direction_not_in_range(errorMessage)
+         error%errorCode = 1
+         call GetMSGwave_direction_not_in_range(error%Message)
       endif
    endif
 
-   if (succes) then
+   if (error%errorCode == 0) then
       ! liever niet tijdens z-func
-      call checkModelFactors (modelFactors, 1, errorMessage, ierr)
-      succes = (ierr == 0)
+      call checkModelFactors (modelFactors, 1, error%message, error%errorcode)
    endif
 
    end subroutine checkInputdata
@@ -766,15 +754,14 @@
 
    end subroutine checkModelFactors
 
-   subroutine initGeometries(geometryF, geometry, success, errorText)
+   subroutine initGeometries(geometryF, geometry, error)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"initGeometries" :: initGeometries
       type(OvertoppingGeometryTypeF), intent(inout) :: geometryF      !< struct with geometry and roughness
       type(tpGeometry), intent(inout) :: geometry
-      logical, intent(out) :: success
-      character(len=*), intent(inout) :: errorText
+      type(tMessage)  , intent(inout) :: error
 
       call initializeGeometry(geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
-                             geometryF%roughness, geometry, success, errorText)
+                             geometryF%roughness, geometry, error)
       call setupGeometries(geometry%parent)
    end subroutine initGeometries
 

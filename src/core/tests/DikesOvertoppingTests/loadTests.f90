@@ -134,8 +134,6 @@ subroutine testSeriesLoad
     type(OvertoppingGeometryTypeF) :: geometryF
     type (tpLoad)            :: load                 ! structure with load data
     type (tpOvertopping)     :: overtopping          ! structure with overtopping results
-    logical                  :: succes               ! flag for succes
-    character(len=250)       :: errorMessage         ! error message
     type(tLogging)           :: logging              ! logging struct
     character(len=120)       :: frozenFile           ! frozen copy of the output file of the testserie
     type(tMessage)           :: error                ! error struct
@@ -147,7 +145,7 @@ subroutine testSeriesLoad
 !
     !
     !   read the cross section
-    call readCrossSection(crossSectionFile, geometry, succes, errorMessage)
+    call readCrossSection(crossSectionFile, geometry, error)
 
     npoints = geometry%nCoordinates
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
@@ -231,29 +229,29 @@ subroutine testSeriesLoad
         !
         ! compute the wave period
         load%Tm_10 = computeWavePeriod(load%Hm0, waveSteepness, error)
-        call assert_equal(error%errorCode, 0, errorMessage)
+        call assert_equal(error%errorCode, 0, error%Message)
         !
         ! compute the angle of wave attack
         beta = angleBetween2Directions(load%phi, geometry%psi, error)
-        call assert_equal(error%errorCode, 0, errorMessage)
+        call assert_equal(error%errorCode, 0, error%Message)
         !
         ! Compute the wave runup and the wave overtopping discharge with the Overtopping module
-        call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, succes, errorMessage)
-        if (.not. succes) then
-            write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
+        call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, error)
+        if (error%errorCode /= 0) then
+            write(ounit, '(2a)') 'Failure: ', trim(error%Message)
         else
             z2   = overtopping%z2
             q0   = overtopping%Qo
-            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, succes, errorMessage, logging)
-            if (.not. succes) then
+            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, error, logging)
+            if (error%errorCode /= 0) then
                HBN_4 = HBNdummy
             end if
-            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, succes, errorMessage, logging)
-            if (.not. succes) then
+            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, error, logging)
+            if (error%errorCode /= 0) then
                HBN_3 = HBNdummy
             end if
-            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, succes, errorMessage, logging)
-            if (.not. succes) then
+            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, error, logging)
+            if (error%errorCode /= 0) then
                HBN_2 = HBNdummy
             end if
 !            if (.not. succes) then
@@ -277,8 +275,8 @@ subroutine testSeriesLoad
     ! do comparison:
     !
     write (frozenFile,'(a,i1,a,i2.2,a)') '../DikesOvertoppingTests/OutputOvertopping/output_section', i, '_test', j, '.txt'
-    errorMessage = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
-    call assert_files_comparable(outputFile, frozenFile, trim(errorMessage))
+    error%Message = 'The file "' // trim(outputFile) // '" differs with the same file computed before.'
+    call assert_files_comparable(outputFile, frozenFile, trim(error%Message))
 
 end subroutine testSeriesLoad
 

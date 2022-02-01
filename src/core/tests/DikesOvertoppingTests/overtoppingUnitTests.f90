@@ -35,6 +35,7 @@ use ftnunit
 use typeDefinitionsOvertopping
 use factorModuleOvertopping
 use overtoppingMessages
+use errorMessages, only : tMessage
 implicit none
 private
 public :: allOvertoppingUnitTests
@@ -57,12 +58,11 @@ subroutine testCalculateGammaF
    real(kind=wp)      :: z2             !< 2% wave run-up (m)
    type(tpGeometry)   :: geometry       !< structure with geometry data
    real(kind=wp)      :: gammaF         !< influence factor roughness
-   logical            :: succes         !< flag for succes
-   character(len=256) :: errorMessage   !< error message
    character(len=256) :: MsgExpected    !< expected error message
    integer            :: i              !< loop counter
    integer, parameter :: npoints = 5    !< number of profile points
    integer            :: ierr           !< error code of allocate
+   type(tMessage)     :: error          !< error struct
 
    ksi0      = 7.61e-9_wp
    ksi0Limit = 1.73_wp
@@ -85,21 +85,21 @@ subroutine testCalculateGammaF
 
    do i = 1, npoints - 1
        h = 0.5_wp * (geometry%yCoordinates(i+1) + geometry%yCoordinates(i))
-       call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, succes, errorMessage)
-       call assert_true(succes, errorMessage)
+       call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
+       call assert_equal(error%errorCode, 0, error%Message)
        call assert_comparable(gammaF, geometry%roughnessFactors(i), 1d-6, 'diff in gammaF')
    enddo
    
    ! error handling
    h = -4.01_wp
-   call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, succes, errorMessage)
+   call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
    call GetMSG_calculateGammaFtoLow(MsgExpected)
-   call assert_equal(errorMessage, MsgExpected, 'test error handling')
+   call assert_equal(error%Message, MsgExpected, 'test error handling')
 
    h = 8.65_wp
-   call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, succes, errorMessage)
+   call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
    call GetMSG_calculateGammaFtoHigh(MsgExpected)
-   call assert_equal(errorMessage, MsgExpected, 'test error handling')
+   call assert_equal(error%Message, MsgExpected, 'test error handling')
 
    deallocate(geometry%xCoordinates, geometry%yCoordinates, geometry%roughnessFactors, &
               geometry%xCoordDiff, geometry%yCoordDiff, geometry%segmentSlopes)
@@ -116,12 +116,11 @@ subroutine testCalculateGammaF2
    real(kind=wp)      :: z2                      !< 2% wave run-up (m)
    type(tpGeometry)   :: geometry                !< structure with geometry data
    real(kind=wp)      :: gammaF                  !< influence factor roughness
-   logical            :: succes                  !< flag for succes
-   character(len=256) :: errorMessage            !< error message
    integer            :: i                       !< loop counter
    integer, parameter :: npoints = 5             !< number of profile points
    integer            :: ierr                    !< error code of allocate
    real(kind=wp)      :: gammaFexpected(npoints) !< expected results
+   type(tMessage)     :: error                   !< error struct
 
    ksi0      = 7.61e-9_wp
    ksi0Limit = 1.73_wp
@@ -145,8 +144,8 @@ subroutine testCalculateGammaF2
    gammaFexpected = [1.0_wp, 0.926985439830363_wp, 0.802088868478168_wp, 0.766296466268931_wp, 0.7_wp]
    do i = 1, npoints
        h = geometry%yCoordinates(i)
-       call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, succes, errorMessage)
-       call assert_true(succes, errorMessage)
+       call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
+       call assert_equal(error%errorCode, 0, error%Message)
        call assert_comparable(gammaF, gammaFexpected(i), 1d-6, 'diff in gammaF')
    enddo
 

@@ -676,11 +676,10 @@ subroutine TestProfileAdjustment
     real(kind=wp), allocatable :: yCoordinates(:)      ! y-coordinates (m+NAP)
     real(kind=wp), allocatable :: xCoordsAdjusted(:)   ! vector with x-coordinates of the adjusted profile
     real(kind=wp), allocatable :: zCoordsAdjusted(:)   ! vector with y-coordinates of the adjusted profile
-    logical                    :: succes               ! flag for succes
-    character(len=255)         :: errorMessage         ! error message
     real(kind=wp)              :: dikeHeight           ! vector with x-coordinates of the adjusted profile
     integer                    :: i                    ! do-loop counter
-    
+    type(tMessage)             :: error                ! error struct
+
     nCoordinates = 4
     allocate (xCoordinates (nCoordinates))
     allocate (yCoordinates (nCoordinates))
@@ -697,7 +696,7 @@ subroutine TestProfileAdjustment
     
     dikeHeight = 0.74d0
     
-    call profileInStructure(nCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, succes, errorMessage)
+    call profileInStructure(nCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, error)
     
     do i = 2, nrCoordsAdjusted
         call assert_true (xCoordsAdjusted(i) > xCoordsAdjusted(i-1), "X coordinates increasing")

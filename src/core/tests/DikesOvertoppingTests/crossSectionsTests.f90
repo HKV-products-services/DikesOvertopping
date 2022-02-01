@@ -196,10 +196,9 @@ subroutine TestSeriesCrossSections
 
     type (tpGeometry)          :: geometry             ! structure with geometry data
     type (tpOvertopping)       :: overtopping          ! structure with overtopping results
-    logical                    :: succes               ! flag for succes
-    character(len=250)         :: errorMessage         ! error message
     character(len=5)           :: ratio                ! ratio to be printed
     type(tLogging)             :: logging              ! logging struct
+    type(tMessage)             :: error                ! error struct
 
     type(OvertoppingGeometryTypeF) :: geometryF
     integer                    :: i                    ! do-loop counter
@@ -216,7 +215,7 @@ subroutine TestSeriesCrossSections
     !
     ! read the cross section
     write (crossSectionFile,'(a,i1,a)') '../DikesOvertoppingTests/InputOvertopping/Cross_section', crossSectionId, '.txt'
-    call readCrossSection(crossSectionFile, geometry, succes, errorMessage)
+    call readCrossSection(crossSectionFile, geometry, error)
 
     ! fill the model factors for the Overtopping dll
     modelFactors%factorDeterminationQ_b_f_n      = 2.3d0
@@ -267,12 +266,11 @@ subroutine TestSeriesCrossSections
                                 yCoordinates)
 
         call initializeGeometry (psi, nCoordinates, xCoordinates, yCoordinates, &
-                                 roughnessFactors(1:nCoordinates-1), geometry,  &
-                                 succes, errorMessage)
+                                 roughnessFactors(1:nCoordinates-1), geometry, error)
 
         call checkCrossSection (geometry%psi, geometry%nCoordinates,            &
                                 geometry%xCoordinates, geometry%yCoordinates,   &
-                                geometry%roughnessFactors, succes, errorMessage)
+                                geometry%roughnessFactors, error)
 
         do i = 1, npoints
             geometryF%xcoords(i)   = geometry%xCoordinates(i)
@@ -282,26 +280,26 @@ subroutine TestSeriesCrossSections
         geometryF%normal  = geometry%psi
         geometryF%npoints = npoints
 
-        call assert_true (succes, errorMessage)
+        call assert_equal (error%errorCode, 0, error%Message)
         !
         ! Compute the wave runup and the wave overtopping discharge with the Overtopping module
-        call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, succes, errorMessage)
+        call calculateOvertopping (geometry, load, modelFactors, overtopping, logging, error)
 
-        if (.not. succes) then
-            write(ounit, '(2a)') 'Failure: ', trim(errorMessage)
+        if (error%errorCode /= 0) then
+            write(ounit, '(2a)') 'Failure: ', trim(error%Message)
         else
             z2   = overtopping%z2
             q0   = overtopping%Qo
-            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, succes, errorMessage, logging)
-            if (.not. succes) then
+            call iterateToGivenDischarge(load, geometryF, 1.0E-4_wp, HBN_4, modelFactors, overtopping, error, logging)
+            if (error%errorCode /= 0) then
                HBN_4 = HBNdummy
             end if
-            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, succes, errorMessage, logging)
-            if (.not. succes) then
+            call iterateToGivenDischarge(load, geometryF, 1.0E-3_wp, HBN_3, modelFactors, overtopping, error, logging)
+            if (error%errorCode /= 0) then
                HBN_3 = HBNdummy
             end if
-            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, succes, errorMessage, logging)
-            if (.not. succes) then
+            call iterateToGivenDischarge(load, geometryF, 1.0E-2_wp, HBN_2, modelFactors, overtopping, error, logging)
+            if (error%errorCode /= 0) then
                HBN_2 = HBNdummy
             end if
 !            if (.not. succes) then

@@ -50,6 +50,7 @@ module dllOvertopping
     use overtoppingInterface,       only : OvertoppingGeometryType, OvertoppingGeometryTypeF
     use versionInfo,                only : tpVersionStruct, getFileVersion
     use mainModuleOvertopping,      only : initGeometries, cleanupGeometry
+    use errorMessages, only : tMessage
     use, intrinsic :: iso_c_binding
 
     implicit none
@@ -148,6 +149,7 @@ subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, 
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
     use ModuleLogging
+    use errorMessages
     type(OvertoppingGeometryTypeF), intent(inout) :: geometryF      !< struct with geometry and roughness
     type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
     real(kind=wp), intent(in)                  :: dikeHeight     !< dike height
@@ -158,14 +160,18 @@ subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, 
     type(tLogging), intent(in)                 :: logging        !< logging struct
 !
     type (tpGeometry)                            :: geometry       !< structure with geometry data
+    type (tMessage)                              :: error
 
-    call initGeometries(geometryF, geometry, success, errorText)
-    if (success) then
-        call calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometry%parent, logging, success, errorText)
+    call initGeometries(geometryF, geometry, error)
+    if (error%errorCode == 0) then
+        call calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometry%parent, logging, error)
     end if
     call cleanupGeometry(geometry%parent)
     call deallocateGeometry(geometry)
-
+    success = (error%errorCode == 0)
+    if (.not. success) then
+        errorText = error%message
+    end if
 end subroutine calculateQoF
 
 !>
@@ -342,31 +348,34 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 
     if (success) then
         call initializeGeometry (geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
-                             geometryF%roughness, geometry, success, errorText)
+                             geometryF%roughness, geometry, msgStruct)
+        success = (msgStruct%errorCode == 0)
     endif
 
     if (success) then
-        call checkSegmentTypes(geometry, success, errorText)
+        call checkSegmentTypes(geometry, msgStruct)
+        success = (msgStruct%errorCode == 0)
     endif
 
     if (success) then
 
         call profileInStructure(geometry%nCoordinates, geometry%xcoordinates, geometry%ycoordinates, dikeHeight, &
-                            nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, success, errorText)
+                            nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, msgStruct)
+        success = (msgStruct%errorCode == 0)
     endif
 
     if (success) then
         call initializeGeometry(geometry%psi, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, &
-                                geometry%roughnessFactors, geometryAdjusted, success, errorText)
+                                geometry%roughnessFactors, geometryAdjusted, msgStruct)
         call deallocateGeometry(geometryAdjusted)
         call deallocateGeometry(geometry)
+        success = (msgStruct%errorCode == 0)
     endif
 
     if (.not. success) then
-        if (errorText /= ' ') then
+        if (msgStruct%message /= ' ') then
             msgStruct%errorCode = 1
             msgStruct%severity  = severityError
-            msgStruct%message   = errorText
             call addMessage(errorStruct, msgStruct)
         endif
     endif
@@ -450,13 +459,19 @@ subroutine omkeerVariantC(load, discharge, geometryInput, modelFactors, dikeHeig
     type(OvertoppingGeometryTypeF)            :: geometry       !< fortran struct with geometry and roughness
     type(tLogging)                            :: logging        !< logging struct
     type (tpOvertopping)                      :: overtopping    !< structure with overtopping results
+    type(tMessage)                            :: error          !< error struct
 
     geometry = geometry_c_f(geometryInput)
 
     logging%verbosity = verbosity
     logging%filename = logFile
 
-    call iterateToGivenDischarge(load, geometry, discharge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+    call iterateToGivenDischarge(load, geometry, discharge, dikeHeight, modelFactors, overtopping, error, logging)
+
+    success = (error%errorCode == 0)
+    if (.not. success) then
+        errorText = error%message
+    end if
 
 end subroutine omkeerVariantC
 
@@ -479,8 +494,13 @@ subroutine omkeerVariantF(load, geometryF, givenDischarge, dikeHeight, modelFact
     logical, intent(out)                       :: success        !< flag for success
     character(len=*), intent(out)              :: errorText      !< error message (only set if not successful)
     type(tLogging), intent(in)                 :: logging        !< logging struct
-!
-    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+    type(tMessage)                             :: error          !< error struct
+
+    call iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, modelFactors, overtopping, error, logging)
+    success = (error%errorCode == 0)
+    if (.not. success) then
+        errorText = error%message
+    end if
 end subroutine omkeerVariantF
 
 !>

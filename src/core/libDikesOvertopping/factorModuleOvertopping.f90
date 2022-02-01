@@ -40,6 +40,7 @@
    use geometryModuleOvertopping
    use precision, only : wp, pi
    use OvertoppingMessages
+   use errorMessages
 
    implicit none
 
@@ -56,7 +57,7 @@
 !! representative slope angle
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateTanAlpha (h, Hm0, z2, geometry, tanAlpha, succes, errorMessage)
+   subroutine calculateTanAlpha (h, Hm0, z2, geometry, tanAlpha, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -68,8 +69,7 @@
    real(kind=wp),       intent(in   ) :: z2             !< 2% wave run-up (m)
    type(tpGeometry), target, intent(in   ) :: geometry       !< structure with geometry data
    real(kind=wp),       intent(  out) :: tanAlpha       !< representative slope angle
-   logical,             intent(  out) :: succes         !< flag for succes
-   character(len=*),    intent(inout) :: errorMessage   !< error message, only set in case of an error
+   type(tMessage),      intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
@@ -82,7 +82,7 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    if (geometry%splitId == 'B') then
       geometryNoBerms => geometry%parent%geometryNoBerms(2)
@@ -92,19 +92,19 @@
 
    ! local water level not lower than dike toe (first y-coordinate)
    if (h < geometry%yCoordinates(1)) then
-      succes = .false.
+      error%errorCode = 1
    endif
 
    ! local water level not higher than crest level (last y-coordinate)
    if (h > geometry%yCoordinates(geometry%nCoordinates)) then
-      succes = .false.
+      error%errorCode = 1
    endif
 
    ! determine cross section without berms
-   if (succes) then
+   if (error%errorCode == 0) then
       if (geometry%NbermSegments > 0) then
          if (geometryNoBerms%nCoordinates == 0) then
-            call removeBerms (geometry, geometryNoBerms, succes, errorMessage)
+            call removeBerms (geometry, geometryNoBerms, error)
          endif
          LocalGeometryNoBerms => geometryNoBerms
       else
@@ -113,21 +113,21 @@
    endif
 
    ! calculate representative slope angle
-   if (succes) then
+   if (error%errorCode == 0) then
 
       ! determine y-coordinates lower and upper bound representative slope
       yLower = max(h-1.5d0*Hm0, LocalGeometryNoBerms%yCoordinates(1))
       yUpper = min(h+z2,      LocalGeometryNoBerms%yCoordinates(LocalGeometryNoBerms%nCoordinates))
 
       ! calculate horizontal distance between lower and upper bound
-      call calculateHorzDistance (LocalGeometryNoBerms, yLower, yUpper, dx, succes, errorMessage)
+      call calculateHorzDistance (LocalGeometryNoBerms, yLower, yUpper, dx, error)
       ! calculate representative slope angle
-      if (succes) then
+      if (error%errorCode == 0) then
          if (dx > 0.0) then
             tanAlpha = (yUpper - yLower) / dx
          else
-            succes = .false.
-            call GetMSGcalc_representative_slope_angle(errorMessage)
+            error%errorCode = 1
+            call GetMSGcalc_representative_slope_angle(error%Message)
          endif
       endif
 
@@ -179,7 +179,7 @@
 !! influence factor roughness
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateGammaF (h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, succes, errorMessage)
+   subroutine calculateGammaF (h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -193,8 +193,7 @@
    real(kind=wp),          intent(in   ) :: z2             !< 2% wave run-up (m)
    type(tpGeometry),       intent(in   ) :: geometry       !< structure with geometry data
    real(kind=wp),          intent(  out) :: gammaF         !< influence factor roughness
-   logical,                intent(  out) :: succes         !< flag for succes
-   character(len=*),       intent(inout) :: errorMessage   !< error message, only set in case of an error
+   type(tMessage),         intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
@@ -213,21 +212,21 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! local water level not lower than dike toe (first y-coordinate)
    if (h < geometry%yCoordinates(1)) then
-      succes = .false.
-      call GetMSG_calculateGammaFtoLow(errorMessage)
+      error%errorCode = 1
+      call GetMSG_calculateGammaFtoLow(error%Message)
    endif
 
    ! local water level not higher than crest level (last y-coordinate)
    if (h > geometry%yCoordinates(geometry%nCoordinates)) then
-      succes = .false.
-      call GetMSG_calculateGammaFtoHigh(errorMessage)
+      error%errorCode = 1
+      call GetMSG_calculateGammaFtoHigh(error%Message)
    endif
 
-   if (succes) then
+   if (error%errorCode == 0) then
       ! determine y-coordinates lower and upper bound segments with influence
       dy1 = max(1d-5, 0.25d0*z2)
       dy2 = max(1d-5, 0.50d0*z2)
@@ -267,8 +266,8 @@
       if (geometry%nCoordinates == 2) then
           gammaF = rFactors(1)
       else
-          call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, succes, errorMessage)
-          if (succes) then
+          call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, error)
+          if (error%errorCode == 0) then
               sum_horzLengths = sum(horzLengths)
               if (sum_horzLengths > 0.0d0) then
                   gammaF = dot_product (horzLengths, rFactors) / sum_horzLengths
@@ -279,7 +278,7 @@
       endif
 
       ! adjust influence factor if breaker parameter is greater than limit value
-      if (succes .and. (ksi0 > ksi0Limit)) then
+      if (error%errorCode == 0 .and. (ksi0 > ksi0Limit)) then
          if (gammaB*ksi0Limit < ten) then
             gammaF = gammaF + (one-gammaF)*gammaB*(ksi0-ksi0Limit)/(ten-gammaB*ksi0Limit)
          endif
@@ -289,9 +288,9 @@
    endif
 
    ! determine possible error message
-   if (.not. succes) then
-       if (errorMessage == ' ') then
-           call GetMSG_calc_influence_roughness(errorMessage)
+   if (error%errorCode /= 0) then
+       if (error%Message == ' ') then
+           call GetMSG_calc_influence_roughness(error%Message)
        endif
    endif
 
@@ -301,7 +300,7 @@
 !! influence factor berms
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateGammaB (h, Hm0, z2, geometry, gammaB, succes, errorMessage)
+   subroutine calculateGammaB (h, Hm0, z2, geometry, gammaB, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -313,8 +312,7 @@
    real(kind=wp),          intent(in   ) :: z2             !< 2% wave run-up (m)
    type(tpGeometry),       intent(in   ) :: geometry       !< structure with geometry data
    real(kind=wp),          intent(  out) :: gammaB         !< influence factor berms
-   logical,                intent(  out) :: succes         !< flag for succes
-   character(len=*),       intent(inout) :: errorMessage   !< error message, only set in case of an error
+   type(tMessage),         intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
@@ -337,23 +335,23 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! local water level not lower than dike toe (first y-coordinate)
    if (h < geometry%yCoordinates(1)) then
-      succes = .false.
+      error%errorCode = 1
    endif
 
    ! local water level not higher than crest level (last y-coordinate)
    if (h > geometry%yCoordinates(geometry%nCoordinates)) then
-      succes = .false.
+      error%errorCode = 1
    endif
 
    ! ---------------------------------------------------------------------
    ! calculate berm widhts, heights, influence lengths and relative depths
    ! ---------------------------------------------------------------------
 
-   if (succes) then
+   if (error%errorCode == 0) then
 
       ! initialize berm counter
       N = 0
@@ -368,41 +366,41 @@
             N = N+1
 
             ! check if the berm segment is a horizontal berm
-            if (geometry%segmentSlopes(i) > 0.0d0) succes = .false.
+            if (geometry%segmentSlopes(i) > 0.0d0) error%errorCode = 1
 
             ! determine the width of the berm segment
-            if (succes) then
+            if (error%errorCode == 0) then
                B(N)  = geometry%xCoordDiff(i)
             endif
 
             ! determine the height of the (horizontal) berm segment
-            if (succes) then
+            if (error%errorCode == 0) then
                hB(N) = geometry%yCoordinates(i)
             endif
 
             ! calculate the influence length
-            if (succes) then
+            if (error%errorCode == 0) then
                yLower = max(hB(N)-Hm0, geometry%yCoordinates(1))
                yUpper = min(hB(N)+Hm0, geometry%yCoordinates(geometry%nCoordinates))
-               call calculateHorzDistance (geometry, yLower, yUpper, LB(N), succes, errorMessage)
+               call calculateHorzDistance (geometry, yLower, yUpper, LB(N), error)
             endif
 
             ! calculate relative berm width
-            if (succes) then
+            if (error%errorCode == 0) then
                if (LB(N) > 0.0d0) then
                   rB(N) = B(N) / LB(N)
                else
-                  succes = .false.
+                  error%errorCode = 1
                endif
             endif
 
             ! calculate the berm depth
-            if (succes) then
+            if (error%errorCode == 0) then
                dH(N) = h - hB(N)
             endif
 
             ! calculate the influence of the berm depth
-            if (succes) then
+            if (error%errorCode == 0) then
 
                if (dH(N) < 0.0d0) then ! local water level below the berm (dH<0)
             
@@ -433,13 +431,13 @@
    endif
 
    ! check number of berm segments
-   succes = (succes .and. (N == geometry%NbermSegments))
+   if (N /= geometry%NbermSegments) error%errorCode = 1
 
    ! ------------------------------------
    ! calculate influence factor for berms
    ! ------------------------------------
 
-   if (succes) then
+   if (error%errorCode == 0) then
 
       if (N == 0) then
 
@@ -471,16 +469,16 @@
    ! ---------------------------------
    ! adjust influence factor for berms
    ! ---------------------------------
-   if (succes) then
+   if (error%errorCode == 0) then
       if (gammaB < 0.6d0) then
          gammaB = 0.6d0
       endif
    endif
 
    ! determine possible error message
-   if (.not. succes) then
-      if (errorMessage == ' ') then
-         call GetMSGcalc_influence_berms(errorMessage)
+   if (error%errorCode /= 0) then
+      if (error%Message == ' ') then
+         call GetMSGcalc_influence_berms(error%Message)
       endif
    endif
 

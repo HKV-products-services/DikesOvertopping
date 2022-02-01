@@ -40,6 +40,7 @@
    use precision
    use typeDefinitionsOvertopping
    use OvertoppingMessages
+   use errorMessages
 
    implicit none
 
@@ -56,7 +57,7 @@
 !! calculate wave runup
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateWaveRunup (Hm0, ksi0, ksi0Limit, gammaB, gammaF, gammaBeta, modelFactors, z2, succes, errorMessage)
+   subroutine calculateWaveRunup (Hm0, ksi0, ksi0Limit, gammaB, gammaF, gammaBeta, modelFactors, z2, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -71,15 +72,14 @@
    real(kind=wp),             intent(inout)  :: gammaBeta      !< influence factor angle of wave attack
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
-   logical,                   intent(out)    :: succes         !< flag for succes
-   character(len=*),          intent(inout)  :: errorMessage   !< error message, only set in case of an error
+   type(tMessage),            intent(inout)  :: error          !< error struct
 
 ! ==========================================================================================================
 
    ! if applicable adjust influence factors
-   call adjustInfluenceFactors (gammaB, gammaF, gammaBeta, 1, ksi0, ksi0Limit, succes, errorMessage)
+   call adjustInfluenceFactors (gammaB, gammaF, gammaBeta, 1, ksi0, ksi0Limit, error)
 
-   if (succes) then
+   if (error%errorCode == 0) then
 
       ! calculate 2% wave run-up for small breaker parameters
       if (ksi0 < ksi0Limit) then
@@ -90,8 +90,8 @@
          z2 = Hm0 * gammaF * gammaBeta * (fRunup2 - fRunup3/sqrt(ksi0))
          z2 = max(z2, 0.0d0)
       else
-         call GetMSGbreaker_param_is_zero(errorMessage)
-         succes = .false.
+         call GetMSGbreaker_param_is_zero(error%Message)
+         error%errorCode = 1
          z2 = 0d0
       endif
       z2 = z2 * modelFactors%m_z2
@@ -105,7 +105,7 @@
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
    subroutine calculateWaveOvertoppingDischarge (h, Hm0, tanAlpha, gammaB, gammaF, gammaBeta, ksi0, &
-                                                 hCrest, modelFactors, Qo, succes, errorMessage)
+                                                 hCrest, modelFactors, Qo, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -122,8 +122,7 @@
    real(kind=wp),            intent(in)  :: hCrest         !< crest level (m+NAP)
    type(tpOvertoppingInput), intent(in)  :: modelFactors   !< structure with model factors
    real(kind=wp),            intent(out) :: Qo             !< wave overtopping discharge (l/m per s)
-   logical,                  intent(out) :: succes         !< flag for succes
-   character(len=*),         intent(inout) :: errorMessage !< error message, only set in case of an error
+   type(tMessage),           intent(inout) :: error        !< error struct
 !
 !  Local parameters
 !
@@ -134,19 +133,19 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! check input parameters calculation wave overtopping discharge
-   if (succes) succes = (Hm0            > 0.0d0)
-   if (succes) succes = (tanAlpha       > 0.0d0)
-   if (succes) succes = (gammaB         > 0.0d0)
-   if (succes) succes = (gammaF         > 0.0d0)
-   if (succes) succes = (gammaBeta      > 0.0d0)
-   if (succes) succes = (ksi0           > 0.0d0)
+   if (Hm0            <= 0.0d0) error%errorCode = 1
+   if (tanAlpha       <= 0.0d0) error%errorCode = 1
+   if (gammaB         <= 0.0d0) error%errorCode = 1
+   if (gammaF         <= 0.0d0) error%errorCode = 1
+   if (gammaBeta      <= 0.0d0) error%errorCode = 1
+   if (ksi0           <= 0.0d0) error%errorCode = 1
 
    ! calculate dimensionless overtopping discharges
-   if (succes) then
-   
+   if (error%errorCode == 0) then
+
       ! breaking waves
       Qb = (0.067d0/sqrt(tanAlpha)) * gammaB * ksi0 * &
                exp(-modelFactors%factorDeterminationQ_b_f_b * ((hCrest-h)/Hm0) * (1/(ksi0 * gammaBeta * gammaB * gammaF)))
@@ -160,8 +159,8 @@
    endif
 
    ! calculate wave overtopping discharge
-   if (succes) then
-   
+   if (error%errorCode == 0) then
+
       ! check value breaker parameter
       if (ksi0 > 5.0d0) then
 
@@ -191,8 +190,8 @@
    endif
 
    ! determine possible error message
-   if (.not. succes) then
-      call GetMSGcalc_wave_overtopping_discharge(errorMessage)
+   if (error%errorCode /= 0) then
+      call GetMSGcalc_wave_overtopping_discharge(error%Message)
    endif
 
    end subroutine calculateWaveOvertoppingDischarge
@@ -222,7 +221,7 @@
 !! calculate the wave steepness
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateWaveSteepness (Hm0, Tm_10, s0, succes, errorMessage)
+   subroutine calculateWaveSteepness (Hm0, Tm_10, s0, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -232,8 +231,7 @@
    real(kind=wp),    intent(in   ) :: Hm0            !< significant wave height (m)
    real(kind=wp),    intent(in   ) :: Tm_10          !< spectral wave period (s)
    real(kind=wp),    intent(  out) :: s0             !< wave steepness
-   logical,          intent(  out) :: succes         !< flag for succes
-   character(len=*), intent(inout) :: errorMessage   !< error message, only set in case of an error
+   type(tMessage),   intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
@@ -242,7 +240,7 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! calculate the wave length
    call calculateWaveLength (Tm_10, L0)
@@ -251,8 +249,8 @@
    if (L0 > 0.0d0) then
       s0 = Hm0/L0
    else
-      succes = .false.
-      call GetMSGcalc_wave_steepness_period_is_zero(errorMessage)
+      error%errorCode = 1
+      call GetMSGcalc_wave_steepness_period_is_zero(error%Message)
    endif
 
    end subroutine calculateWaveSteepness
@@ -261,7 +259,7 @@
 !! calculate the breaker parameter
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateBreakerParameter (tanAlpha, s0, ksi0, succes, errorMessage)
+   subroutine calculateBreakerParameter (tanAlpha, s0, ksi0, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -271,20 +269,19 @@
    real(kind=wp),    intent(in   ) :: tanAlpha       !< representative slope angle
    real(kind=wp),    intent(in   ) :: s0             !< wave steepness
    real(kind=wp),    intent(  out) :: ksi0           !< breaker parameter
-   logical,          intent(  out) :: succes         !< flag for succes
-   character(len=*), intent(inout) :: errorMessage   !< error message, only set in case of an error
+   type(tMessage),   intent(inout) :: error          !< error struct
 
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! calculate the breaker parameter
    if (s0 > 0.0d0) then
       ksi0 = tanAlpha/sqrt(s0)
    else
-      succes = .false.
-      call GetMSGcalc_breaker_param_steepness_is_zero(errorMessage)
+      error%errorCode = 1
+      call GetMSGcalc_breaker_param_steepness_is_zero(error%Message)
    endif
 
    end subroutine calculateBreakerParameter
@@ -316,7 +313,7 @@
 !! calculate the breaker limit
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateBreakerLimit (gammaB, ksi0Limit, succes, errorMessage)
+   subroutine calculateBreakerLimit (gammaB, ksi0Limit, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -325,8 +322,7 @@
 !
    real(kind=wp),             intent(in   ) :: gammaB         ! influence factor for berms
    real(kind=wp),             intent(  out) :: ksi0Limit      ! limit value breaker parameter
-   logical,                   intent(  out) :: succes         ! flag for succes
-   character(len=*),          intent(inout) :: errorMessage   ! error message, only set in case of an error
+   type(tMessage),            intent(inout) :: error          ! error struct
 !
 !  Local parameters
 !
@@ -343,7 +339,7 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
    if (gammaB == 1.0_wp) then
        ksi0limit = 1.73383901115961_wp
        return
@@ -362,9 +358,9 @@
    d =  fRunup3
 
    ! calculate the real roots of the cubic function
-   call realRootsCubicFunction (a, b, c, d, N, x, succes, errorMessage)
+   call realRootsCubicFunction (a, b, c, d, N, x, error)
 
-   if (succes) then
+   if (error%errorCode == 0) then
 
       ! calculate ksi0 from positive solutions
       M = 0
@@ -390,7 +386,7 @@
 !! adjust the influence factors
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine adjustInfluenceFactors (gammaB, gammaF, gammaBeta, gammaBetaType, ksi0, ksi0Limit, succes, errorMessage)
+   subroutine adjustInfluenceFactors (gammaB, gammaF, gammaBeta, gammaBetaType, ksi0, ksi0Limit, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -403,8 +399,7 @@
    integer,          intent(in)     :: gammaBetaType  !< type influence factor angle of wave attack: 1 = wave run-up, 2 = overtopping
    real(kind=wp),    intent(in)     :: ksi0           !< breaker parameter
    real(kind=wp),    intent(in)     :: ksi0Limit      !< limit value breaker parameter
-   logical,          intent(out)    :: succes         !< flag for succes
-   character(len=*), intent(inout)  :: errorMessage   !< error message, only set in case of an error
+   type(tMessage),   intent(inout)  :: error          !< error struct
 !
 !  Local parameters
 !
@@ -420,7 +415,7 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! initialize the minimal values for the influence factors
    gammaB_min = 0.6d0
@@ -432,11 +427,11 @@
       case (2)
          gammaBeta_min = 0.736d0 ! overtopping
       case default
-         succes = .false.
+         error%errorCode = 1
    end select
 
    ! calculate the total influence factor
-   if (succes) then
+   if (error%errorCode == 0) then
       if (ksi0 < ksi0Limit) then
          gammaT = gammaB * gammaF * gammaBeta
       else
@@ -444,11 +439,11 @@
       endif
 
       ! check if the total influence factor is greater than zero
-      succes = (gammaT > 0.0d0)
+      if (gammaT <= 0.0d0) error%errorCode = 1
    endif
 
    ! adjust the influence factors if the total influence is less than 0.4
-   if (succes) then
+   if (error%errorCode == 0) then
       if (gammaT < 0.4d0) then
 
          ! calculate the ratios of the influence factors in relation to their minimum
@@ -457,11 +452,11 @@
          ratioBeta = (1-gammaBeta) / (1-gammaBeta_min)
 
          ! check the ratio values
-         if ((ratioB    < 0.0d0) .or. (ratioB    > 1.0d0)) succes = .false.
-         if ((ratioF    < 0.0d0) .or. (ratioF    > 1.0d0)) succes = .false.
-         if ((ratioBeta < 0.0d0) .or. (ratioBeta > 1.0d0)) succes = .false.
+         if ((ratioB    < 0.0d0) .or. (ratioB    > 1.0d0)) error%errorCode = 1
+         if ((ratioF    < 0.0d0) .or. (ratioF    > 1.0d0)) error%errorCode = 1
+         if ((ratioBeta < 0.0d0) .or. (ratioBeta > 1.0d0)) error%errorCode = 1
 
-         if (succes) then
+         if (error%errorCode == 0) then
 
             ! calculate the sum of the ratios
             ratioT = ratioB + ratioF + ratioBeta
@@ -477,8 +472,8 @@
    endif
 
    ! determine possible error message
-   if (.not. succes) then
-      call GetMSGcalc_influence_factors(errorMessage)
+   if (error%errorCode /= 0) then
+      call GetMSGcalc_influence_factors(error%Message)
    endif
 
    end subroutine adjustInfluenceFactors
@@ -487,7 +482,7 @@
 !! calculate the roots of a cubic function
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine realRootsCubicFunction (a, b, c, d, N, x, succes, errorMessage)
+   subroutine realRootsCubicFunction (a, b, c, d, N, x, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -500,8 +495,7 @@
    real(kind=wp),    intent(in  )  :: d              !< coefficient d cubic function
    integer,          intent(  out) :: N              !< number of real roots cubic function
    real(kind=wp),    intent(  out) :: x(3)           !< real roots cubic function
-   logical,          intent(  out) :: succes         !< flag for succes
-   character(len=*), intent(inout) :: errorMessage   !< error message, only set in case of an error
+   type(tMessage),   intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
@@ -511,14 +505,14 @@
 ! ==========================================================================================================
 
    ! calculate complex roots cubic function
-   call rootsGeneralCubic (a, b, c, d, z, succes, errorMessage)
+   call rootsGeneralCubic (a, b, c, d, z, error)
 
    ! initialize (number of) real roots
    N = 0
    x = 0.0d0
 
-   if (succes) then
-      
+   if (error%errorCode == 0) then
+
       ! loop over complex roots cubic function
       do i=1, 3
 
@@ -526,7 +520,7 @@
          if (isEqualZero (imag(z(i)))) then
 
             ! add to real roots cubic function
-            if (succes) then
+            if (error%errorCode == 0) then
                N    = N+1
                x(N) = dble(z(i))
             endif
@@ -543,7 +537,7 @@
 !! calculate the roots of a generic cubic function
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine rootsGeneralCubic (a, b, c, d, z, succes, errorMessage)
+   subroutine rootsGeneralCubic (a, b, c, d, z, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -554,9 +548,8 @@
    real(kind=wp),    intent(in   )  :: b              !< coefficients b cubic function
    real(kind=wp),    intent(in   )  :: c              !< coefficients c cubic function
    real(kind=wp),    intent(in   )  :: d              !< coefficients d cubic function
-   double complex,   intent(  out) :: z(3)           !< roots cubic function
-   logical,          intent(  out) :: succes         !< flag for succes
-   character(len=*), intent(inout) :: errorMessage   !< error message, only set in case of an error
+   double complex,   intent(  out) :: z(3)            !< roots cubic function
+   type(tMessage),   intent(inout) :: error           !< error struct
 !
 !  Local parameters
 !
@@ -565,12 +558,12 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! check first coefficient cubic function
-   succes = (.not. isEqualZero (a))
+   if (isEqualZero (a)) error%errorCode = 1
 
-   if (succes) then
+   if (error%errorCode == 0) then
 
       ! substitution of z = t-b/(3a) gives: t^3 + pt + q = 0
       p = (3*a*c - b**2)/(3*(a**2))
@@ -585,8 +578,8 @@
    endif
 
    ! determine possible error message
-   if (.not. succes) then
-      call GetMSGcalc_roots_cubic_function(errorMessage)
+   if (error%errorCode /= 0) then
+      call GetMSGcalc_roots_cubic_function(error%Message)
    endif
 
    end subroutine rootsGeneralCubic

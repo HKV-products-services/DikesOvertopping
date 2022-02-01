@@ -40,6 +40,7 @@
    use typeDefinitionsOvertopping
    use formulaModuleOvertopping
    use OvertoppingMessages
+   use errorMessages
 
    implicit none
 
@@ -57,20 +58,19 @@
 !! check cross section
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine checkCrossSection (psi, nCoordinates, xCoordinates, yCoordinates, roughnessFactors, succes, errorMessage)
+   subroutine checkCrossSection (psi, nCoordinates, xCoordinates, yCoordinates, roughnessFactors, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   real(kind=wp),    intent(in)  :: psi                              !< dike normal (degrees)
-   integer,          intent(in)  :: nCoordinates                     !< number of coordinates
-   real(kind=wp),    intent(in)  :: xCoordinates    (nCoordinates)   !< x-coordinates (m)
-   real(kind=wp),    intent(in)  :: yCoordinates    (nCoordinates)   !< y-coordinates (m+NAP)
-   real(kind=wp),    intent(in)  :: roughnessFactors(nCoordinates-1) !< roughness factors
-   logical,          intent(out) :: succes                           !< flag for succes
-   character(len=*), intent(inout) :: errorMessage                   !< error message
+   real(kind=wp),    intent(in)    :: psi                              !< dike normal (degrees)
+   integer,          intent(in)    :: nCoordinates                     !< number of coordinates
+   real(kind=wp),    intent(in)    :: xCoordinates    (nCoordinates)   !< x-coordinates (m)
+   real(kind=wp),    intent(in)    :: yCoordinates    (nCoordinates)   !< y-coordinates (m+NAP)
+   real(kind=wp),    intent(in)    :: roughnessFactors(nCoordinates-1) !< roughness factors
+   type(tMessage),   intent(inout) :: error                            !< error struct
 !
 !  Local parameters
 !
@@ -80,60 +80,57 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! check dike normal
-   if (succes) then
-      if ((psi < 0.0d0) .or. (psi > 360.0d0)) then
-         succes = .false.
-         call GetMSGpsi_not_in_range(errorMessage)
-      endif
+   if ((psi < 0.0d0) .or. (psi > 360.0d0)) then
+      error%errorCode = 1
+      call GetMSGpsi_not_in_range(error%Message)
    endif
 
    ! check number of coordinates
-   if (succes) then
+   if (error%errorCode == 0) then
       if (nCoordinates < 2) then
-         succes = .false.
-         call GetMSGdimension_cross_section_less_than_2(errorMessage)
+         error%errorCode = 1
+         call GetMSGdimension_cross_section_less_than_2(error%Message)
       endif
    endif
 
    ! initialize structure with geometry data
-   if (succes) then
-      call initializeGeometry (psi, nCoordinates, xCoordinates, yCoordinates, roughnessFactors, &
-                               geometry, succes, errorMessage)
+   if (error%errorCode == 0) then
+      call initializeGeometry (psi, nCoordinates, xCoordinates, yCoordinates, roughnessFactors, geometry, error)
    endif
 
    ! check minimal distance x-coordinates
-   if (succes) then
+   if (error%errorCode == 0) then
       if (minval(geometry%xCoordDiff) < xDiff_min - marginDiff) then
-         succes = .false.
-         write (errorMessage, GetFMTxcoordinates_must_increase()) xDiff_min
+         error%errorCode = 1
+         write (error%Message, GetFMTxcoordinates_must_increase()) xDiff_min
       endif
    endif
 
    ! check minimal distance y-coordinates
-   if (succes) then
+   if (error%errorCode == 0) then
       if (minval(geometry%yCoordDiff) < 0.0d0) then
-         succes = .false.
-         call GetMSGycoordinates_must_be_nondecreasing(errorMessage)
+         error%errorCode = 1
+         call GetMSGycoordinates_must_be_nondecreasing(error%Message)
       endif
    endif
 
-   if (succes) then
-       call checkSegmentTypes(geometry, succes, errorMessage)
+   if (error%errorCode == 0) then
+       call checkSegmentTypes(geometry, error)
     endif
 
    ! check roughness factors
-   if (succes) then
+   if (error%errorCode == 0) then
       if (any(geometry%roughnessFactors < rFactor_min)) then
-         succes = .false.
+         error%errorCode = 1
          rFactor = minval(geometry%roughnessFactors)
-         write (errorMessage,GetFMTroughnessfactors_out_of_range()) rFactor_min, rFactor_max, rFactor
+         write (error%Message,GetFMTroughnessfactors_out_of_range()) rFactor_min, rFactor_max, rFactor
       else if (any(geometry%roughnessFactors > rFactor_max)) then
-         succes = .false.
+         error%errorCode = 1
          rFactor = maxval(geometry%roughnessFactors)
-         write (errorMessage,GetFMTroughnessfactors_out_of_range()) rFactor_min, rFactor_max, rFactor
+         write (error%Message,GetFMTroughnessfactors_out_of_range()) rFactor_min, rFactor_max, rFactor
       endif
    endif
 
@@ -142,31 +139,30 @@
    end subroutine checkCrossSection
 
    ! validation routine for segment types
-   subroutine checkSegmentTypes(geometry, success, errorMessage)
+   subroutine checkSegmentTypes(geometry, error)
    type (tpGeometry), intent(in)   :: geometry     !< structure with geometry data
-   logical, intent(out)            :: success      !< validation failed or not
-   character(len=*), intent(inout) :: errorMessage !< error message, only set in case of an error
+   type (tMessage),   intent(inout):: error        !< error struct
 
    ! check segment types
-   if (count(geometry%segmentTypes == 3) > 0d0) then
-      success = .false.
-      call GetMSGdike_segment_mismatches(errorMessage)
+   if (count(geometry%segmentTypes == 3) > 0) then
+      error%errorCode = 1
+      call GetMSGdike_segment_mismatches(error%Message)
    endif
 
    ! check number of berm segments
-   if (success) then
+   if (error%errorCode == 0) then
       if (geometry%NbermSegments > 2) then
-         success = .false.
-         call GetMSGmax2berm_segments(errorMessage)
+         error%errorCode = 1
+         call GetMSGmax2berm_segments(error%Message)
       endif
    endif
 
    ! check if first and last dike segment is a slope segment
-   if (success) then
+   if (error%errorCode == 0) then
       if ((geometry%segmentTypes(1) == 2) .or. &
           (geometry%segmentTypes(geometry%nCoordinates-1) == 2)) then
-         success = .false.
-         call GetMSGfirst_and_last_must_be_slope(errorMessage)
+         error%errorCode = 1
+         call GetMSGfirst_and_last_must_be_slope(error%Message)
       endif
    endif
    end subroutine checkSegmentTypes
@@ -175,8 +171,7 @@
 !! initialize the geometry
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine initializeGeometry (psi, nCoordinates, xCoordinates, yCoordinates, roughnessFactors, &
-                                  geometry, succes, errorMessage)
+   subroutine initializeGeometry (psi, nCoordinates, xCoordinates, yCoordinates, roughnessFactors, geometry, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -188,9 +183,8 @@
    real(kind=wp),       intent(in   ) :: xCoordinates(nCoordinates)       !< x-coordinates (m)
    real(kind=wp),       intent(in   ) :: yCoordinates(nCoordinates)       !< y-coordinates (m+NAP)
    real(kind=wp),       intent(in   ) :: roughnessFactors(nCoordinates-1) !< roughness factors
-   type (tpGeometry), target, intent(inout) :: geometry                         !< structure with geometry data
-   logical,             intent(  out) :: succes                           !< flag for succes
-   character(len=*),    intent(inout) :: errorMessage                     !< error message, only set in case of an error
+   type (tpGeometry), target, intent(inout) :: geometry                   !< structure with geometry data
+   type (tMessage),     intent(inout) :: error                            !< error struct
 !
 !  local parameters
 !
@@ -200,7 +194,7 @@
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! copy dike normal to structure with geometry data
    geometry%psi = psi
@@ -209,31 +203,31 @@
    geometry%nCoordinates = nCoordinates
 
    ! allocate vectors in structure with geometry data
-   call allocateVectorsGeometry (nCoordinates, geometry, succes, errorMessage)
+   call allocateVectorsGeometry (nCoordinates, geometry, error)
 
-   if (succes) then
+   if (error%errorCode == 0) then
    ! copy (x,y)-coordinates and roughness factors to structure with geometry data
       geometry%xCoordinates     = xCoordinates
       geometry%yCoordinates     = yCoordinates
       geometry%roughnessFactors = roughnessFactors
 
    ! calculate the differences and segment slopes
-      call calculateSegmentSlopes (geometry, succes, errorMessage)
+      call calculateSegmentSlopes (geometry, error)
    endif
 
    ! determine the type of the segments (slope or berm)
-   if (succes) then
-      call determineSegmentTypes (geometry, succes, errorMessage)
+   if (error%errorCode == 0) then
+      call determineSegmentTypes (geometry, error)
    endif
-   
-   if (succes) then
+
+   if (error%errorCode == 0) then
        do i = 1, geometry%nCoordinates - 1
            if (geometry%Roughnessfactors(i) < rFactor_min .or. geometry%Roughnessfactors(i) > rFactor_max) then
-               succes = .false.
-               write(errorMessage, GetFMTroughnessfactors_out_of_range(), iostat=ierr) &
+               error%errorCode = 1
+               write(error%Message, GetFMTroughnessfactors_out_of_range(), iostat=ierr) &
                    rFactor_min, rFactor_max, geometry%Roughnessfactors(i)
                if (ierr /= 0) then
-                   errorMessage = GetFMTroughnessfactors_out_of_range()
+                   error%Message = GetFMTroughnessfactors_out_of_range()
                endif
                exit
            endif
@@ -241,7 +235,7 @@
    endif 
 
    ! determine the number of berm segments
-   if (succes) then
+   if (error%errorCode == 0) then
       geometry%NbermSegments = count(geometry%segmentTypes == 2)
    endif
 
@@ -255,7 +249,7 @@
 !! allocate the geometry vectors
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine allocateVectorsGeometry (nCoordinates, geometry, succes, errorMessage)
+   subroutine allocateVectorsGeometry (nCoordinates, geometry, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -264,8 +258,7 @@
 !
    integer,             intent(in)     :: nCoordinates   !< number of coordinates
    type (tpGeometry),   intent(inout)  :: geometry       !< structure with geometry data
-   logical,             intent(out)    :: succes         !< succes flag
-   character(len=*),    intent(inout)  :: errorMessage   !< error message (only set in case of error)
+   type (tMessage),     intent(inout)  :: error          !< error struct
 !
 !  local parameters
 !
@@ -290,10 +283,10 @@
    if (ierr == 0) allocate (geometry%segmentSlopes    (nCoordinates-1), stat=ierr)
    if (ierr == 0) allocate (geometry%segmentTypes     (nCoordinates-1), stat=ierr)
 
-   succes = (ierr == 0)
+   error%errorCode = ierr
    if (ierr /= 0) then
        sizeArrays  = 2 * nCoordinates + 5 * (nCoordinates-1)
-       write(errorMessage, GetFMTallocateError()) sizeArrays
+       write(error%Message, GetFMTallocateError()) sizeArrays
    endif 
 
    end subroutine allocateVectorsGeometry
@@ -325,7 +318,7 @@ end subroutine deallocateGeometry
 !! calculate the segment slopes
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateSegmentSlopes (geometry, succes, errorMessage)
+   subroutine calculateSegmentSlopes (geometry, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -333,16 +326,15 @@ end subroutine deallocateGeometry
 !  Input/output parameters
 !
    type (tpGeometry),   intent(inout)  :: geometry       !< structure with geometry data
-   logical,             intent(  out)  :: succes         !< flag for succes
-   character(len=*),    intent(inout)  :: errorMessage   !< error message, only set in case of an error
+   type (tMessage),     intent(inout)  :: error          !< error struct
 
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
    if (geometry%nCoordinates < 2) then
-       succes = .false.
-       call GetMSGdimension_cross_section_less_than_2(errorMessage)
+       error%errorCode = 1
+       call GetMSGdimension_cross_section_less_than_2(error%Message)
    else
 
       ! calculate horizontal distances
@@ -357,8 +349,8 @@ end subroutine deallocateGeometry
       if (minval(geometry%xCoordDiff) > 0.0d0) then
          geometry%segmentSlopes = geometry%yCoordDiff / geometry%xCoordDiff
       else
-         succes = .false.
-         call GetMSGslope_negative(errorMessage)
+         error%errorCode = 1
+         call GetMSGslope_negative(error%Message)
       endif
    endif
 
@@ -368,7 +360,7 @@ end subroutine deallocateGeometry
 !! determine the segment types
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine determineSegmentTypes (geometry, succes, errorMessage)
+   subroutine determineSegmentTypes (geometry, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -376,8 +368,7 @@ end subroutine deallocateGeometry
 !  Input/output parameters
 !
    type (tpGeometry),   intent(inout)  :: geometry     !< structure with geometry data
-   logical,             intent(out  )  :: succes       !< success flag
-   character(len=*),    intent(inout)  :: errorMessage !< error message; only set in case of error
+   type (tMessage),     intent(inout)  :: error        !< error struct
 !
 !  Local parameters
 !
@@ -389,7 +380,7 @@ end subroutine deallocateGeometry
 
 ! ==========================================================================================================
 
-   succes = .true.
+   error%errorCode = 0
    nBerms = 0
 
    ! loop over dike segments
@@ -408,11 +399,11 @@ end subroutine deallocateGeometry
          geometry%segmentTypes(i) = 2 ! berm
          nBerms = nBerms + 1
          if (i == 1) then
-             succes = .false.
-             call GetMSG_first_segment_berm(errorMessage)
+             error%errorCode = 1
+             call GetMSG_first_segment_berm(error%Message)
          else if (i == geometry%nCoordinates - 1) then
-             succes = .false.
-             call GetMSG_last_segment_berm(errorMessage)
+             error%errorCode = 1
+             call GetMSG_last_segment_berm(error%Message)
          endif
       else
          geometry%segmentTypes(i) = 3 ! other
@@ -421,9 +412,9 @@ end subroutine deallocateGeometry
    enddo
 
    if (nBerms > 2) then
-       succes = .false.
+       error%errorCode = 1
        call GetFormatTooManyBerms(cfmt)
-       write(errorMessage, cfmt) nBerms
+       write(error%Message, cfmt) nBerms
    endif
 
    end subroutine determineSegmentTypes
@@ -432,7 +423,7 @@ end subroutine deallocateGeometry
 !! copy a geometry structure
 !!   @ingroup LibOvertopping
 !**********************************************************************************************************
-   subroutine copyGeometry (geometry, geometryCopy, succes, errorMessage, splitId)
+   subroutine copyGeometry (geometry, geometryCopy, error, splitId)
 !***********************************************************************************************************
 !
    implicit none
@@ -441,8 +432,7 @@ end subroutine deallocateGeometry
 !
    type (tpGeometry),   intent(in)     :: geometry       !< structure with geometry data
    type (tpGeometry),   intent(inout)  :: geometryCopy   !< structure with geometry data copy
-   logical,             intent(out)    :: succes         !< succes flag
-   character(len=*),    intent(inout)  :: errorMessage   !< error message, only set in case of error
+   type (tMessage),     intent(inout)  :: error          !< error struct
    character, optional, intent(in)     :: splitId        !< B or F section
 !
 !  Local parameters
@@ -452,9 +442,9 @@ end subroutine deallocateGeometry
 ! ==========================================================================================================
 
    ! allocate vectors in structure with geometry data copy
-   call allocateVectorsGeometry (geometry%nCoordinates, geometryCopy, succes, errorMessage)
+   call allocateVectorsGeometry (geometry%nCoordinates, geometryCopy, error)
 
-   if (succes) then
+   if (error%errorCode == 0) then
    ! copy dike normal and number of coordinates to structure with geometry data copy
       geometryCopy%psi          = geometry%psi
       geometryCopy%nCoordinates = geometry%nCoordinates
@@ -490,7 +480,7 @@ end subroutine deallocateGeometry
 !! merge sequential berms
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine mergeSequentialBerms (geometry, geometryMergedBerms, succes, errorMessage)
+   subroutine mergeSequentialBerms (geometry, geometryMergedBerms, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -499,8 +489,7 @@ end subroutine deallocateGeometry
 !
    type (tpGeometry),   intent(in   )   :: geometry             !< structure with geometry data
    type (tpGeometry),   intent(inout)   :: geometryMergedBerms  !< geometry data with merged sequential berms
-   logical,             intent(  out)   :: succes               !< flag for succes
-   character(len=*),    intent(inout)   :: errorMessage         !< error message, only set in case of an error
+   type (tMessage),     intent(inout)   :: error                !< error struct
 !
 !  Local parameters
 !
@@ -515,7 +504,7 @@ end subroutine deallocateGeometry
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! ---------------------------------------
    ! determine if there are sequential berms
@@ -549,7 +538,7 @@ end subroutine deallocateGeometry
    if (.not. sequentialBerms) then
 
       ! no sequential berms present
-      call copyGeometry (geometry, geometryMergedBerms, succes, errorMessage)
+      call copyGeometry (geometry, geometryMergedBerms, error)
 
    else
 
@@ -559,9 +548,9 @@ end subroutine deallocateGeometry
       geometryMergedBerms%NbermSegments = geometry%NbermSegments - 1
 
       ! allocate vectors in structure with new geometry data
-      call allocateVectorsGeometry (geometryMergedBerms%nCoordinates, geometryMergedBerms, succes, errorMessage)
+      call allocateVectorsGeometry (geometryMergedBerms%nCoordinates, geometryMergedBerms, error)
 
-      if (succes) then
+      if (error%errorCode == 0) then
          ! remove x-coordinate between sequential berms
          geometryMergedBerms%xCoordinates(1:index)  = geometry%xCoordinates(1:index)
          geometryMergedBerms%xCoordinates(index+1:) = geometry%xCoordinates(index+2:)
@@ -575,15 +564,15 @@ end subroutine deallocateGeometry
          if ((B1+B2) > 0.0d0) then
             geometryMergedBerms%roughnessFactors(index)  = (B1*rFactor1 + B2*rFactor2) / (B1+B2)
          else
-            succes = .false.
-            call GetMSGmerging_seq_berm(errorMessage)
+            error%errorCode = 1
+            call GetMSGmerging_seq_berm(error%Message)
          endif
          geometryMergedBerms%roughnessFactors(index+1:)  = geometry%roughnessFactors(index+2:)
       endif
       
       ! recalculate differences and slopes
-      if (succes) then
-         call calculateSegmentSlopes (geometryMergedBerms, succes, errorMessage)
+      if (error%errorCode == 0) then
+         call calculateSegmentSlopes (geometryMergedBerms, error)
       endif
 
       ! remove sequential berm from dike segment types
@@ -598,7 +587,7 @@ end subroutine deallocateGeometry
 !! adjust non-horizontal berms
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine adjustNonHorizontalBerms (geometry, geometryFlatBerms, succes, errorMessage)
+   subroutine adjustNonHorizontalBerms (geometry, geometryFlatBerms, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -607,8 +596,7 @@ end subroutine deallocateGeometry
 !
    type (tpGeometry),   intent(in   ) :: geometry          !< structure with geometry data
    type (tpGeometry),   intent(inout) :: geometryFlatBerms !< geometry data with horizontal berms
-   logical,             intent(  out) :: succes            !< flag for succes
-   character(len=*),    intent(inout) :: errorMessage      !< error message, only set in case of an error
+   type (tMessage),     intent(inout) :: error             !< error
 !
 !  Local parameters
 !
@@ -620,12 +608,12 @@ end subroutine deallocateGeometry
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! initialize the structure with geometry data with horizontal berms
-   call copyGeometry (geometry, geometryFlatBerms, succes, errorMessage, geometry%splitId)
+   call copyGeometry (geometry, geometryFlatBerms, error, geometry%splitId)
 
-   if (succes) then
+   if (error%errorCode == 0) then
       ! loop over possible berm segments
       do i=2, geometry%nCoordinates - 2
 
@@ -639,14 +627,14 @@ end subroutine deallocateGeometry
             if (geometryFlatBerms%segmentSlopes(i-1) > 0.0d0) then
                dx1 = (hBerm - geometryFlatBerms%yCoordinates(i-1)) / geometryFlatBerms%segmentSlopes(i-1)
             else
-               succes = .false.
+               error%errorCode = 1
             endif
 
             ! calculate horizontal distance from end point horizontal berm to next point
             if (geometryFlatBerms%segmentSlopes(i+1) > 0.0d0) then
                dx2 = (geometryFlatBerms%yCoordinates(i+1) - hBerm) / geometryFlatBerms%segmentSlopes(i+1)
             else
-               succes = .false.
+               error%errorCode = 1
             endif
 
             ! ---------------------------------------------------------------------------------------------
@@ -655,8 +643,8 @@ end subroutine deallocateGeometry
             ! ---------------------------------------------------------------------------------------------
 
             ! determine possible error message
-            if (.not. succes) then
-               call GetMSGadjust_non_horizontal_seq_berm(errorMessage)
+            if (error%errorCode /= 0) then
+               call GetMSGadjust_non_horizontal_seq_berm(error%Message)
                exit ! exit loop
             endif
 
@@ -669,15 +657,15 @@ end subroutine deallocateGeometry
             geometryFlatBerms%xCoordinates(i+1) = geometryFlatBerms%xCoordinates(i+1) - dx2
 
             ! recalculate segment slopes
-            call calculateSegmentSlopes (geometryFlatBerms, succes, errorMessage)
-            if (.not. succes) then
+            call calculateSegmentSlopes (geometryFlatBerms, error)
+            if (error%errorCode /= 0) then
                exit ! exit loop
             endif
 
          endif
 
       enddo
-   
+
    endif
 
    end subroutine adjustNonHorizontalBerms
@@ -686,7 +674,7 @@ end subroutine deallocateGeometry
 !! remove berms
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine removeBerms (geometry, geometryNoBerms, succes, errorMessage)
+   subroutine removeBerms (geometry, geometryNoBerms, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -695,8 +683,7 @@ end subroutine deallocateGeometry
 !
    type (tpGeometry),   intent(in   ) :: geometry          !< structure with geometry data
    type (tpGeometry),   intent(inout) :: geometryNoBerms   !< geometry data withouth berms
-   logical,             intent(  out) :: succes            !< flag for succes
-   character(len=*),    intent(inout) :: errorMessage      !< error message, only set in case of an error
+   type (tMessage),     intent(inout) :: error             !< error struct
 !
 !  Local parameters
 !
@@ -707,7 +694,7 @@ end subroutine deallocateGeometry
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! determine (x,y)-coordinates cross section without berms
    if (geometry%NbermSegments > 0) then
@@ -719,9 +706,9 @@ end subroutine deallocateGeometry
       geometryNoBerms%nCoordinates = geometry%nCoordinates - geometry%NbermSegments
 
       ! allocate vectors in structure with new geometry data
-      call allocateVectorsGeometry (geometryNoBerms%nCoordinates, geometryNoBerms, succes, errorMessage)
+      call allocateVectorsGeometry (geometryNoBerms%nCoordinates, geometryNoBerms, error)
 
-      if (succes) then
+      if (error%errorCode == 0) then
          ! initialize total berm width
          Bsum = 0.0d0
 
@@ -738,8 +725,8 @@ end subroutine deallocateGeometry
 
                ! check if the berm segment is a horizontal berm
                if (geometry%segmentSlopes(i) > 0.0d0) then
-                  succes = .false.
-                  call GetMSGRemoveNonHorizontalBerm(errorMessage)
+                  error%errorCode = 1
+                  call GetMSGRemoveNonHorizontalBerm(error%Message)
                endif
 
                ! add the width of the berm segment to the total sum
@@ -758,24 +745,24 @@ end subroutine deallocateGeometry
       endif
 
       ! calculate the differences and segment slopes
-      if (succes) then
-         call calculateSegmentSlopes (geometryNoBerms, succes, errorMessage)
+      if (error%errorCode == 0) then
+         call calculateSegmentSlopes (geometryNoBerms, error)
       endif
 
       ! determine the type of the segments (slope or berm)
-      if (succes) then
-         call determineSegmentTypes (geometryNoBerms, succes, errorMessage)
+      if (error%errorCode == 0) then
+         call determineSegmentTypes (geometryNoBerms, error)
       endif
 
       ! determine the number of berm segments
-      if (succes) then
+      if (error%errorCode == 0) then
          geometryNoBerms%NbermSegments = count(geometryNoBerms%segmentTypes == 2)
       endif
 
    else
 
       ! no berms present
-      call copyGeometry (geometry, geometryNoBerms, succes, errorMessage)
+      call copyGeometry (geometry, geometryNoBerms, error)
 
    endif
 
@@ -785,31 +772,30 @@ end subroutine deallocateGeometry
 !! remove dike segments
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine removeDikeSegments (geometry, index, geometryAdjusted, succes, errorMessage)
+   subroutine removeDikeSegments (geometry, index, geometryAdjusted, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   type (tpGeometry),   intent(in)  :: geometry          !< structure with geometry data
-   integer,             intent(in)  :: index             !< index starting point new cross section
+   type (tpGeometry),   intent(in)    :: geometry          !< structure with geometry data
+   integer,             intent(in)    :: index             !< index starting point new cross section
    type (tpGeometry),   intent(inout) :: geometryAdjusted  !< geometry data with removed dike segments
-   logical,             intent(out) :: succes            !< flag for succes
-   character(len=*),    intent(inout) :: errorMessage    !< error message
+   type (tMessage),     intent(inout) :: error             !< error struct
    
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! check index starting point new cross section
    if ((index < 1) .or. (index > geometry%nCoordinates-1)) then
-      succes = .false.
-      call GetMSGremove_dike_segments_index(errorMessage)
+      error%errorCode = 1
+      call GetMSGremove_dike_segments_index(error%Message)
    endif
 
-   if (succes) then
+   if (error%errorCode == 0) then
 
       ! copy the dike normal
       geometryAdjusted%psi = geometry%psi
@@ -818,25 +804,25 @@ end subroutine deallocateGeometry
       geometryAdjusted%nCoordinates = geometry%nCoordinates - index + 1
 
       ! allocate vectors in structure with geometry data
-      call allocateVectorsGeometry (geometryAdjusted%nCoordinates, geometryAdjusted, succes, errorMessage)
+      call allocateVectorsGeometry (geometryAdjusted%nCoordinates, geometryAdjusted, error)
 
-      if (succes) then
+      if (error%errorCode == 0) then
          ! select the remaining dike segments for the new cross section
          geometryAdjusted%xCoordinates     = geometry%xCoordinates    (index:)
          geometryAdjusted%yCoordinates     = geometry%yCoordinates    (index:)
          geometryAdjusted%roughnessFactors = geometry%roughnessFactors(index:)
 
          ! calculate the differences and segment slopes
-         call calculateSegmentSlopes (geometryAdjusted, succes, errorMessage)
+         call calculateSegmentSlopes (geometryAdjusted, error)
       endif
 
       ! determine the type of the segments (slope or berm)
-      if (succes) then
-         call determineSegmentTypes (geometryAdjusted, succes, errorMessage)
+      if (error%errorCode == 0) then
+         call determineSegmentTypes (geometryAdjusted, error)
       endif
 
       ! determine the number of berm segments for the new cross section
-      if (succes) then
+      if (error%errorCode == 0) then
          geometryAdjusted%NbermSegments = count(geometryAdjusted%segmentTypes == 2)
       endif
 
@@ -848,7 +834,7 @@ end subroutine deallocateGeometry
 !! split a cross section
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine splitCrossSection (geometry, L0, NwideBerms, geometrysectionB, geometrysectionF, succes, errorMessage)
+   subroutine splitCrossSection (geometry, L0, NwideBerms, geometrysectionB, geometrysectionF, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -860,8 +846,7 @@ end subroutine deallocateGeometry
    integer,             intent(  out) :: NwideBerms        !< number of wide berms
    type (tpGeometry),   intent(inout) :: geometrySectionB  !< geometry data with wide berms to ordinary berms
    type (tpGeometry),   intent(inout) :: geometrySectionF  !< geometry data with wide berms to foreshores
-   logical,             intent(  out) :: succes            !< flag for succes
-   character(len=*),    intent(inout) :: errorMessage      !< error message, only set in case of an error
+   type (tMessage),     intent(inout) :: error             !< error struct
 !
 !  Local parameters
 !
@@ -873,11 +858,11 @@ end subroutine deallocateGeometry
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! initialize the structures with geometry data for split cross sections
-   call copyGeometry (geometry, geometrySectionB, succes, errorMessage, 'B')
-   if (succes) call copyGeometry (geometry, geometrySectionF, succes, errorMessage, 'F')
+   call copyGeometry (geometry, geometrySectionB, error, 'B')
+   if (error%errorCode == 0) call copyGeometry (geometry, geometrySectionF, error, 'F')
 
    ! initialize number of wide berms
    NwideBerms = 0
@@ -886,7 +871,7 @@ end subroutine deallocateGeometry
    ! determine the (x,y)-coordinates for the split cross sections
    ! ------------------------------------------------------------
 
-   if (succes) then
+   if (error%errorCode == 0) then
       ! loop over possible berm segments
       do i=2, geometry%nCoordinates - 2
 
@@ -915,12 +900,12 @@ end subroutine deallocateGeometry
                   horzShift = (B-0.25d0*L0) * (1 - geometry%segmentSlopes(i)/geometry%segmentSlopes(i-1))
                else
                   horzShift = 0.0d0 
-                  succes = .false. ! previous dike segment has a gradient <= zero
-                  call GetMSGsplit_cross_section_seq_berm(errorMessage)
+                  error%errorCode = 1 ! previous dike segment has a gradient <= zero
+                  call GetMSGsplit_cross_section_seq_berm(error%Message)
                endif
                if (horzShift < 0.0d0) then
-                  succes = .false. ! previous dike segment has a more gentle slope
-                  call GetMSGsplit_cross_section_seq_berm(errorMessage)
+                  error%errorCode = 1 ! previous dike segment has a more gentle slope
+                  call GetMSGsplit_cross_section_seq_berm(error%Message)
                endif
                geometrySectionB%xCoordinates(1:i-1) = geometrySectionB%xCoordinates(1:i-1) + horzShift
 
@@ -942,8 +927,8 @@ end subroutine deallocateGeometry
 
    ! calculate the differences and segment slopes
    if (NwideBerms > 0) then
-      if (succes) call calculateSegmentSlopes (geometrySectionB, succes, errorMessage)
-      if (succes) call calculateSegmentSlopes (geometrySectionF, succes, errorMessage)
+      if (error%errorCode == 0) call calculateSegmentSlopes (geometrySectionB, error)
+      if (error%errorCode == 0) call calculateSegmentSlopes (geometrySectionF, error)
    end if
 
    ! type of segments and number of berm segments is NOT recalculated
@@ -954,7 +939,7 @@ end subroutine deallocateGeometry
 !! calculate horizontal lengths
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateHorzLengths (geometry, yLower, yUpper, horzLengths, succes, errorMessage)
+   subroutine calculateHorzLengths (geometry, yLower, yUpper, horzLengths, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -965,8 +950,7 @@ end subroutine deallocateGeometry
    real(kind=wp),     intent(in   ) :: yLower                               !< y-coord. lower bound (m+NAP)
    real(kind=wp),     intent(in   ) :: yUpper                               !< y-coord. upper bound (m+NAP)
    real(kind=wp),     intent(  out) :: horzLengths(geometry%nCoordinates-1) !< horizontal lengths segments (m)
-   logical,           intent(  out) :: succes                               !< flag for succes
-   character(len=*),  intent(inout) :: errorMessage                         !< error message, only set in case of an error
+   type(tMessage),    intent(inout) :: error                                !< error struct
 !
 !  Local parameters
 !
@@ -978,24 +962,24 @@ end subroutine deallocateGeometry
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
-   succes = .true.
+   error%errorCode = 0
 
    ! y-coordinate upper bound not lower than y-coordinate lower bound
    if (yUpper < yLower) then
-      succes = .false.
+      error%errorCode = 1
    endif
 
    ! y-coordinate lower bound not lower than dike toe (first y-coordinate)
    if (yLower < geometry%yCoordinates(1)) then
-      succes = .false.
+      error%errorCode = 1
    endif
 
    ! y-coordinate upper bound not higher than crest level (last y-coordinate)
    if (yUpper > geometry%yCoordinates(geometry%nCoordinates)) then
-      succes = .false.
+      error%errorCode = 1
    endif
 
-   if (succes) then
+   if (error%errorCode == 0) then
 
       ! initialize horizontal lengths
       horzLengths = geometry%xCoordDiff
@@ -1039,8 +1023,8 @@ end subroutine deallocateGeometry
    endif
 
    ! determine possible error message
-   if (.not. succes) then
-      call GetMSGcalc_horizontal_lengths(errorMessage)
+   if (error%errorCode /= 0) then
+      call GetMSGcalc_horizontal_lengths(error%Message)
    endif
 
    end subroutine calculateHorzLengths
@@ -1049,7 +1033,7 @@ end subroutine deallocateGeometry
 !! calculate horizontal distance
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateHorzDistance (geometry, yLower, yUpper, dx, succes, errorMessage)
+   subroutine calculateHorzDistance (geometry, yLower, yUpper, dx, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -1060,8 +1044,7 @@ end subroutine deallocateGeometry
    real(kind=wp),       intent(in)     :: yLower         !< y-coordinate lower bound (m+NAP)
    real(kind=wp),       intent(in)     :: yUpper         !< y-coordinate upper bound (m+NAP)
    real(kind=wp),       intent(inout)  :: dx             !< horizontal distance between bounds (m)
-   logical,             intent(out)    :: succes         !< flag for succes
-   character(len=*),    intent(inout)  :: errorMessage   !< error message, only set in case of an error
+   type(tMessage),      intent(inout)  :: error          !< error struct
 !
 !  Local parameters
 !
@@ -1070,10 +1053,10 @@ end subroutine deallocateGeometry
 ! ==========================================================================================================
 
    ! calculate horizontal lengths
-   call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, succes, errorMessage)
+   call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, error)
 
    ! calculate horizontal distance
-   if (succes) dx = sum(horzLengths)
+   if (error%errorCode == 0) dx = sum(horzLengths)
 
    end subroutine calculateHorzDistance
 
