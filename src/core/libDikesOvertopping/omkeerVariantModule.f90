@@ -197,8 +197,8 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
             endif
         endif
     enddo
-    
-    call checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischarge, dikeHeight, omkeerProps, iUp, iLow, dis1, dis2, minDikeHeight, maxDikeHeight, foundValue, error)
+
+    call checkIfOnBerm()
     if ( error%errorCode /= 0) return
     !
     ! use logarithmic relation between discharge and dike height
@@ -248,24 +248,9 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
 
     deallocate(omkeerProps%isBerm, omkeerProps%dischargeProfile, omkeerProps%isValidZ, omkeerProps%ZProfile)
 
-end subroutine iterateToGivenDischargeValidProfile
+contains
 
-subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischarge, dikeHeight, omkeerProps, iUp, iLow, dis1, dis2, minDikeHeight, maxDikeHeight, foundValue, error)
-    type(tpGeometry), intent(inout)            :: geometry       !< internal structure with geometry data
-    type(tpLoad), intent(in)                   :: load           !< struct with waterlevel and wave parameters
-    type(tpOvertoppingInput), intent(inout)    :: modelFactors   !< struct with modelFactors
-    type(tpOvertopping), intent(inout)         :: overtopping    !< structure with overtopping results
-    type(tOmkeer), intent(inout)               :: omkeerProps    !< struct with derived properties
-    integer, intent(in)                        :: iUp            !< upper bound on profile
-    integer, intent(in)                        :: iLow           !< lower bound on profile
-    real(kind=wp), intent(in)                  :: givenDischarge !< discharge to iterate to
-    real(kind=wp), intent(inout)               :: dis1           !< discharge at minDikeHeight
-    real(kind=wp), intent(inout)               :: dis2           !< discharge at maxDikeHeight
-    real(kind=wp), intent(inout)               :: minDikeHeight  !< lower bound dike heigth
-    real(kind=wp), intent(inout)               :: maxDikeHeight  !< upper bound dike heigth
-    real(kind=wp), intent(inout)               :: dikeHeight     !< dike height
-    logical, intent(inout)                     :: foundValue     !< flag for early succesfull return
-    type(tMessage), intent(inout)              :: error          !< error struct
+subroutine checkIfOnBerm()
     !
     ! locals
     !
@@ -374,5 +359,7 @@ subroutine checkIfOnBerm(geometry, load, modelfactors, overtopping, givenDischar
     endif
 
 end subroutine checkIfOnBerm
+
+end subroutine iterateToGivenDischargeValidProfile
 
 end module omkeerVariantModule
