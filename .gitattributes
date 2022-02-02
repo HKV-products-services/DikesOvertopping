@@ -34,6 +34,7 @@ release/x64/dllDikesOvertopping.lib -text
 release/x64/winapi.dll -text
 release/x64/winapi.lib -text
 src/CreateSigExport.ps1 -text
+src/core/CMakeLists.txt -text
 src/core/feedbackDLL.vfproj -text
 src/core/linux/Makefile -text
 src/core/linux/Makefile_gnu -text

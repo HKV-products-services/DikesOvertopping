@@ -97,6 +97,7 @@ subroutine omkeerVariantTestBasic
 
     pointer            (q, omkeerVariant)
 
+    q = 0
 #if defined _WIN32 || defined _WIN64
     p = loadlibrary    ("dllDikesOvertopping.dll"C) ! the C at the end says add a null byte as in C
     call assert_true(p /= 0, 'load dllDikesOvertopping.dll')
