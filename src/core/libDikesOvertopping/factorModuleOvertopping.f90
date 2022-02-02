@@ -57,15 +57,14 @@
 !! representative slope angle
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateTanAlpha (h, Hm0, z2, geometry, tanAlpha, error)
+   subroutine calculateTanAlpha (load, z2, geometry, tanAlpha, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   real(kind=wp),       intent(in   ) :: h              !< local water level (m+NAP)
-   real(kind=wp),       intent(in   ) :: Hm0            !< significant wave height (m)
+   type(tpLoad),        intent(in   ) :: load           !< load struct
    real(kind=wp),       intent(in   ) :: z2             !< 2% wave run-up (m)
    type(tpGeometry), target, intent(in   ) :: geometry       !< structure with geometry data
    real(kind=wp),       intent(  out) :: tanAlpha       !< representative slope angle
@@ -91,12 +90,12 @@
    end if
 
    ! local water level not lower than dike toe (first y-coordinate)
-   if (h < geometry%yCoordinates(1)) then
+   if (load%h < geometry%yCoordinates(1)) then
       error%errorCode = 1
    endif
 
    ! local water level not higher than crest level (last y-coordinate)
-   if (h > geometry%yCoordinates(geometry%nCoordinates)) then
+   if (load%h > geometry%yCoordinates(geometry%nCoordinates)) then
       error%errorCode = 1
    endif
 
@@ -116,8 +115,8 @@
    if (error%errorCode == 0) then
 
       ! determine y-coordinates lower and upper bound representative slope
-      yLower = max(h-1.5d0*Hm0, LocalGeometryNoBerms%yCoordinates(1))
-      yUpper = min(h+z2,      LocalGeometryNoBerms%yCoordinates(LocalGeometryNoBerms%nCoordinates))
+      yLower = max(load%h-1.5d0*load%Hm0, LocalGeometryNoBerms%yCoordinates(1))
+      yUpper = min(load%h+z2,      LocalGeometryNoBerms%yCoordinates(LocalGeometryNoBerms%nCoordinates))
 
       ! calculate horizontal distance between lower and upper bound
       call calculateHorzDistance (LocalGeometryNoBerms, yLower, yUpper, dx, error)
@@ -139,15 +138,14 @@
 !! influence factor angle of wave attack
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateGammaBeta (Hm0, Tm_10, beta, gammaBeta_z, gammaBeta_o)
+   subroutine calculateGammaBeta (load, beta, gammaBeta_z, gammaBeta_o)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   real(kind=wp), intent(inout)  :: Hm0         !< significant wave height (m)
-   real(kind=wp), intent(inout)  :: Tm_10       !< spectral wave period (s)
+   type(tpLoad),  intent(inout)  :: load        !< load struct
    real(kind=wp), intent(in)     :: beta        !< angle of wave attack (degree)
    real(kind=wp), intent(out)    :: gammaBeta_z !< influence factor angle of wave attack 2% wave run-up
    real(kind=wp), intent(out)    :: gammaBeta_o !< influence factor angle of wave attack overtopping
@@ -163,12 +161,12 @@
       
       if (beta > 110.0d0) then
          ! beta > 110
-         Hm0   = 0.0d0
-         Tm_10 = 0.0d0
+         load%Hm0   = 0.0d0
+         load%Tm_10 = 0.0d0
        else
          ! 80 < beta <= 110
-         Hm0   = Hm0   *      (110.0d0 - beta)/30.0d0
-         Tm_10 = Tm_10 * sqrt((110.0d0 - beta)/30.0d0)
+         load%Hm0   = load%Hm0   *      (110.0d0 - beta)/30.0d0
+         load%Tm_10 = load%Tm_10 * sqrt((110.0d0 - beta)/30.0d0)
       endif
 
    endif
@@ -300,15 +298,14 @@
 !! influence factor berms
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateGammaB (h, Hm0, z2, geometry, gammaB, error)
+   subroutine calculateGammaB (load, z2, geometry, gammaB, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   real(kind=wp),          intent(in   ) :: h              !< local water level (m+NAP)
-   real(kind=wp),          intent(in   ) :: Hm0            !< significant wave height (m)
+   type(tpLoad),           intent(in   ) :: load           !< load struct
    real(kind=wp),          intent(in   ) :: z2             !< 2% wave run-up (m)
    type(tpGeometry),       intent(in   ) :: geometry       !< structure with geometry data
    real(kind=wp),          intent(  out) :: gammaB         !< influence factor berms
@@ -338,12 +335,12 @@
    error%errorCode = 0
 
    ! local water level not lower than dike toe (first y-coordinate)
-   if (h < geometry%yCoordinates(1)) then
+   if (load%h < geometry%yCoordinates(1)) then
       error%errorCode = 1
    endif
 
    ! local water level not higher than crest level (last y-coordinate)
-   if (h > geometry%yCoordinates(geometry%nCoordinates)) then
+   if (load%h > geometry%yCoordinates(geometry%nCoordinates)) then
       error%errorCode = 1
    endif
 
@@ -380,8 +377,8 @@
 
             ! calculate the influence length
             if (error%errorCode == 0) then
-               yLower = max(hB(N)-Hm0, geometry%yCoordinates(1))
-               yUpper = min(hB(N)+Hm0, geometry%yCoordinates(geometry%nCoordinates))
+               yLower = max(hB(N)-load%Hm0, geometry%yCoordinates(1))
+               yUpper = min(hB(N)+load%Hm0, geometry%yCoordinates(geometry%nCoordinates))
                call calculateHorzDistance (geometry, yLower, yUpper, LB(N), error)
             endif
 
@@ -396,7 +393,7 @@
 
             ! calculate the berm depth
             if (error%errorCode == 0) then
-               dH(N) = h - hB(N)
+               dH(N) = load%h - hB(N)
             endif
 
             ! calculate the influence of the berm depth
@@ -414,9 +411,9 @@
 
                else ! local water level on or above the berm (dH>=0)
 
-                  if (dH(N) < 2*Hm0) then
+                  if (dH(N) < 2*load%Hm0) then
                      ! local water level less than 2*Hm0 above the berm (influence)
-                     rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/(2*Hm0))
+                     rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/(2*load%Hm0))
                   else
                      ! local water level 2*Hm0 or more above the berm (no influence)
                      rD(N) = 1.0d0

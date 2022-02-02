@@ -78,9 +78,7 @@
 !
    real(kind=wp)            :: toe                  !< height of the dike toe (m+NAP)
    real(kind=wp)            :: crest                !< crest height (m+NAP)
-   real(kind=wp)            :: h                    !< water level (m+NAP)
-   real(kind=wp)            :: Hm0                  !< significant wave height (m)
-   real(kind=wp)            :: Tm_10                !< spectral wave period (s)
+   type (tpLoad)            :: loadAdj              !< structure with load parameters
    real(kind=wp)            :: beta                 !< angle of wave attack (degree)
    real(kind=wp)            :: gammaBeta_z          !< influence factor angle of wave attack 2% wave run-up
    real(kind=wp)            :: gammaBeta_o          !< influence factor angle of wave attack overtopping
@@ -116,26 +114,24 @@
       crest = geometry%yCoordinates(geometry%nCoordinates)
 
       ! initialize local values wave height and wave period
-      Hm0   = min(load%Hm0, max(load%h - toe, 0.0d0))
-      Tm_10 = load%Tm_10
-      
-      h = load%h
+      loadAdj = load
+      loadAdj%Hm0 = min(load%Hm0, max(load%h - toe, 0.0d0))
 
       ! calculate angle of wave attack
       call calculateAngleWaveAttack (load%phi, geometry%psi, beta)
-         
+
       ! calculate influence factors angle of wave attack
-      call calculateGammaBeta (Hm0, Tm_10, beta, gammaBeta_z, gammaBeta_o)
-   
+      call calculateGammaBeta (loadAdj, beta, gammaBeta_z, gammaBeta_o)
+
       ! check wave height and wave period
-      if (abs (Hm0) < tinyWaves .or. isEqualZero (Tm_10)) then
+      if (abs (loadAdj%Hm0) < tinyWaves .or. isEqualZero (loadAdj%Tm_10)) then
 
          ! wave height and/or wave period equal to zero
          overtopping%z2 = 0.0d0
          overtopping%Qo = 0.0d0
-    
+
       ! water level below toe of the cross section
-      elseif (h < toe) then
+      elseif (loadAdj%h < toe) then
 
          ! water level lower than toe of the cross section
          overtopping%z2 = 0.0d0
@@ -147,7 +143,7 @@
 
          ! calculate the wave length
          if (error%errorCode == 0) then
-            call calculateWaveLength (Tm_10, L0)
+            call calculateWaveLength (loadAdj%Tm_10, L0)
          endif
          
          ! if applicable split cross section
@@ -162,19 +158,19 @@
             if (NwideBerms == 0) then
 
                ! no wide berms (geometrySectionB = geometrySectionF)
-               call calculateOvertoppingSection (geometrySectionB, h, Hm0, Tm_10, L0,       &
+               call calculateOvertoppingSection (geometrySectionB, loadAdj, L0,       &
                                                  gammaBeta_z, gammaBeta_o, modelFactors,    &
                                                  overtopping, error)
             else
 
                ! geometrySectionB equals geometry with all wide berms reduced to B=L0/4
-               call calculateOvertoppingSection (geometrySectionB, h, Hm0, Tm_10, L0,       &
+               call calculateOvertoppingSection (geometrySectionB, loadAdj, L0,       &
                                                  gammaBeta_z, gammaBeta_o, modelFactors,    &
                                                  overtoppingB, error)
 
                ! geometrySectionF equals geometry with all wide berms extended B=L0
                if (error%errorCode == 0) then
-                  call calculateOvertoppingSection (geometrySectionF, h, Hm0, Tm_10, L0,    &
+                  call calculateOvertoppingSection (geometrySectionF, loadAdj, L0,    &
                                                     gammaBeta_z, gammaBeta_o, modelFactors, &
                                                     overtoppingF, error)
                endif
@@ -199,7 +195,7 @@
 !! calculate the overtopping for a section
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateOvertoppingSection (geometry, h, Hm0, Tm_10, L0, gammaBeta_z, gammaBeta_o, &
+   subroutine calculateOvertoppingSection (geometry, load, L0, gammaBeta_z, gammaBeta_o, &
                                            modelFactors, overtopping, error)
 !***********************************************************************************************************
 !   implicit none
@@ -207,9 +203,7 @@
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   real(kind=wp),             intent(in)     :: h              !< local water level (m+NAP)
-   real(kind=wp),             intent(in)     :: Hm0            !< significant wave height (m)
-   real(kind=wp),             intent(in)     :: Tm_10          !< spectral wave period (s)
+   type (tpLoad),             intent(in)     :: load           !< load struct
    real(kind=wp),             intent(in)     :: L0             !< wave length (m)
    real(kind=wp),             intent(inout)  :: gammaBeta_z    !< influence angle wave attack wave run-up
    real(kind=wp),             intent(inout)  :: gammaBeta_o    !< influence angle wave attack overtopping
@@ -226,7 +220,7 @@
    real(kind=wp)     :: hBerm             !< average berm height (m)
    real(kind=wp)     :: z2max             !< maximum 2% wave run-up due to foreshore (m)
    real(kind=wp)     :: dH                !< water depth at the end of the foreshore (m)
-   real(kind=wp)     :: Hm0_red           !< reduced significant wave height (m)
+   type (tpLoad)     :: load_red          !< load with reduced Hm0
    type (tpGeometry), pointer :: geometryAdjusted  !< geometry with removed dike segments
 
 ! ==========================================================================================================
@@ -262,7 +256,7 @@
             if (B >= L0) then
 
                ! compare height of the foreshore to local water level
-               if (h < geometry%yCoordinates(i)) then
+               if (load%h < geometry%yCoordinates(i)) then
                
                   ! ---------------------------------
                   ! local water level below foreshore
@@ -279,12 +273,12 @@
                   hBerm = (geometry%yCoordinates(i)+geometry%yCoordinates(i+1))/2
                   
                   ! maximum z2% equals average berm height minus local water level 
-                  z2max = hBerm - h
+                  z2max = hBerm - load%h
 
                   ! exit loop over dike segments
                   exit
 
-               elseif (h > geometry%yCoordinates(i+1)) then
+               elseif (load%h > geometry%yCoordinates(i+1)) then
                
                   ! ---------------------------------
                   ! local water level above foreshore
@@ -292,7 +286,7 @@
                   foreshoreCase = 2
 
                   ! water depth at the end of the foreshore
-                  dH = h - geometry%yCoordinates(i+1)
+                  dH = load%h - geometry%yCoordinates(i+1)
 
                   ! index coordinates at the end of the foreshore
                   index = i+1
@@ -323,13 +317,12 @@
       ! ----------------------
 
          ! calculate 2% wave run-up
-         call iterationWaveRunup (geometry, h, Hm0, Tm_10, gammaBeta_z, &
-                                  modelFactors, overtopping%z2, error)
+         call iterationWaveRunup (geometry, load, gammaBeta_z, modelFactors, overtopping%z2, error)
 
          ! calculate wave overtopping discharge
          if (error%errorCode == 0) then
             if (overtopping%z2 > 0.0d0) then
-               call calculateWaveOvertopping (geometry, h, Hm0, Tm_10, overtopping%z2, gammaBeta_o, &
+               call calculateWaveOvertopping (geometry, load, overtopping%z2, gammaBeta_o, &
                                               modelFactors, overtopping%Qo, error)
             else
                overtopping%Qo = 0.0d0
@@ -341,8 +334,7 @@
       ! ------------------------------------------------
 
          ! calculate 2% wave run-up
-         call iterationWaveRunup (geometry, h, Hm0, Tm_10, gammaBeta_z, &
-                                  modelFactors, overtopping%z2, error)
+         call iterationWaveRunup (geometry, load, gammaBeta_z, modelFactors, overtopping%z2, error)
 
          if (error%errorCode == 0) then
 
@@ -362,18 +354,18 @@
          call removeDikeSegments (geometry, index, geometryAdjusted, error)
 
          ! significant wave height is reduced due to foreshore
-         Hm0_red = min(Hm0, dH * modelFactors%reductionFactorForeshore)
+         load_red = load
+         load_red%Hm0 = min(load%Hm0, dH * modelFactors%reductionFactorForeshore)
 
          ! calculate 2% wave run-up
          if (error%errorCode == 0) then
-            call iterationWaveRunup (geometryAdjusted, h, Hm0_red, Tm_10, gammaBeta_z, &
-                                     modelFactors, overtopping%z2, error)
+            call iterationWaveRunup (geometryAdjusted, load_red, gammaBeta_z, modelFactors, overtopping%z2, error)
          endif
 
          ! calculate wave overtopping discharge
          if (error%errorCode == 0) then
             if (overtopping%z2 > 0.0d0) then
-               call calculateWaveOvertopping (geometryAdjusted, h, Hm0_red, Tm_10, overtopping%z2, &
+               call calculateWaveOvertopping (geometryAdjusted, load_red, overtopping%z2, &
                                               gammaBeta_o, modelFactors, overtopping%Qo, error)
             else
                overtopping%Qo = 0.0d0
@@ -388,12 +380,12 @@
          call removeDikeSegments (geometry, index, geometryAdjusted, error)
 
          ! significant wave height is reduced due to foreshore
-         Hm0_red = min(Hm0, dH * modelFactors%reductionFactorForeshore)
+         load_red = load
+         load_red%Hm0 = min(load%Hm0, dH * modelFactors%reductionFactorForeshore)
 
          ! calculate 2% wave run-up
          if (error%errorCode == 0) then
-            call iterationWaveRunup (geometryAdjusted, h, Hm0_red, Tm_10, gammaBeta_z, &
-                                     modelFactors, overtopping%z2, error)
+            call iterationWaveRunup (geometryAdjusted, load_red, gammaBeta_z, modelFactors, overtopping%z2, error)
          endif
 
          ! 2% wave run-up is limited due to foreshore
@@ -421,7 +413,7 @@
 !! calculate wave overtopping
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateWaveOvertopping (geometry, h, Hm0, Tm_10, z2, gammaBeta_o, modelFactors, Qo, error)
+   subroutine calculateWaveOvertopping (geometry, load, z2, gammaBeta_o, modelFactors, Qo, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -429,9 +421,7 @@
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   real(kind=wp),             intent(in)     :: h              !< local water level (m+NAP)
-   real(kind=wp),             intent(in)     :: Hm0            !< significant wave height (m)
-   real(kind=wp),             intent(in)     :: Tm_10          !< spectral wave period (s)
+   type (tpLoad),             intent(in)     :: load           !< load struct
    real(kind=wp),             intent(in)     :: z2             !< 2% wave run-up (m)
    real(kind=wp),             intent(inout)  :: gammaBeta_o    !< influence angle wave attack overtopping
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
@@ -451,7 +441,7 @@
 ! ==========================================================================================================
 
    ! calculate wave steepness
-   call calculateWaveSteepness (Hm0, Tm_10, s0, error)
+   call calculateWaveSteepness (load, s0, error)
    
    ! if applicable adjust non-horizontal berms
    geometryFlatBerms => geometry%parent%geometryFlatBerms
@@ -463,7 +453,7 @@
 
    ! calculate representative slope angle
    if (error%errorCode == 0) then
-      call calculateTanAlpha (h, Hm0, z2, geometryFlatBerms, tanAlpha, error)
+      call calculateTanAlpha (load, z2, geometryFlatBerms, tanAlpha, error)
    endif
 
    ! calculate breaker parameter
@@ -474,7 +464,7 @@
    ! calculate influence factor berms (gammaB)
    if (error%errorCode == 0) then
       if (geometry%NbermSegments > 0) then
-         call calculateGammaB (h, Hm0, z2, geometryFlatBerms, gammaB, error)
+         call calculateGammaB (load, z2, geometryFlatBerms, gammaB, error)
       else
          gammaB = 1.0d0
       endif
@@ -487,7 +477,7 @@
 
    ! calculate influence factor roughness (gammaF)
    if (error%errorCode == 0) then
-      call calculateGammaF (h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
+      call calculateGammaF (load%h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
    endif
 
    ! if applicable adjust influence factors
@@ -497,7 +487,7 @@
 
    ! calculate wave overtopping discharge
    if (error%errorCode == 0) then
-      call calculateWaveOvertoppingDischarge (h, Hm0, tanAlpha, gammaB, gammaF, gammaBeta_o, ksi0, &
+      call calculateWaveOvertoppingDischarge (load, tanAlpha, gammaB, gammaF, gammaBeta_o, ksi0, &
                                               geometry%yCoordinates(geometry%nCoordinates),        &
                                               modelFactors, Qo, error)
    endif

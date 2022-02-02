@@ -104,7 +104,7 @@
 !! calculate the wave overtopping discharge
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateWaveOvertoppingDischarge (h, Hm0, tanAlpha, gammaB, gammaF, gammaBeta, ksi0, &
+   subroutine calculateWaveOvertoppingDischarge (load, tanAlpha, gammaB, gammaF, gammaBeta, ksi0, &
                                                  hCrest, modelFactors, Qo, error)
 !***********************************************************************************************************
 !
@@ -112,8 +112,7 @@
 !
 !  Input/output parameters
 !
-   real(kind=wp),            intent(in)  :: h              !< local water level (m+NAP)
-   real(kind=wp),            intent(in)  :: Hm0            !< significant wave height (m)
+   type(tpLoad),             intent(in)  :: load           !< load struct
    real(kind=wp),            intent(in)  :: tanAlpha       !< representative slope angle
    real(kind=wp),            intent(in)  :: gammaB         !< influence factor berms
    real(kind=wp),            intent(in)  :: gammaF         !< influence factor roughness
@@ -136,7 +135,7 @@
    error%errorCode = 0
 
    ! check input parameters calculation wave overtopping discharge
-   if (Hm0            <= 0.0d0) error%errorCode = 1
+   if (load%Hm0       <= 0.0d0) error%errorCode = 1
    if (tanAlpha       <= 0.0d0) error%errorCode = 1
    if (gammaB         <= 0.0d0) error%errorCode = 1
    if (gammaF         <= 0.0d0) error%errorCode = 1
@@ -148,13 +147,13 @@
 
       ! breaking waves
       Qb = (0.067d0/sqrt(tanAlpha)) * gammaB * ksi0 * &
-               exp(-modelFactors%factorDeterminationQ_b_f_b * ((hCrest-h)/Hm0) * (1/(ksi0 * gammaBeta * gammaB * gammaF)))
+               exp(-modelFactors%factorDeterminationQ_b_f_b * ((hCrest-load%h)/load%Hm0) * (1/(ksi0 * gammaBeta * gammaB * gammaF)))
    
       ! non-breaking waves
-      Qn = 0.2d0 * exp(-modelFactors%factorDeterminationQ_b_f_n * ((hCrest-h)/Hm0) * (1/(gammaBeta * gammaF)))
+      Qn = 0.2d0 * exp(-modelFactors%factorDeterminationQ_b_f_n * ((hCrest-load%h)/load%Hm0) * (1/(gammaBeta * gammaF)))
 
       ! shallow waves
-      Qs = (10.0d0 ** -modelFactors%fshallow) * exp(-(hCrest-h) / (gammaBeta * gammaF * Hm0 * (0.33d0+0.022d0*max(ksi0,7.0d0))))
+      Qs = (10.0d0 ** -modelFactors%fshallow) * exp(-(hCrest-load%h) / (gammaBeta * gammaF * load%Hm0 * (0.33d0+0.022d0*max(ksi0,7.0d0))))
 
    endif
 
@@ -168,7 +167,7 @@
 
             ! 5 < breaker parameter < 7
             if (Qn > 0d0 .and. Qs > 0d0) then
-               Qo = max(Qn, exp(log(Qn) + (log(Qs)-log(Qn))*(ksi0-5.0d0)/2)) * sqrt(gravityConstant * Hm0**3)
+               Qo = max(Qn, exp(log(Qn) + (log(Qs)-log(Qn))*(ksi0-5.0d0)/2)) * sqrt(gravityConstant * load%Hm0**3)
             else
                Qo = 0d0
             endif
@@ -176,14 +175,14 @@
          else
 
             ! breaker parameter >= 7
-            Qo = Qs * sqrt(gravityConstant * Hm0**3)
+            Qo = Qs * sqrt(gravityConstant * load%Hm0**3)
 
          endif
 
       else
 
          ! 0 < breaker parameter <= 5
-         Qo = min(Qb,Qn) * sqrt(gravityConstant * Hm0**3)
+         Qo = min(Qb,Qn) * sqrt(gravityConstant * load%Hm0**3)
 
       endif
 
@@ -221,15 +220,14 @@
 !! calculate the wave steepness
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateWaveSteepness (Hm0, Tm_10, s0, error)
+   subroutine calculateWaveSteepness (load, s0, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   real(kind=wp),    intent(in   ) :: Hm0            !< significant wave height (m)
-   real(kind=wp),    intent(in   ) :: Tm_10          !< spectral wave period (s)
+   type(tpLoad),     intent(in   ) :: load           !< load struct
    real(kind=wp),    intent(  out) :: s0             !< wave steepness
    type(tMessage),   intent(inout) :: error          !< error struct
 !
@@ -243,11 +241,11 @@
    error%errorCode = 0
 
    ! calculate the wave length
-   call calculateWaveLength (Tm_10, L0)
+   call calculateWaveLength (load%Tm_10, L0)
 
    ! calculate the wave steepness
    if (L0 > 0.0d0) then
-      s0 = Hm0/L0
+      s0 = load%Hm0/L0
    else
       error%errorCode = 1
       call GetMSGcalc_wave_steepness_period_is_zero(error%Message)
