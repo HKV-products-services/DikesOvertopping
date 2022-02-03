@@ -1,19 +1,19 @@
 #!/bin/sh
 
-cp ../../external/tools/precision.f90 .
-cp ../../external/tools/utilities.f90 .
-cp ../../external/feedback/feedback.f90 .
-cp ../../external/feedback_dll/feedback_parameters.f90 .
-cp ../../external/feedback_dll/feedbackDLL.f90 .
-cp ../../external/feedback_dll/feedbackDLL_implementation.f90 .
-cp ../../external/tools/errorMessages.f90 .
-cp ../../external/tools/equalReals.f90 .
-cp ../../external/general/vectorUtilities.f90 .
-# cp ../../external/general/versionInfo.f90 .
-cp ../../external/general/waveParametersUtilities.f90 .
-cp ../../external/general/angleUtilities.f90 .
-cp ../../external/ftnunit/ftnunit_hooks_teamcity.f90 .
-cp ../../external/ftnunit/ftnunit.f90 .
+cp ../../external/HRcommon_src/tools/precision.f90 .
+cp ../../external/HRcommon_src/tools/utilities.f90 .
+cp ../../external/HRcommon_src/feedback/feedback.f90 .
+cp ../../external/HRcommon_src/feedback_dll/feedback_parameters.f90 .
+cp ../../external/HRcommon_src/feedback_dll/feedbackDLL.f90 .
+cp ../../external/HRcommon_src/feedback_dll/feedbackDLL_implementation.f90 .
+cp ../../external/HRcommon_src/tools/errorMessages.f90 .
+cp ../../external/HRcommon_src/tools/equalReals.f90 .
+cp ../../external/HRcommon_src/general/vectorUtilities.f90 .
+# cp ../../external/HRcommon_src/general/versionInfo.f90 .
+cp ../../external/HRcommon_src/general/waveParametersUtilities.f90 .
+cp ../../external/HRcommon_src/general/angleUtilities.f90 .
+cp ../../external/HRcommon_src/ftnunit/ftnunit_hooks_teamcity.f90 .
+cp ../../external/HRcommon_src/ftnunit/ftnunit.f90 .
 cp ../../libDikesOvertopping/typeDefinitionsOvertopping.f90 .
 cp ../../libDikesOvertopping/OvertoppingMessages.f90 .
 cp ../../libDikesOvertopping/ModuleLogging.f90 .
