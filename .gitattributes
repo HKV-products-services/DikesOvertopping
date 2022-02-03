@@ -38,16 +38,8 @@ src/core/CMakeLists.txt -text
 src/core/external/feedbackDLL.vfproj -text
 src/core/external/throwexception.f90 -text
 src/core/external/versionInfo.f90 -text
-src/core/linux/Makefile -text
-src/core/linux/Makefile_gnu -text
-src/core/linux/copy_files.sh -text
-src/core/linux/make.inc -text
 src/core/prepare_sln.cmd -text
 src/core/prepare_sln.py -text
-src/core/tests/linux/Makefile -text
-src/core/tests/linux/Makefile_gnu -text
-src/core/tests/linux/copy_files.sh -text
-src/core/tests/linux/make.inc -text
 src/core/tests/unitTests/runtests.bat -text
 src/licenses/LicenseAGPL.txt -text
 src/wrappers/TestRunner/App.config -text
