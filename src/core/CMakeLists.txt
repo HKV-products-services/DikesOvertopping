@@ -68,3 +68,12 @@ add_executable(unitTestProgram
 )
 
 target_link_libraries(unitTestProgram DllDikesOvertopping DikesOvertoppingLib HRtools FeedbackDll Feedback)
+
+enable_testing()
+
+add_test(
+  NAME overtopping-unit-tests
+  COMMAND $<TARGET_FILE:unitTestProgram> /s 1
+  WORKING_DIRECTORY ../tests/unitTests
+)
+
