@@ -38,6 +38,8 @@ add_library(HRgeneral
     external/HRcommon_src/ftnunit/ftnunit_hooks_teamcity.f90  
 )
 
+target_link_libraries(HRgeneral Feedback)
+
 set_target_properties(HRgeneral
     PROPERTIES
       POSITION_INDEPENDENT_CODE 1

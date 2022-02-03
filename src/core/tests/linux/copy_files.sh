@@ -9,7 +9,8 @@ cp ../../external/HRcommon_src/feedback_dll/feedbackDLL_implementation.f90 .
 cp ../../external/HRcommon_src/tools/errorMessages.f90 .
 cp ../../external/HRcommon_src/tools/equalReals.f90 .
 cp ../../external/HRcommon_src/general/vectorUtilities.f90 .
-# cp ../../external/HRcommon_src/general/versionInfo.f90 .
+cp ../../external/versionInfo.f90 .
+cp ../../external/throwexception.f90 .
 cp ../../external/HRcommon_src/general/waveParametersUtilities.f90 .
 cp ../../external/HRcommon_src/general/angleUtilities.f90 .
 cp ../../external/HRcommon_src/ftnunit/ftnunit_hooks_teamcity.f90 .

@@ -9,7 +9,7 @@ cp ../external/HRcommon_src/feedback_dll/feedbackDLL_implementation.f90 .
 cp ../external/HRcommon_src/tools/errorMessages.f90 .
 cp ../external/HRcommon_src/tools/equalReals.f90 .
 cp ../external/HRcommon_src/general/vectorUtilities.f90 .
-# cp ../external/HRcommon_src/general/versionInfo.f90 .
+cp ../external/versionInfo.f90 .
 cp ../libDikesOvertopping/typeDefinitionsOvertopping.f90 .
 cp ../libDikesOvertopping/OvertoppingMessages.f90 .
 cp ../libDikesOvertopping/ModuleLogging.f90 .
