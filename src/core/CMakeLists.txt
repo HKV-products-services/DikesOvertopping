@@ -18,67 +18,7 @@ if(UNIX)
     endif()
 endif(UNIX)
 
-add_compile_definitions(maxParallelThreads=8)
-
-add_library(HRtools
-  STATIC
-    external/HRcommon_src/tools/precision.f90
-    external/HRcommon_src/tools/utilities.f90
-    external/HRcommon_src/tools/errorMessages.f90
-    external/HRcommon_src/tools/equalReals.f90
-)
-
-set_target_properties(HRtools
-    PROPERTIES
-      POSITION_INDEPENDENT_CODE 1
-)
-
-add_library(HRgeneral
-  STATIC
-    external/versionInfo.f90
-    external/HRcommon_src/general/vectorUtilities.f90
-    external/HRcommon_src/general/waveParametersUtilities.f90
-    external/HRcommon_src/general/angleUtilities.f90
-    external/HRcommon_src/ftnunit/ftnunit.f90  
-    external/HRcommon_src/ftnunit/ftnunit_hooks_teamcity.f90  
-)
-
-target_link_libraries(HRgeneral Feedback)
-
-set_target_properties(HRgeneral
-    PROPERTIES
-      POSITION_INDEPENDENT_CODE 1
-)
-
-add_library(FeedbackDll
-  SHARED
-    external/HRcommon_src/feedback_dll/feedback_parameters.f90
-    external/HRcommon_src/feedback_dll/feedbackDLL_implementation.f90
-    external/HRcommon_src/feedback_dll/feedbackDLL.f90
-)
-
-set_target_properties(FeedbackDll
-    PROPERTIES
-      POSITION_INDEPENDENT_CODE 1
-)
-target_link_libraries(FeedbackDll HRtools)
-
-if(WIN32)
-    set_target_properties(FeedbackDll PROPERTIES COMPILE_FLAGS ${openmp_flag})
-    target_link_options(FeedbackDll PRIVATE ${openmp_flag})
-endif(WIN32)
-
-add_library(Feedback
-  STATIC
-    external/HRcommon_src/feedback/feedback.f90
-)
-
-set_target_properties(Feedback
-    PROPERTIES
-      POSITION_INDEPENDENT_CODE 1
-)
-
-target_link_libraries(Feedback HRtools FeedbackDll)
+add_subdirectory(external)
 
 add_library(DikesOvertoppingLib
   STATIC
