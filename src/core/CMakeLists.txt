@@ -10,7 +10,12 @@ if(WIN32)
     set(openmp_flag /Qopenmp)
 endif(WIN32)
 if(UNIX)
-    set(CMAKE_Fortran_FLAGS "-g -cpp -ffree-line-length-none -fopenmp -fPIC -fcray-pointer ")
+    if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+        set(CMAKE_Fortran_FLAGS "-O2 -cpp -ffree-line-length-none -fopenmp -fPIC -fcray-pointer ")
+    endif()
+    if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+        set(CMAKE_Fortran_FLAGS "-O2 -fpp -qopenmp ")
+    endif()
 endif(UNIX)
 
 add_compile_definitions(maxParallelThreads=8)
@@ -109,7 +114,7 @@ set_target_properties(DllDikesOvertopping
 
 target_link_libraries(DllDikesOvertopping DikesOvertoppingLib FeedbackDll Feedback HRtools)
 
-add_executable(DikesOvertoppingUnitTest
+add_executable(unitTestProgram
     tests/DikesOvertoppingTests/crossSectionsTests.f90
     tests/DikesOvertoppingTests/overtoppingTests.f90
     tests/DikesOvertoppingTests/testHelper.f90
@@ -122,4 +127,4 @@ add_executable(DikesOvertoppingUnitTest
     external/throwexception.f90
 )
 
-target_link_libraries(DikesOvertoppingUnitTest DllDikesOvertopping DikesOvertoppingLib HRtools FeedbackDll Feedback)
+target_link_libraries(unitTestProgram DllDikesOvertopping DikesOvertoppingLib HRtools FeedbackDll Feedback)
