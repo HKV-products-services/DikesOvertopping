@@ -6,7 +6,7 @@
 ! it under the terms of the GNU Affero General Public License as published by
 ! the Free Software Foundation, either version 3 of the License, or
 ! (at your option) any later version.
-! 
+!
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
@@ -45,7 +45,7 @@
    implicit none
 
    private
-   
+
    public :: calculateTanAlpha  ! representative slope angle
    public :: calculateGammaBeta ! influence factor angle of wave attack
    public :: calculateGammaF    ! influence factor roughness
@@ -158,7 +158,7 @@
 
    ! adjustment of the wave parameters if beta > 80
    if (beta > 80.0d0) then
-      
+
       if (beta > 110.0d0) then
          ! beta > 110
          load%Hm0   = 0.0d0
@@ -363,65 +363,56 @@
             N = N+1
 
             ! check if the berm segment is a horizontal berm
-            if (geometry%segmentSlopes(i) > 0.0d0) error%errorCode = 1
+            if (geometry%segmentSlopes(i) > 0.0d0) then
+               error%errorCode = 1  !TODO is this possible?
+               exit
+            end if
 
             ! determine the width of the berm segment
-            if (error%errorCode == 0) then
-               B(N)  = geometry%xCoordDiff(i)
-            endif
+            B(N)  = geometry%xCoordDiff(i)
 
             ! determine the height of the (horizontal) berm segment
-            if (error%errorCode == 0) then
-               hB(N) = geometry%yCoordinates(i)
-            endif
+            hB(N) = geometry%yCoordinates(i)
 
             ! calculate the influence length
-            if (error%errorCode == 0) then
-               yLower = max(hB(N)-load%Hm0, geometry%yCoordinates(1))
-               yUpper = min(hB(N)+load%Hm0, geometry%yCoordinates(geometry%nCoordinates))
-               call calculateHorzDistance (geometry, yLower, yUpper, LB(N), error)
-            endif
+            yLower = max(hB(N)-load%Hm0, geometry%yCoordinates(1))
+            yUpper = min(hB(N)+load%Hm0, geometry%yCoordinates(geometry%nCoordinates))
+            call calculateHorzDistance (geometry, yLower, yUpper, LB(N), error)
 
             ! calculate relative berm width
-            if (error%errorCode == 0) then
-               if (LB(N) > 0.0d0) then
-                  rB(N) = B(N) / LB(N)
-               else
-                  error%errorCode = 1
-               endif
+            if (LB(N) > 0.0d0) then
+               rB(N) = B(N) / LB(N)
+            else
+               error%errorCode = 1
+               exit
             endif
 
             ! calculate the berm depth
-            if (error%errorCode == 0) then
-               dH(N) = load%h - hB(N)
-            endif
+            dH(N) = load%h - hB(N)
 
             ! calculate the influence of the berm depth
-            if (error%errorCode == 0) then
+            if (dH(N) < 0.0d0) then ! local water level below the berm (dH<0)
 
-               if (dH(N) < 0.0d0) then ! local water level below the berm (dH<0)
-            
-                  if (z2 > -dH(N)) then
-                     ! local water level + z2% above the berm (influence)
-                     rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/z2)
-                  else
-                     ! local water level + z2% on or below the berm (no influence)
-                     rD(N) = 1.0d0
-                  endif
+               if (z2 > -dH(N)) then
+                  ! local water level + z2% above the berm (influence)
+                  rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/z2)
+               else
+                  ! local water level + z2% on or below the berm (no influence)
+                  rD(N) = 1.0d0
+               endif
 
-               else ! local water level on or above the berm (dH>=0)
+            else ! local water level on or above the berm (dH>=0)
 
-                  if (dH(N) < 2*load%Hm0) then
-                     ! local water level less than 2*Hm0 above the berm (influence)
-                     rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/(2*load%Hm0))
-                  else
-                     ! local water level 2*Hm0 or more above the berm (no influence)
-                     rD(N) = 1.0d0
-                  endif
-
+               if (dH(N) < 2*load%Hm0) then
+                  ! local water level less than 2*Hm0 above the berm (influence)
+                  rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/(2*load%Hm0))
+               else
+                  ! local water level 2*Hm0 or more above the berm (no influence)
+                  rD(N) = 1.0d0
                endif
 
             endif
+
          endif
       enddo
 
@@ -467,9 +458,7 @@
    ! adjust influence factor for berms
    ! ---------------------------------
    if (error%errorCode == 0) then
-      if (gammaB < 0.6d0) then
-         gammaB = 0.6d0
-      endif
+      gammaB = max(0.6d0, gammaB)
    endif
 
    ! determine possible error message
