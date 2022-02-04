@@ -54,20 +54,19 @@ subroutine testCalculateGammaF
    real(kind=wp)      :: h              !< local water level (m+NAP)
    real(kind=wp)      :: ksi0           !< breaker parameter
    real(kind=wp)      :: ksi0Limit      !< limit value breaker parameter
-   real(kind=wp)      :: gammaB         !< influence factor berms
+   type(tpinfluencefactors) :: gamma    !< influence factors
    real(kind=wp)      :: z2             !< 2% wave run-up (m)
    type(tpGeometry)   :: geometry       !< structure with geometry data
-   real(kind=wp)      :: gammaF         !< influence factor roughness
    character(len=256) :: MsgExpected    !< expected error message
    integer            :: i              !< loop counter
    integer, parameter :: npoints = 5    !< number of profile points
    integer            :: ierr           !< error code of allocate
    type(tMessage)     :: error          !< error struct
 
-   ksi0      = 7.61e-9_wp
-   ksi0Limit = 1.73_wp
-   gammaB    = 1.0_wp
-   z2        = 2.23e-15_wp
+   ksi0          = 7.61e-9_wp
+   ksi0Limit     = 1.73_wp
+   gamma%gammaB  = 1.0_wp
+   z2            = 2.23e-15_wp
 
    allocate(geometry%xCoordinates(npoints), geometry%yCoordinates(npoints), geometry%roughnessFactors(npoints-1), &
             geometry%xCoordDiff(npoints-1), geometry%yCoordDiff(npoints-1), geometry%segmentSlopes(npoints-1), stat=ierr)
@@ -85,19 +84,19 @@ subroutine testCalculateGammaF
 
    do i = 1, npoints - 1
        h = 0.5_wp * (geometry%yCoordinates(i+1) + geometry%yCoordinates(i))
-       call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
+       call calculateGammaF(h, ksi0, ksi0Limit, gamma, z2, geometry, error)
        call assert_equal(error%errorCode, 0, error%Message)
-       call assert_comparable(gammaF, geometry%roughnessFactors(i), 1d-6, 'diff in gammaF')
+       call assert_comparable(gamma%gammaF, geometry%roughnessFactors(i), 1d-6, 'diff in gammaF')
    enddo
    
    ! error handling
    h = -4.01_wp
-   call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
+   call calculateGammaF(h, ksi0, ksi0Limit, gamma, z2, geometry, error)
    call GetMSG_calculateGammaFtoLow(MsgExpected)
    call assert_equal(error%Message, MsgExpected, 'test error handling')
 
    h = 8.65_wp
-   call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
+   call calculateGammaF(h, ksi0, ksi0Limit, gamma, z2, geometry, error)
    call GetMSG_calculateGammaFtoHigh(MsgExpected)
    call assert_equal(error%Message, MsgExpected, 'test error handling')
 
@@ -112,20 +111,19 @@ subroutine testCalculateGammaF2
    real(kind=wp)      :: h                       !< local water level (m+NAP)
    real(kind=wp)      :: ksi0                    !< breaker parameter
    real(kind=wp)      :: ksi0Limit               !< limit value breaker parameter
-   real(kind=wp)      :: gammaB                  !< influence factor berms
+   type(tpInfluencefactors) :: gamma             !< influence factors
    real(kind=wp)      :: z2                      !< 2% wave run-up (m)
    type(tpGeometry)   :: geometry                !< structure with geometry data
-   real(kind=wp)      :: gammaF                  !< influence factor roughness
    integer            :: i                       !< loop counter
    integer, parameter :: npoints = 5             !< number of profile points
    integer            :: ierr                    !< error code of allocate
    real(kind=wp)      :: gammaFexpected(npoints) !< expected results
    type(tMessage)     :: error                   !< error struct
 
-   ksi0      = 7.61e-9_wp
-   ksi0Limit = 1.73_wp
-   gammaB    = 1.0_wp
-   z2        = 1.0_wp
+   ksi0         = 7.61e-9_wp
+   ksi0Limit    = 1.73_wp
+   gamma%gammaB = 1.0_wp
+   z2           = 1.0_wp
 
    allocate(geometry%xCoordinates(npoints), geometry%yCoordinates(npoints), geometry%roughnessFactors(npoints-1), &
             geometry%xCoordDiff(npoints-1), geometry%yCoordDiff(npoints-1), geometry%segmentSlopes(npoints-1), stat=ierr)
@@ -144,9 +142,9 @@ subroutine testCalculateGammaF2
    gammaFexpected = [1.0_wp, 0.926985439830363_wp, 0.802088868478168_wp, 0.766296466268931_wp, 0.7_wp]
    do i = 1, npoints
        h = geometry%yCoordinates(i)
-       call calculateGammaF(h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
+       call calculateGammaF(h, ksi0, ksi0Limit, gamma, z2, geometry, error)
        call assert_equal(error%errorCode, 0, error%Message)
-       call assert_comparable(gammaF, gammaFexpected(i), 1d-6, 'diff in gammaF')
+       call assert_comparable(gamma%gammaF, gammaFexpected(i), 1d-6, 'diff in gammaF')
    enddo
 
    deallocate(geometry%xCoordinates, geometry%yCoordinates, geometry%roughnessFactors, &

@@ -57,7 +57,7 @@
 !! calculate wave runup
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateWaveRunup (Hm0, ksi0, ksi0Limit, gammaB, gammaF, gammaBeta, modelFactors, z2, error)
+   subroutine calculateWaveRunup (Hm0, ksi0, ksi0Limit, gamma, modelFactors, z2, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -67,9 +67,7 @@
    real(kind=wp),             intent(in)     :: Hm0            !< significant wave height (m)
    real(kind=wp),             intent(in)     :: ksi0           !< breaker parameter
    real(kind=wp),             intent(in)     :: ksi0Limit      !< limit value breaker parameter
-   real(kind=wp),             intent(inout)  :: gammaB         !< influence factor berms
-   real(kind=wp),             intent(inout)  :: gammaF         !< influence factor roughness
-   real(kind=wp),             intent(inout)  :: gammaBeta      !< influence factor angle of wave attack
+   type(tpInfluencefactors),  intent(inout)  :: gamma          !< influence factors
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
    type(tMessage),            intent(inout)  :: error          !< error struct
@@ -77,17 +75,17 @@
 ! ==========================================================================================================
 
    ! if applicable adjust influence factors
-   call adjustInfluenceFactors (gammaB, gammaF, gammaBeta, 1, ksi0, ksi0Limit, error)
+   call adjustInfluenceFactors (gamma, 1, ksi0, ksi0Limit, error)
 
    if (error%errorCode == 0) then
 
       ! calculate 2% wave run-up for small breaker parameters
       if (ksi0 < ksi0Limit) then
-         z2 = Hm0 * fRunup1 * gammaB * gammaF * gammaBeta * ksi0
+         z2 = Hm0 * fRunup1 * gamma%gammaB * gamma%gammaF * gamma%gammaBeta * ksi0
 
       ! calculate 2% wave run-up for large breaker parameters
       else if (ksi0 > 0.0d0) then
-         z2 = Hm0 * gammaF * gammaBeta * (fRunup2 - fRunup3/sqrt(ksi0))
+         z2 = Hm0 * gamma%gammaF * gamma%gammaBeta * (fRunup2 - fRunup3/sqrt(ksi0))
          z2 = max(z2, 0.0d0)
       else
          call GetMSGbreaker_param_is_zero(error%Message)
@@ -104,8 +102,7 @@
 !! calculate the wave overtopping discharge
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateWaveOvertoppingDischarge (load, tanAlpha, gammaB, gammaF, gammaBeta, ksi0, &
-                                                 hCrest, modelFactors, Qo, error)
+   subroutine calculateWaveOvertoppingDischarge (load, tanAlpha, gamma, ksi0, hCrest, modelFactors, Qo, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -114,9 +111,7 @@
 !
    type(tpLoadX),            intent(in)  :: load           !< load struct
    real(kind=wp),            intent(in)  :: tanAlpha       !< representative slope angle
-   real(kind=wp),            intent(in)  :: gammaB         !< influence factor berms
-   real(kind=wp),            intent(in)  :: gammaF         !< influence factor roughness
-   real(kind=wp),            intent(in)  :: gammaBeta      !< influence factor angle of wave attack
+   type(tpInfluencefactors), intent(in)  :: gamma          !< influence factors
    real(kind=wp),            intent(in)  :: ksi0           !< breaker parameter
    real(kind=wp),            intent(in)  :: hCrest         !< crest level (m+NAP)
    type(tpOvertoppingInput), intent(in)  :: modelFactors   !< structure with model factors
@@ -135,25 +130,28 @@
    error%errorCode = 0
 
    ! check input parameters calculation wave overtopping discharge
-   if (load%Hm0       <= 0.0d0) error%errorCode = 1
-   if (tanAlpha       <= 0.0d0) error%errorCode = 1
-   if (gammaB         <= 0.0d0) error%errorCode = 1
-   if (gammaF         <= 0.0d0) error%errorCode = 1
-   if (gammaBeta      <= 0.0d0) error%errorCode = 1
-   if (ksi0           <= 0.0d0) error%errorCode = 1
+   if (load%Hm0        <= 0.0d0) error%errorCode = 1
+   if (tanAlpha        <= 0.0d0) error%errorCode = 1
+   if (gamma%gammaB    <= 0.0d0) error%errorCode = 1
+   if (gamma%gammaF    <= 0.0d0) error%errorCode = 1
+   if (gamma%gammaBeta <= 0.0d0) error%errorCode = 1
+   if (ksi0            <= 0.0d0) error%errorCode = 1
 
    ! calculate dimensionless overtopping discharges
    if (error%errorCode == 0) then
 
       ! breaking waves
-      Qb = (0.067d0/sqrt(tanAlpha)) * gammaB * ksi0 * &
-               exp(-modelFactors%factorDeterminationQ_b_f_b * ((hCrest-load%h)/load%Hm0) * (1/(ksi0 * gammaBeta * gammaB * gammaF)))
-   
+      Qb = (0.067d0/sqrt(tanAlpha)) * gamma%gammaB * ksi0 * &
+               exp(-modelFactors%factorDeterminationQ_b_f_b * ((hCrest-load%h)/load%Hm0) * &
+               (1.0d0 /(ksi0 * gamma%gammaBeta * gamma%gammaB * gamma%gammaF)))
+
       ! non-breaking waves
-      Qn = 0.2d0 * exp(-modelFactors%factorDeterminationQ_b_f_n * ((hCrest-load%h)/load%Hm0) * (1/(gammaBeta * gammaF)))
+      Qn = 0.2d0 * exp(-modelFactors%factorDeterminationQ_b_f_n * ((hCrest-load%h)/load%Hm0) * &
+               (1.0d0 /(gamma%gammaBeta * gamma%gammaF)))
 
       ! shallow waves
-      Qs = (10.0d0 ** -modelFactors%fshallow) * exp(-(hCrest-load%h) / (gammaBeta * gammaF * load%Hm0 * (0.33d0+0.022d0*max(ksi0,7.0d0))))
+      Qs = (10.0d0 ** -modelFactors%fshallow) * exp(-(hCrest-load%h) / &
+               (gamma%gammaBeta * gamma%gammaF * load%Hm0 * (0.33d0+0.022d0*max(ksi0,7.0d0))))
 
    endif
 
@@ -384,20 +382,18 @@
 !! adjust the influence factors
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine adjustInfluenceFactors (gammaB, gammaF, gammaBeta, gammaBetaType, ksi0, ksi0Limit, error)
+   subroutine adjustInfluenceFactors (gamma, gammaBetaType, ksi0, ksi0Limit, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   real(kind=wp),    intent(inout)  :: gammaB         !< influence factor berms
-   real(kind=wp),    intent(inout)  :: gammaF         !< influence factor roughness
-   real(kind=wp),    intent(inout)  :: gammaBeta      !< influence factor angle of wave attack
-   integer,          intent(in)     :: gammaBetaType  !< type influence factor angle of wave attack: 1 = wave run-up, 2 = overtopping
-   real(kind=wp),    intent(in)     :: ksi0           !< breaker parameter
-   real(kind=wp),    intent(in)     :: ksi0Limit      !< limit value breaker parameter
-   type(tMessage),   intent(inout)  :: error          !< error struct
+   type(tPInfluenceFactors), intent(inout) :: gamma          !< influence factors
+   integer,                  intent(in)    :: gammaBetaType  !< type influence factor angle of wave attack: 1 = wave run-up, 2 = overtopping
+   real(kind=wp),            intent(in)    :: ksi0           !< breaker parameter
+   real(kind=wp),            intent(in)    :: ksi0Limit      !< limit value breaker parameter
+   type(tMessage),           intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
@@ -431,9 +427,9 @@
    ! calculate the total influence factor
    if (error%errorCode == 0) then
       if (ksi0 < ksi0Limit) then
-         gammaT = gammaB * gammaF * gammaBeta
+         gammaT = gamma%gammaB * gamma%gammaF * gamma%gammaBeta
       else
-         gammaT = gammaF * gammaBeta
+         gammaT = gamma%gammaF * gamma%gammaBeta
       endif
 
       ! check if the total influence factor is greater than zero
@@ -445,9 +441,9 @@
       if (gammaT < 0.4d0) then
 
          ! calculate the ratios of the influence factors in relation to their minimum
-         ratioB    = (1-gammaB)    / (1-gammaB_min)
-         ratioF    = (1-gammaF)    / (1-gammaF_min)
-         ratioBeta = (1-gammaBeta) / (1-gammaBeta_min)
+         ratioB    = (1.0d0-gamma%gammaB)    / (1.0d0-gammaB_min)
+         ratioF    = (1.0d0-gamma%gammaF)    / (1.0d0-gammaF_min)
+         ratioBeta = (1.0d0-gamma%gammaBeta) / (1.0d0-gammaBeta_min)
 
          ! check the ratio values
          if ((ratioB    < 0.0d0) .or. (ratioB    > 1.0d0)) error%errorCode = 1
@@ -460,9 +456,9 @@
             ratioT = ratioB + ratioF + ratioBeta
 
             ! adjust the influence factors
-            gammaB    = gammaB    * exp((ratioB   /ratioT) * log(0.4d0/gammaT))
-            gammaF    = gammaF    * exp((ratioF   /ratioT) * log(0.4d0/gammaT))
-            gammaBeta = gammaBeta * exp((ratioBeta/ratioT) * log(0.4d0/gammaT))
+            gamma%gammaB    = gamma%gammaB    * exp((ratioB   /ratioT) * log(0.4d0/gammaT))
+            gamma%gammaF    = gamma%gammaF    * exp((ratioF   /ratioT) * log(0.4d0/gammaT))
+            gamma%gammaBeta = gamma%gammaBeta * exp((ratioBeta/ratioT) * log(0.4d0/gammaT))
 
          endif
 

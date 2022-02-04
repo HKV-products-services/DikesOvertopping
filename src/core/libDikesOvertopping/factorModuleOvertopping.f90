@@ -138,23 +138,23 @@
 !! influence factor angle of wave attack
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateGammaBeta (load, beta, gammaBeta_z, gammaBeta_o)
+   subroutine calculateGammaBeta (load, beta, gamma_z, gamma_o)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   type(tpLoadX), intent(inout)  :: load        !< load struct
-   real(kind=wp), intent(in)     :: beta        !< angle of wave attack (degree)
-   real(kind=wp), intent(out)    :: gammaBeta_z !< influence factor angle of wave attack 2% wave run-up
-   real(kind=wp), intent(out)    :: gammaBeta_o !< influence factor angle of wave attack overtopping
+   type(tpLoadX),            intent(inout) :: load     !< load struct
+   real(kind=wp),            intent(in)    :: beta     !< angle of wave attack (degree)
+   type(tpInfluencefactors), intent(out)   :: gamma_z  !< influence factor angle of wave attack 2% wave run-up
+   type(tpInfluencefactors), intent(out)   :: gamma_o  !< influence factor angle of wave attack overtopping
 
 ! ==========================================================================================================
 
    ! calculate influence factors angle of wave attack for 2% wave run-up and overtopping
-   gammaBeta_z = 1d0 - 0.0022d0 * min(beta,80.0d0)
-   gammaBeta_o = 1d0 - 0.0033d0 * min(beta,80.0d0)
+   gamma_z%gammabeta = 1d0 - 0.0022d0 * min(beta,80.0d0)
+   gamma_o%gammabeta = 1d0 - 0.0033d0 * min(beta,80.0d0)
 
    ! adjustment of the wave parameters if beta > 80
    if (beta > 80.0d0) then
@@ -177,21 +177,20 @@
 !! influence factor roughness
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateGammaF (h, ksi0, ksi0Limit, gammaB, z2, geometry, gammaF, error)
+   subroutine calculateGammaF (h, ksi0, ksi0Limit, gamma, z2, geometry, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   real(kind=wp),          intent(in   ) :: h              !< local water level (m+NAP)
-   real(kind=wp),          intent(in   ) :: ksi0           !< breaker parameter
-   real(kind=wp),          intent(in   ) :: ksi0Limit      !< limit value breaker parameter
-   real(kind=wp),          intent(in   ) :: gammaB         !< influence factor berms
-   real(kind=wp),          intent(in   ) :: z2             !< 2% wave run-up (m)
-   type(tpGeometry),       intent(in   ) :: geometry       !< structure with geometry data
-   real(kind=wp),          intent(  out) :: gammaF         !< influence factor roughness
-   type(tMessage),         intent(inout) :: error          !< error struct
+   real(kind=wp),            intent(in   ) :: h              !< local water level (m+NAP)
+   real(kind=wp),            intent(in   ) :: ksi0           !< breaker parameter
+   real(kind=wp),            intent(in   ) :: ksi0Limit      !< limit value breaker parameter
+   type(tpInfluencefactors), intent(inout) :: gamma          !< influence factors
+   real(kind=wp),            intent(in   ) :: z2             !< 2% wave run-up (m)
+   type(tpGeometry),         intent(in   ) :: geometry       !< structure with geometry data
+   type(tMessage),           intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
@@ -262,25 +261,25 @@
       ! --------------------------------------------------
 
       if (geometry%nCoordinates == 2) then
-          gammaF = rFactors(1)
+          gamma%gammaF = rFactors(1)
       else
           call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, error)
           if (error%errorCode == 0) then
               sum_horzLengths = sum(horzLengths)
               if (sum_horzLengths > 0.0d0) then
-                  gammaF = dot_product (horzLengths, rFactors) / sum_horzLengths
+                  gamma%gammaF = dot_product (horzLengths, rFactors) / sum_horzLengths
               else
-                  gammaF = rFactors(iLower)
+                  gamma%gammaF = rFactors(iLower)
               endif
           endif
       endif
 
       ! adjust influence factor if breaker parameter is greater than limit value
       if (error%errorCode == 0 .and. (ksi0 > ksi0Limit)) then
-         if (gammaB*ksi0Limit < ten) then
-            gammaF = gammaF + (one-gammaF)*gammaB*(ksi0-ksi0Limit)/(ten-gammaB*ksi0Limit)
+         if (gamma%gammaB*ksi0Limit < ten) then
+            gamma%gammaF = gamma%gammaF + (one-gamma%gammaF)*gamma%gammaB*(ksi0-ksi0Limit)/(ten-gamma%gammaB*ksi0Limit)
          endif
-         gammaF = min(one, gammaF)
+         gamma%gammaF = min(one, gamma%gammaF)
       endif
 
    endif

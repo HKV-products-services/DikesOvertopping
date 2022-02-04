@@ -78,8 +78,14 @@
    end type tpLoad
 
     type, extends(tpLoad), public :: tpLoadX
-        real(kind=wp) :: L0 !< wave length
+        real(kind=wp)        :: L0 !< wave length
     end type tpLoadX
+
+    type, public             :: tpInfluenceFactors
+       real(kind=wp)         :: gammaBeta         !< influence angle wave attack overtopping
+       real(kind=wp)         :: gammaB            !< influence factor berms
+       real(kind=wp)         :: gammaF            !< influence factor roughness
+    end type tpInfluenceFactors
 
    real(kind=wp), parameter :: fRunup1 = 1.65_wp
    real(kind=wp), parameter :: fRunup2 = 4.00_wp

@@ -56,7 +56,7 @@ module waveRunup
 !! iteration for the wave runup
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine iterationWaveRunup (geometry, load, gammaBeta_z, modelFactors, z2, error)
+   subroutine iterationWaveRunup (geometry, load, gamma_z, modelFactors, z2, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -65,7 +65,7 @@ module waveRunup
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
    type (tpLoadX),            intent(in)     :: load           !< load struct
-   real(kind=wp),             intent(inout)  :: gammaBeta_z    !< influence factor angle wave attack 2% run-up
+   type(tpInfluencefactors),  intent(inout)  :: gamma_z        !< influence factor angle wave attack 2% run-up
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
    type(tMessage),            intent(inout)  :: error          !< error struct
@@ -111,7 +111,7 @@ module waveRunup
 
          z2_start(i) = determineStartingValue(i, modelFactors%relaxationFactor, z2_start, z2_end, load%Hm0)
 
-         z2_end(i) = innerCalculation(geometry, load, gammaBeta_z, modelFactors, z2_start(i), s0, geometryFlatBerms, error)
+         z2_end(i) = innerCalculation(geometry, load, gamma_z, modelFactors, z2_start(i), s0, geometryFlatBerms, error)
 
          ! calculate convergence criterium
          convergence = (abs(z2_start(i) - z2_end(i)) < z2_margin)
@@ -141,7 +141,7 @@ module waveRunup
       
          z2_start(i) = z2k + 2.0_wp * z2_margin * (real(i,wp)-offset)
       
-         z2_end(i) = innerCalculation(geometry, load, gammaBeta_z, modelFactors, z2_start(i), s0, geometryFlatBerms, error)
+         z2_end(i) = innerCalculation(geometry, load, gamma_z, modelFactors, z2_start(i), s0, geometryFlatBerms, error)
 
          ! calculate convergence criterium
          convergence = (abs(z2_start(i) - z2_end(i)) < z2_margin)
@@ -173,7 +173,7 @@ module waveRunup
 !! inner calculation for the wave runup
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   function innerCalculation(geometry, load, gammaBeta_z, modelFactors, z2, s0, &
+   function innerCalculation(geometry, load, gamma_z, modelFactors, z2, s0, &
                              geometryFlatBerms, error) result(z2_end)
 !***********************************************************************************************************
    implicit none
@@ -182,7 +182,7 @@ module waveRunup
 !
    type (tpGeometry),         intent(in)     :: geometry           !< structure with geometry data
    type (tpLoadX),            intent(in)     :: load               !< load struct
-   real(kind=wp),             intent(inout)  :: gammaBeta_z        !< influence factor angle wave attack 2% run-up
+   type(tpInfluencefactors),  intent(inout)  :: gamma_z        !< influence factor angle wave attack 2% run-up
    type (tpOvertoppingInput), intent(in)     :: modelFactors       !< structure with model factors
    real(kind=wp),             intent(in)     :: z2                 !< 2% wave run-up (m)
    real(kind=wp),             intent(in)     :: s0                 !< wave steepness
@@ -196,16 +196,14 @@ module waveRunup
    real(kind=wp)     :: ksi0       !< breaker parameter
    real(kind=wp)     :: ksi0Limit  !< limit value breaker parameter
    real(kind=wp)     :: z2_smooth  !< 2% wave run-up (no roughness)
-   real(kind=wp)     :: gammaF     !< influence factor roughness
    real(kind=wp)     :: z2_rough   !< 2% wave run-up (no berms)
-   real(kind=wp)     :: gammaB     !< influence factor berms
    
 ! ==========================================================================================================
 
    ! initialize influence factor berms and roughness and z2_end
-   gammaB     = 1.0d0
-   gammaF     = 1.0d0
-   z2_end     = 0.0d0
+   gamma_z%gammaB  = 1.0d0
+   gamma_z%gammaF  = 1.0d0
+   z2_end        = 0.0d0
 
    ! calculate representative slope angle
    if (z2 > 0.0d0) then
@@ -222,24 +220,22 @@ module waveRunup
 
    ! calculate limit value breaker parameter
    if (error%errorCode == 0) then
-      call calculateBreakerLimit (gammaB, ksi0Limit, error)
+      call calculateBreakerLimit (gamma_z%gammaB, ksi0Limit, error)
    endif
 
    ! calculate z2% smooth (gammaB=1, gammaF=1)
    if (error%errorCode == 0) then
-      call calculateWaveRunup (load%Hm0, ksi0, ksi0Limit, gammaB, gammaF, &
-                                  gammaBeta_z, modelFactors, z2_smooth, error)
+      call calculateWaveRunup (load%Hm0, ksi0, ksi0Limit, gamma_z, modelFactors, z2_smooth, error)
    endif
 
    ! calculate influence factor roughness (gammaF)
    if (error%errorCode == 0) then
       if (z2_smooth > 0.0d0) then
-         call calculateGammaF (load%h, ksi0, ksi0Limit, gammaB, z2_smooth, geometry, gammaF, error)
+         call calculateGammaF (load%h, ksi0, ksi0Limit, gamma_z, z2_smooth, geometry, error)
 
          ! calculate z2% rough (gammaB=1)
          if (error%errorCode == 0) then
-            call calculateWaveRunup (load%Hm0, ksi0, ksi0Limit, gammaB, gammaF, &
-                                  gammaBeta_z, modelFactors, z2_rough, error)
+            call calculateWaveRunup (load%Hm0, ksi0, ksi0Limit, gamma_z, modelFactors, z2_rough, error)
          endif
       else
          return
@@ -251,23 +247,22 @@ module waveRunup
 
       ! calculate influence factor berms (gammaB)
       if (error%errorCode == 0) then
-         call calculateGammaB (load, z2_rough, geometryFlatBerms, gammaB, error)
+         call calculateGammaB (load, z2_rough, geometryFlatBerms, gamma_z%gammaB, error)
       endif
 
       ! calculate limit value breaker parameter
       if (error%errorCode == 0) then
-         call calculateBreakerLimit (gammaB, ksi0Limit, error)
+         call calculateBreakerLimit (gamma_z%gammaB, ksi0Limit, error)
       endif
 
       ! calculate influence factor roughness (gammaF)
       if (error%errorCode == 0) then
-         call calculateGammaF (load%h, ksi0, ksi0Limit, gammaB, z2_rough, geometry, gammaF, error)
+         call calculateGammaF (load%h, ksi0, ksi0Limit, gamma_z, z2_rough, geometry, error)
       endif
    
       ! calculate z2%
       if (error%errorCode == 0) then
-         call calculateWaveRunup (load%Hm0, ksi0, ksi0Limit, gammaB, gammaF, &
-                                  gammaBeta_z, modelFactors, z2_end, error)
+         call calculateWaveRunup (load%Hm0, ksi0, ksi0Limit, gamma_z, modelFactors, z2_end, error)
       endif
 
    else
