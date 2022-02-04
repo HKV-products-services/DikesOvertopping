@@ -214,12 +214,9 @@
 !  Local parameters
 !
    integer           :: foreshoreCase     !< foreshore case
-   integer           :: i                 !< counter dike segments
-   real(kind=wp)     :: B                 !< width of berm segment (m)
-   integer           :: index             !< index coordinates at the end of the foreshore
-   real(kind=wp)     :: hBerm             !< average berm height (m)
-   real(kind=wp)     :: z2max             !< maximum 2% wave run-up due to foreshore (m)
    real(kind=wp)     :: dH                !< water depth at the end of the foreshore (m)
+   integer           :: index             !< index coordinates at the end of the foreshore
+   real(kind=wp)     :: z2max             !< maximum 2% wave run-up due to foreshore (m)
    type (tpLoad)     :: load_red          !< load with reduced Hm0
    type (tpGeometry), pointer :: geometryAdjusted  !< geometry with removed dike segments
 
@@ -232,82 +229,7 @@
 
    geometryAdjusted => geometry%parent%geometryRemoveDikeSegments
 
-   ! initialize foreshore case
-   foreshoreCase = 0
-
-   ! determine foreshore case:
-   !  0 = no foreshores
-   !  1 = local water level below first foreshore
-   !  2 = local water level above last foreshore
-   !  3 = local water level between foreshores
-   !  4 = local water level on foreshore
-   if (geometry%NbermSegments > 0) then
-
-      ! loop over possible berm segments
-      do i=2, geometry%nCoordinates - 2
-
-         ! determine if the current dike segment is a berm segment
-         if (geometry%segmentTypes(i) == 2) then
-
-            ! determine the width of the berm segment
-            B = geometry%xCoordDiff(i)
-
-            ! determine if the berm segment is a foreshore
-            if (B >= L0) then
-
-               ! compare height of the foreshore to local water level
-               if (load%h < geometry%yCoordinates(i)) then
-               
-                  ! ---------------------------------
-                  ! local water level below foreshore
-                  ! ---------------------------------
-
-                  ! foreshore case depends on current status
-                  if (foreshoreCase == 0) then
-                     foreshoreCase = 1 ! below first foreshore (no foreshores so far)
-                  else 
-                     foreshoreCase = 3 ! between foreshores (above first foreshore)
-                  endif
-
-                  ! calculate average berm height
-                  hBerm = (geometry%yCoordinates(i)+geometry%yCoordinates(i+1))/2
-                  
-                  ! maximum z2% equals average berm height minus local water level 
-                  z2max = hBerm - load%h
-
-                  ! exit loop over dike segments
-                  exit
-
-               elseif (load%h > geometry%yCoordinates(i+1)) then
-               
-                  ! ---------------------------------
-                  ! local water level above foreshore
-                  ! ---------------------------------
-                  foreshoreCase = 2
-
-                  ! water depth at the end of the foreshore
-                  dH = load%h - geometry%yCoordinates(i+1)
-
-                  ! index coordinates at the end of the foreshore
-                  index = i+1
-
-                  ! (no exit: local water level may be on or below another foreshore)
-
-               else
-               
-                  ! ------------------------------
-                  ! local water level on foreshore
-                  ! ------------------------------
-                  foreshoreCase = 4
-
-                  ! exit loop over dike segments
-                  exit
-
-               endif
-            endif
-         endif
-      enddo
-   endif
+   foreshoreCase = determineForeshoreCase ()
 
    ! calculate 2% wave run-up and wave overtopping discharge for given foreshore case
    select case (foreshoreCase)
@@ -406,8 +328,94 @@
 
       end select
 
-   end subroutine calculateOvertoppingSection
+contains
 
+!> helper function
+function determineForeshoreCase () result(foreshoreCase)
+   integer           :: foreshoreCase  !< function result
+
+   integer           :: i              !< loop counter
+   real(kind=wp)     :: hBerm          !< average berm height (m)
+   real(kind=wp)     :: B              !< width of berm segment (m)
+
+   ! determine foreshore case:
+   !  0 = no foreshores
+   !  1 = local water level below first foreshore
+   !  2 = local water level above last foreshore
+   !  3 = local water level between foreshores
+   !  4 = local water level on foreshore
+   foreshoreCase = 0
+   if (geometry%NbermSegments > 0) then
+
+      ! loop over possible berm segments
+      do i=2, geometry%nCoordinates - 2
+
+         ! determine if the current dike segment is a berm segment
+         if (geometry%segmentTypes(i) == 2) then
+
+            ! determine the width of the berm segment
+            B = geometry%xCoordDiff(i)
+
+            ! determine if the berm segment is a foreshore
+            if (B >= L0) then
+
+               ! compare height of the foreshore to local water level
+               if (load%h < geometry%yCoordinates(i)) then
+
+                  ! ---------------------------------
+                  ! local water level below foreshore
+                  ! ---------------------------------
+
+                  ! foreshore case depends on current status
+                  if (foreshoreCase == 0) then
+                     foreshoreCase = 1 ! below first foreshore (no foreshores so far)
+                  else 
+                     foreshoreCase = 3 ! between foreshores (above first foreshore)
+                  endif
+
+                  ! calculate average berm height
+                  hBerm = (geometry%yCoordinates(i)+geometry%yCoordinates(i+1))/2
+
+                  ! maximum z2% equals average berm height minus local water level
+                  z2max = hBerm - load%h
+
+                  ! exit loop over dike segments
+                  exit
+
+               elseif (load%h > geometry%yCoordinates(i+1)) then
+
+                  ! ---------------------------------
+                  ! local water level above foreshore
+                  ! ---------------------------------
+                  foreshoreCase = 2
+
+                  ! water depth at the end of the foreshore
+                  dH = load%h - geometry%yCoordinates(i+1)
+
+                  ! index coordinates at the end of the foreshore
+                  index = i+1
+
+                  ! (no exit: local water level may be on or below another foreshore)
+
+               else
+
+                  ! ------------------------------
+                  ! local water level on foreshore
+                  ! ------------------------------
+                  foreshoreCase = 4
+
+                  ! exit loop over dike segments
+                  exit
+
+               endif
+            endif
+         endif
+      enddo
+   endif
+
+end function determineForeshoreCase
+
+end subroutine calculateOvertoppingSection
 
 !> calculateWaveOvertopping:
 !! calculate wave overtopping

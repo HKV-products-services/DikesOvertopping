@@ -64,19 +64,19 @@
 !
 !  Input/output parameters
 !
-   type(tpLoad),        intent(in   ) :: load           !< load struct
-   real(kind=wp),       intent(in   ) :: z2             !< 2% wave run-up (m)
+   type(tpLoad),             intent(in   ) :: load           !< load struct
+   real(kind=wp),            intent(in   ) :: z2             !< 2% wave run-up (m)
    type(tpGeometry), target, intent(in   ) :: geometry       !< structure with geometry data
-   real(kind=wp),       intent(  out) :: tanAlpha       !< representative slope angle
-   type(tMessage),      intent(inout) :: error          !< error struct
+   real(kind=wp),            intent(  out) :: tanAlpha       !< representative slope angle
+   type(tMessage),           intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
-   type(tpGeometry), pointer :: geometryNoBerms   !< geometry without berms
+   type(tpGeometry), pointer :: geometryNoBerms        !< geometry without berms
    type(tpGeometry), pointer :: LocalGeometryNoBerms   !< geometry without berms, as in the computations
-   real(kind=wp)     :: yLower            !< y-coordinate lower bound representative slope (m+NAP)
-   real(kind=wp)     :: yUpper            !< y-coordinate upper bound representative slope (m+NAP)
-   real(kind=wp)     :: dx                !< horizontal distance between lower and upper bound (m)
+   real(kind=wp)             :: yLower                 !< y-coordinate lower bound representative slope (m+NAP)
+   real(kind=wp)             :: yUpper                 !< y-coordinate upper bound representative slope (m+NAP)
+   real(kind=wp)             :: dx                     !< horizontal distance between lower and upper bound (m)
 
 ! ==========================================================================================================
 
@@ -364,7 +364,7 @@
 
             ! check if the berm segment is a horizontal berm
             if (geometry%segmentSlopes(i) > 0.0d0) then
-               error%errorCode = 1  !TODO is this possible?
+               error%errorCode = 1
                exit
             end if
 
@@ -380,7 +380,7 @@
             call calculateHorzDistance (geometry, yLower, yUpper, LB(N), error)
 
             ! calculate relative berm width
-            if (LB(N) > 0.0d0) then
+            if (error%errorCode == 0 .and. LB(N) > 0.0d0) then
                rB(N) = B(N) / LB(N)
             else
                error%errorCode = 1
@@ -403,9 +403,9 @@
 
             else ! local water level on or above the berm (dH>=0)
 
-               if (dH(N) < 2*load%Hm0) then
+               if (dH(N) < 2.0d0*load%Hm0) then
                   ! local water level less than 2*Hm0 above the berm (influence)
-                  rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/(2*load%Hm0))
+                  rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/(2.0d0*load%Hm0))
                else
                   ! local water level 2*Hm0 or more above the berm (no influence)
                   rD(N) = 1.0d0
@@ -427,37 +427,35 @@
 
    if (error%errorCode == 0) then
 
-      if (N == 0) then
+      select case (N)
+      case (0)
 
          ! no berms present
          gammaB = 1.0d0
 
-      elseif (N == 1) then
+      case (1)
 
          ! one berm present
-         gammaB = 1 - rB(1) * (1-rD(1))
+         gammaB = 1.0d0 - rB(1) * (1.0d0-rD(1))
 
-      else
+      case default
 
          ! more berms present
-         f1 =     B  * (1-rD)
-         f2 = (LB-B) * (1-rD)
+         f1 =     B  * (1.0d0-rD)
+         f2 = (LB-B) * (1.0d0-rD)
          f3 = sum(f1)
-         f4 = sum(f1 * f2)
-         f5 = sum(f1 * (1-rD))
          if (f3 > 0.0d0) then
-            gammaB = 1 - f5 / (f4/f3 + f3)
+            f4 = sum(f1 * f2)
+            f5 = sum(f1 * (1.0d0-rD))
+            gammaB = 1.0d0 - f5 / (f4/f3 + f3)
          else
             gammaB = 1.0d0
          endif
-      endif
+      end select
 
-   endif
-
-   ! ---------------------------------
-   ! adjust influence factor for berms
-   ! ---------------------------------
-   if (error%errorCode == 0) then
+      ! ---------------------------------
+      ! adjust influence factor for berms
+      ! ---------------------------------
       gammaB = max(0.6d0, gammaB)
    endif
 
