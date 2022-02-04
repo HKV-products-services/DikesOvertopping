@@ -42,17 +42,17 @@ set_target_properties(DikesOvertoppingLib
 
 target_link_libraries(DikesOvertoppingLib FeedbackDll Feedback HRgeneral)
 
-add_library(DllDikesOvertopping
+add_library(DikesOvertopping
   SHARED
     dllDikesOvertopping/dllOvertopping.f90
 )
 
-set_target_properties(DllDikesOvertopping
+set_target_properties(DikesOvertopping
     PROPERTIES
       POSITION_INDEPENDENT_CODE 1
 )
 
-target_link_libraries(DllDikesOvertopping DikesOvertoppingLib FeedbackDll Feedback HRtools)
+target_link_libraries(DikesOvertopping DikesOvertoppingLib FeedbackDll Feedback HRtools)
 
 add_executable(unitTestProgram
     tests/DikesOvertoppingTests/crossSectionsTests.f90
@@ -67,7 +67,7 @@ add_executable(unitTestProgram
     external/throwexception.f90
 )
 
-target_link_libraries(unitTestProgram DllDikesOvertopping DikesOvertoppingLib HRtools FeedbackDll Feedback)
+target_link_libraries(unitTestProgram DikesOvertoppingLib HRtools FeedbackDll Feedback)
 
 enable_testing()
 
