@@ -78,11 +78,10 @@
 !
    real(kind=wp)            :: toe                  !< height of the dike toe (m+NAP)
    real(kind=wp)            :: crest                !< crest height (m+NAP)
-   type (tpLoad)            :: loadAdj              !< structure with load parameters
+   type (tpLoadX)           :: loadAdj              !< structure with load parameters
    real(kind=wp)            :: beta                 !< angle of wave attack (degree)
    real(kind=wp)            :: gammaBeta_z          !< influence factor angle of wave attack 2% wave run-up
    real(kind=wp)            :: gammaBeta_o          !< influence factor angle of wave attack overtopping
-   real(kind=wp)            :: L0                   !< wave length (m)
    integer                  :: NwideBerms           !< number of wide berms
    type (tpOvertopping)     :: overtoppingB         !< structure with overtopping results for ordinary berms
    type (tpOvertopping)     :: overtoppingF         !< structure with overtopping results for foreshores
@@ -114,8 +113,10 @@
       crest = geometry%yCoordinates(geometry%nCoordinates)
 
       ! initialize local values wave height and wave period
-      loadAdj = load
-      loadAdj%Hm0 = min(load%Hm0, max(load%h - toe, 0.0d0))
+      loadAdj%Hm0   = min(load%Hm0, max(load%h - toe, 0.0d0))
+      loadAdj%h     = load%h
+      loadAdj%Tm_10 = load%Tm_10
+      loadAdj%phi   = load%phi
 
       ! calculate angle of wave attack
       call calculateAngleWaveAttack (load%phi, geometry%psi, beta)
@@ -143,12 +144,12 @@
 
          ! calculate the wave length
          if (error%errorCode == 0) then
-            call calculateWaveLength (loadAdj%Tm_10, L0)
+            call calculateWaveLength (loadAdj%Tm_10, loadAdj%L0)
          endif
          
          ! if applicable split cross section
          if (error%errorCode == 0) then
-            call splitCrossSection (geometryMergedBerms, L0, NwideBerms, &
+            call splitCrossSection (geometryMergedBerms, loadAdj%L0, NwideBerms, &
                                     geometrysectionB, geometrysectionF, error)
          endif
 
@@ -158,26 +159,26 @@
             if (NwideBerms == 0) then
 
                ! no wide berms (geometrySectionB = geometrySectionF)
-               call calculateOvertoppingSection (geometrySectionB, loadAdj, L0,       &
+               call calculateOvertoppingSection (geometrySectionB, loadAdj,  &
                                                  gammaBeta_z, gammaBeta_o, modelFactors,    &
                                                  overtopping, error)
             else
 
                ! geometrySectionB equals geometry with all wide berms reduced to B=L0/4
-               call calculateOvertoppingSection (geometrySectionB, loadAdj, L0,       &
+               call calculateOvertoppingSection (geometrySectionB, loadAdj,   &
                                                  gammaBeta_z, gammaBeta_o, modelFactors,    &
                                                  overtoppingB, error)
 
                ! geometrySectionF equals geometry with all wide berms extended B=L0
                if (error%errorCode == 0) then
-                  call calculateOvertoppingSection (geometrySectionF, loadAdj, L0,    &
+                  call calculateOvertoppingSection (geometrySectionF, loadAdj,  &
                                                     gammaBeta_z, gammaBeta_o, modelFactors, &
                                                     overtoppingF, error)
                endif
                
                ! interpolation of results for both cross sections
                if (error%errorCode == 0) then
-                  call interpolateResultsSections (geometryMergedBerms, L0, NwideBerms,     &
+                  call interpolateResultsSections (geometryMergedBerms, loadAdj%L0, NwideBerms,     &
                                                    overtoppingB, overtoppingF, overtopping, error)
                endif
             endif
@@ -195,7 +196,7 @@
 !! calculate the overtopping for a section
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateOvertoppingSection (geometry, load, L0, gammaBeta_z, gammaBeta_o, &
+   subroutine calculateOvertoppingSection (geometry, load, gammaBeta_z, gammaBeta_o, &
                                            modelFactors, overtopping, error)
 !***********************************************************************************************************
 !   implicit none
@@ -203,8 +204,7 @@
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   type (tpLoad),             intent(in)     :: load           !< load struct
-   real(kind=wp),             intent(in)     :: L0             !< wave length (m)
+   type (tpLoadX),            intent(in)     :: load           !< load struct
    real(kind=wp),             intent(inout)  :: gammaBeta_z    !< influence angle wave attack wave run-up
    real(kind=wp),             intent(inout)  :: gammaBeta_o    !< influence angle wave attack overtopping
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
@@ -217,7 +217,7 @@
    real(kind=wp)     :: dH                !< water depth at the end of the foreshore (m)
    integer           :: index             !< index coordinates at the end of the foreshore
    real(kind=wp)     :: z2max             !< maximum 2% wave run-up due to foreshore (m)
-   type (tpLoad)     :: load_red          !< load with reduced Hm0
+   type (tpLoadX)    :: load_red          !< load with reduced Hm0
    type (tpGeometry), pointer :: geometryAdjusted  !< geometry with removed dike segments
 
 ! ==========================================================================================================
@@ -357,7 +357,7 @@ function determineForeshoreCase () result(foreshoreCase)
             B = geometry%xCoordDiff(i)
 
             ! determine if the berm segment is a foreshore
-            if (B >= L0) then
+            if (B >= load%L0) then
 
                ! compare height of the foreshore to local water level
                if (load%h < geometry%yCoordinates(i)) then
@@ -429,7 +429,7 @@ end subroutine calculateOvertoppingSection
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   type (tpLoad),             intent(in)     :: load           !< load struct
+   type (tpLoadX),            intent(in)     :: load           !< load struct
    real(kind=wp),             intent(in)     :: z2             !< 2% wave run-up (m)
    real(kind=wp),             intent(inout)  :: gammaBeta_o    !< influence angle wave attack overtopping
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors

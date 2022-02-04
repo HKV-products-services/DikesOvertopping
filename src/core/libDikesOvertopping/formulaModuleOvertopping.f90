@@ -112,7 +112,7 @@
 !
 !  Input/output parameters
 !
-   type(tpLoad),             intent(in)  :: load           !< load struct
+   type(tpLoadX),            intent(in)  :: load           !< load struct
    real(kind=wp),            intent(in)  :: tanAlpha       !< representative slope angle
    real(kind=wp),            intent(in)  :: gammaB         !< influence factor berms
    real(kind=wp),            intent(in)  :: gammaF         !< influence factor roughness
@@ -227,7 +227,7 @@
 !
 !  Input/output parameters
 !
-   type(tpLoad),     intent(in   ) :: load           !< load struct
+   type(tpLoadX),    intent(in   ) :: load           !< load struct
    real(kind=wp),    intent(  out) :: s0             !< wave steepness
    type(tMessage),   intent(inout) :: error          !< error struct
 !

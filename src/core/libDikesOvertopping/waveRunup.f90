@@ -64,7 +64,7 @@ module waveRunup
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   type (tpLoad),             intent(in)     :: load           !< load struct
+   type (tpLoadX),            intent(in)     :: load           !< load struct
    real(kind=wp),             intent(inout)  :: gammaBeta_z    !< influence factor angle wave attack 2% run-up
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
@@ -181,7 +181,7 @@ module waveRunup
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry           !< structure with geometry data
-   type (tpLoad),             intent(in)     :: load               !< load struct
+   type (tpLoadX),            intent(in)     :: load               !< load struct
    real(kind=wp),             intent(inout)  :: gammaBeta_z        !< influence factor angle wave attack 2% run-up
    type (tpOvertoppingInput), intent(in)     :: modelFactors       !< structure with model factors
    real(kind=wp),             intent(in)     :: z2                 !< 2% wave run-up (m)

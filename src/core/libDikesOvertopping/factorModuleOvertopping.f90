@@ -64,7 +64,7 @@
 !
 !  Input/output parameters
 !
-   type(tpLoad),             intent(in   ) :: load           !< load struct
+   type(tpLoadX),            intent(in   ) :: load           !< load struct
    real(kind=wp),            intent(in   ) :: z2             !< 2% wave run-up (m)
    type(tpGeometry), target, intent(in   ) :: geometry       !< structure with geometry data
    real(kind=wp),            intent(  out) :: tanAlpha       !< representative slope angle
@@ -145,7 +145,7 @@
 !
 !  Input/output parameters
 !
-   type(tpLoad),  intent(inout)  :: load        !< load struct
+   type(tpLoadX), intent(inout)  :: load        !< load struct
    real(kind=wp), intent(in)     :: beta        !< angle of wave attack (degree)
    real(kind=wp), intent(out)    :: gammaBeta_z !< influence factor angle of wave attack 2% wave run-up
    real(kind=wp), intent(out)    :: gammaBeta_o !< influence factor angle of wave attack overtopping
@@ -305,7 +305,7 @@
 !
 !  Input/output parameters
 !
-   type(tpLoad),           intent(in   ) :: load           !< load struct
+   type(tpLoadX),          intent(in   ) :: load           !< load struct
    real(kind=wp),          intent(in   ) :: z2             !< 2% wave run-up (m)
    type(tpGeometry),       intent(in   ) :: geometry       !< structure with geometry data
    real(kind=wp),          intent(  out) :: gammaB         !< influence factor berms

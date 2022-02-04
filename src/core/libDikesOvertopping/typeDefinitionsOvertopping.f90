@@ -77,6 +77,10 @@
       real(kind=wp)          :: phi                     !< wave direction (degrees)
    end type tpLoad
 
+    type, extends(tpLoad), public :: tpLoadX
+        real(kind=wp) :: L0 !< wave length
+    end type tpLoadX
+
    real(kind=wp), parameter :: fRunup1 = 1.65_wp
    real(kind=wp), parameter :: fRunup2 = 4.00_wp
    real(kind=wp), parameter :: fRunup3 = 1.50_wp
