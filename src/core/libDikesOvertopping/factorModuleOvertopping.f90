@@ -312,21 +312,11 @@
 !
 !  Local parameters
 !
-   integer        :: i                          !< counter dike segments
-   integer        :: N                          !< counter berm segmetns
+   integer        :: N                          !< counter berm segments
    real(kind=wp)  :: B (geometry%NbermSegments) !< berm widths (m)
-   real(kind=wp)  :: hB(geometry%NbermSegments) !< berm heights (m+NAP)
    real(kind=wp)  :: LB(geometry%NbermSegments) !< berm influence lengths (m)
    real(kind=wp)  :: rB(geometry%NbermSegments) !< relative berm widths
-   real(kind=wp)  :: dH(geometry%NbermSegments) !< berm depths (m)
    real(kind=wp)  :: rD(geometry%NbermSegments) !< relative depths
-   real(kind=wp)  :: yLower                     !< y-coordinate lower bound influence length (m+NAP)
-   real(kind=wp)  :: yUpper                     !< y-coordinate upper bound influence length (m+NAP)
-   real(kind=wp)  :: f1(geometry%NbermSegments) !< vector with help factors for combining influence factors
-   real(kind=wp)  :: f2(geometry%NbermSegments) !< vector with help factors for combining influence factors
-   real(kind=wp)  :: f3                         !< help factor for combining influence factors
-   real(kind=wp)  :: f4                         !< help factor for combining influence factors
-   real(kind=wp)  :: f5                         !< help factor for combining influence factors
 
 ! ==========================================================================================================
 
@@ -343,11 +333,39 @@
       error%errorCode = 1
    endif
 
-   ! ---------------------------------------------------------------------
-   ! calculate berm widhts, heights, influence lengths and relative depths
-   ! ---------------------------------------------------------------------
 
    if (error%errorCode == 0) then
+
+      call calculateBermProperties()
+
+   endif
+
+   ! check number of berm segments
+   if (N /= geometry%NbermSegments) error%errorCode = 1
+
+   if (error%errorCode == 0) then
+
+      call calculateInfluenceFactorBerms()
+   endif
+
+   ! determine possible error message
+   if (error%errorCode /= 0) then
+      if (error%Message == ' ') then
+         call GetMSGcalc_influence_berms(error%Message)
+      endif
+   endif
+
+   contains
+
+   ! ---------------------------------------------------------------------
+   ! calculate berm widths, heights, influence lengths and relative depths
+   ! ---------------------------------------------------------------------
+   subroutine calculateBermProperties()
+      integer        :: i         !< counter dike segments
+      real(kind=wp)  :: yLower    !< y-coordinate lower bound influence length (m+NAP)
+      real(kind=wp)  :: yUpper    !< y-coordinate upper bound influence length (m+NAP)
+      real(kind=wp)  :: dH        !< berm depths (m)
+      real(kind=wp)  :: hB        !< berm heights (m+NAP)
 
       ! initialize berm counter
       N = 0
@@ -371,11 +389,11 @@
             B(N)  = geometry%xCoordDiff(i)
 
             ! determine the height of the (horizontal) berm segment
-            hB(N) = geometry%yCoordinates(i)
+            hB = geometry%yCoordinates(i)
 
             ! calculate the influence length
-            yLower = max(hB(N)-load%Hm0, geometry%yCoordinates(1))
-            yUpper = min(hB(N)+load%Hm0, geometry%yCoordinates(geometry%nCoordinates))
+            yLower = max(hB-load%Hm0, geometry%yCoordinates(1))
+            yUpper = min(hB+load%Hm0, geometry%yCoordinates(geometry%nCoordinates))
             call calculateHorzDistance (geometry, yLower, yUpper, LB(N), error)
 
             ! calculate relative berm width
@@ -387,14 +405,14 @@
             endif
 
             ! calculate the berm depth
-            dH(N) = load%h - hB(N)
+            dH = load%h - hB
 
             ! calculate the influence of the berm depth
-            if (dH(N) < 0.0d0) then ! local water level below the berm (dH<0)
+            if (dH < 0.0d0) then ! local water level below the berm (dH<0)
 
-               if (z2 > -dH(N)) then
+               if (z2 > -dH) then
                   ! local water level + z2% above the berm (influence)
-                  rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/z2)
+                  rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH/z2)
                else
                   ! local water level + z2% on or below the berm (no influence)
                   rD(N) = 1.0d0
@@ -402,9 +420,9 @@
 
             else ! local water level on or above the berm (dH>=0)
 
-               if (dH(N) < 2.0d0*load%Hm0) then
+               if (dH < 2.0d0*load%Hm0) then
                   ! local water level less than 2*Hm0 above the berm (influence)
-                  rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH(N)/(2.0d0*load%Hm0))
+                  rD(N) = 0.5d0 - 0.5d0 * cos(pi*dH/(2.0d0*load%Hm0))
                else
                   ! local water level 2*Hm0 or more above the berm (no influence)
                   rD(N) = 1.0d0
@@ -414,17 +432,17 @@
 
          endif
       enddo
-
-   endif
-
-   ! check number of berm segments
-   if (N /= geometry%NbermSegments) error%errorCode = 1
+   end subroutine calculateBermProperties
 
    ! ------------------------------------
    ! calculate influence factor for berms
    ! ------------------------------------
-
-   if (error%errorCode == 0) then
+   subroutine calculateInfluenceFactorBerms()
+      real(kind=wp)  :: f1(geometry%NbermSegments) !< vector with help factors for combining influence factors
+      real(kind=wp)  :: f2(geometry%NbermSegments) !< vector with help factors for combining influence factors
+      real(kind=wp)  :: f3                         !< help factor for combining influence factors
+      real(kind=wp)  :: f4                         !< help factor for combining influence factors
+      real(kind=wp)  :: f5                         !< help factor for combining influence factors
 
       select case (N)
       case (0)
@@ -456,14 +474,7 @@
       ! adjust influence factor for berms
       ! ---------------------------------
       gammaB = max(0.6d0, gammaB)
-   endif
-
-   ! determine possible error message
-   if (error%errorCode /= 0) then
-      if (error%Message == ' ') then
-         call GetMSGcalc_influence_berms(error%Message)
-      endif
-   endif
+   end subroutine calculateInfluenceFactorBerms
 
    end subroutine calculateGammaB
 
