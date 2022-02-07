@@ -218,32 +218,24 @@
 !! calculate the wave steepness
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateWaveSteepness (load, s0, error)
+   subroutine calculateWaveSteepness (load, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   type(tpLoadX),    intent(in   ) :: load           !< load struct
-   real(kind=wp),    intent(  out) :: s0             !< wave steepness
+   type(tpLoadX),    intent(inout) :: load           !< load struct
    type(tMessage),   intent(inout) :: error          !< error struct
-!
-!  Local parameters
-!
-   real(kind=wp)  :: L0 !< wave length (m)
 
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
    error%errorCode = 0
 
-   ! calculate the wave length
-   call calculateWaveLength (load%Tm_10, L0)
-
    ! calculate the wave steepness
-   if (L0 > 0.0d0) then
-      s0 = load%Hm0/L0
+   if (load%L0 > 0.0d0) then
+      load%s0 = load%Hm0 / load%L0
    else
       error%errorCode = 1
       call GetMSGcalc_wave_steepness_period_is_zero(error%Message)

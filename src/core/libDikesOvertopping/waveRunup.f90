@@ -85,7 +85,7 @@ module waveRunup
 ! ==========================================================================================================
 
    ! calculate wave steepness
-   call calculateWaveSteepness (load, load%s0, error)
+   call calculateWaveSteepness (load, error)
 
    ! if applicable adjust non-horizontal berms
    geometryFlatBerms => geometry%parent%geometryFlatBerms

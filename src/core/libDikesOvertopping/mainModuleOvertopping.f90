@@ -428,7 +428,7 @@ end subroutine calculateOvertoppingSection
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   type (tpLoadX),            intent(in)     :: load           !< load struct
+   type (tpLoadX),            intent(inout)  :: load           !< load struct
    real(kind=wp),             intent(in)     :: z2             !< 2% wave run-up (m)
    type(tpInfluencefactors),  intent(inout)  :: gamma          !< influence factors
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
@@ -438,7 +438,6 @@ end subroutine calculateOvertoppingSection
 !  Local parameters
 !
    type (tpGeometry), pointer :: geometryFlatBerms !< structure with geometry data with horizontal berms
-   real(kind=wp)     :: s0                !< wave steepness
    real(kind=wp)     :: tanAlpha          !< representative slope angle
    real(kind=wp)     :: ksi0              !< breaker parameter
    real(kind=wp)     :: ksi0Limit         !< limit value breaker parameter
@@ -446,7 +445,7 @@ end subroutine calculateOvertoppingSection
 ! ==========================================================================================================
 
    ! calculate wave steepness
-   call calculateWaveSteepness (load, s0, error)
+   call calculateWaveSteepness (load, error)
    
    ! if applicable adjust non-horizontal berms
    geometryFlatBerms => geometry%parent%geometryFlatBerms
@@ -463,7 +462,7 @@ end subroutine calculateOvertoppingSection
 
    ! calculate breaker parameter
    if (error%errorCode == 0) then
-      call calculateBreakerParameter (tanAlpha, s0, ksi0, error)
+      call calculateBreakerParameter (tanAlpha, load%s0, ksi0, error)
    endif
 
    ! calculate influence factor berms (gammaB)
