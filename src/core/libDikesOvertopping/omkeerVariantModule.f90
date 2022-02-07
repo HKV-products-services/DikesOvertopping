@@ -119,21 +119,14 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
 !
     real(kind=wp)                              :: dis1                  ! discharge at minDikeHeight
     real(kind=wp)                              :: dis2                  ! discharge at maxDikeHeight
-    real(kind=wp)                              :: disNext               ! discharge at nextDikeHeight
     real(kind=wp)                              :: minDikeHeight         ! lower bound dike heigth
     real(kind=wp)                              :: maxDikeHeight         ! upper bound dike heigth
-    real(kind=wp)                              :: nextDikeHeight        ! dike heigth for next calculation
     integer                                    :: i                     ! loop counter
-    integer                                    :: j                     ! loop counter
-    integer, parameter                         :: maxItA = 20           ! maximum number of iterations in first loop
-    integer, parameter                         :: maxItB = 5            ! maximum number of iterations in second loop
-    
+
     integer                                    :: nPoints               ! number of profile points
     integer                                    :: ierr                  ! error code
     integer                                    :: iUp                   ! upper bound on profile
     integer                                    :: iLow                  ! lower bound on profile
-    real(kind=wp)                              :: X(2)                  ! argument for logInterpolate
-    real(kind=wp)                              :: Y(2)                  ! argument for logInterpolate
     logical                                    :: foundValue            ! flag for early succesfull return
     type(tOmkeer)                              :: omkeerProps           ! struct with derived properties
 
@@ -156,9 +149,44 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
         call set_nan(omkeerProps%dischargeProfile(i))
     enddo
 
-    !
-    ! get discharge for end of slope segments:
-    !
+    call getDischargeEndSlope()
+
+    iLow = nPoints + 1
+    iUp = 0
+    do i = 1, nPoints
+        if (omkeerProps%isValidZ(i)) then
+            if (equalRealsRelative(givenDischarge , omkeerProps%dischargeProfile(i) , tolDischarge )) then
+                error%errorCode = 0
+                dikeHeight = omkeerProps%ZProfile(i)
+                overtopping%Qo = omkeerProps%dischargeProfile(i)
+                foundValue = .true.
+            else if (givenDischarge < omkeerProps%dischargeProfile(i)) then
+                iLow = i
+            else if (iUp == 0) then
+                iUp = i
+            endif
+        endif
+    enddo
+
+    call checkIfOnBerm()
+    if ( error%errorCode /= 0) return
+
+    call DischargeBasedOnLogRelation()
+
+    call cleanupGeometry(geometry%parent)
+
+    deallocate(omkeerProps%isBerm, omkeerProps%dischargeProfile, omkeerProps%isValidZ, omkeerProps%ZProfile)
+
+contains
+
+!
+! get discharge for end of slope segments:
+!
+subroutine getDischargeEndSlope()
+    integer             :: i, j
+    integer, parameter  :: maxItA = 20           ! maximum number of iterations in first loop
+    real(kind=wp)       :: nextDikeHeight        ! dike heigth for next calculation
+
     call setupGeometries(geometry%parent)
     do i = 1, nPoints
         nextDikeHeight = geometry%yCoordinates(i)
@@ -180,26 +208,15 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
             endif
         endif
     enddo
+end subroutine getDischargeEndSlope
 
-    iLow = nPoints + 1
-    iUp = 0
-    do i = 1, nPoints
-        if (omkeerProps%isValidZ(i)) then
-            if (equalRealsRelative(givenDischarge , omkeerProps%dischargeProfile(i) , tolDischarge )) then
-                error%errorCode = 0
-                dikeHeight = omkeerProps%ZProfile(i)
-                overtopping%Qo = omkeerProps%dischargeProfile(i)
-                foundValue = .true.
-            else if (givenDischarge < omkeerProps%dischargeProfile(i)) then
-                iLow = i
-            else if (iUp == 0) then
-                iUp = i
-            endif
-        endif
-    enddo
-
-    call checkIfOnBerm()
-    if ( error%errorCode /= 0) return
+subroutine DischargeBasedOnLogRelation()
+    real(kind=wp)       :: disNext               ! discharge at nextDikeHeight
+    real(kind=wp)       :: X(2)                  ! argument for logInterpolate
+    real(kind=wp)       :: Y(2)                  ! argument for logInterpolate
+    integer             :: i
+    real(kind=wp)       :: nextDikeHeight        ! dike heigth for next calculation
+    integer, parameter  :: maxItB = 5            ! maximum number of iterations in second loop
     !
     ! use logarithmic relation between discharge and dike height
     !
@@ -243,12 +260,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
             call set_nan(dikeHeight)
         endif
     endif
-
-    call cleanupGeometry(geometry%parent)
-
-    deallocate(omkeerProps%isBerm, omkeerProps%dischargeProfile, omkeerProps%isValidZ, omkeerProps%ZProfile)
-
-contains
+end subroutine DischargeBasedOnLogRelation
 
 subroutine checkIfOnBerm()
     !

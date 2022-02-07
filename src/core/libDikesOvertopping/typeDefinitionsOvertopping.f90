@@ -79,6 +79,7 @@
 
     type, extends(tpLoad), public :: tpLoadX
         real(kind=wp)        :: L0 !< wave length
+        real(kind=wp)        :: s0 !< wave steepness
     end type tpLoadX
 
     type, public             :: tpInfluenceFactors

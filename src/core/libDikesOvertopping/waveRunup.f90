@@ -64,7 +64,7 @@ module waveRunup
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   type (tpLoadX),            intent(in)     :: load           !< load struct
+   type (tpLoadX),            intent(inout)  :: load           !< load struct
    type(tpInfluencefactors),  intent(inout)  :: gamma_z        !< influence factor angle wave attack 2% run-up
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
    real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
@@ -73,7 +73,6 @@ module waveRunup
 !  Local parameters
 !
    type (tpGeometry), pointer :: geometryFlatBerms        !< structure with geometry data with horizontal berms
-   real(kind=wp)     :: s0                       !< wave steepness
    integer           :: i                        !< counter iteration steps
    real(kind=wp)     :: z2_start  (z2_iter_max2) !< starting value 2% wave run-up for each iteration step
    real(kind=wp)     :: z2_end    (z2_iter_max2) !< ending value 2% wave run-up   for each iteration step
@@ -86,7 +85,7 @@ module waveRunup
 ! ==========================================================================================================
 
    ! calculate wave steepness
-   call calculateWaveSteepness (load, s0, error)
+   call calculateWaveSteepness (load, load%s0, error)
 
    ! if applicable adjust non-horizontal berms
    geometryFlatBerms => geometry%parent%geometryFlatBerms
@@ -111,7 +110,7 @@ module waveRunup
 
          z2_start(i) = determineStartingValue(i, modelFactors%relaxationFactor, z2_start, z2_end, load%Hm0)
 
-         z2_end(i) = innerCalculation(geometry, load, gamma_z, modelFactors, z2_start(i), s0, geometryFlatBerms, error)
+         z2_end(i) = innerCalculation(geometry, load, gamma_z, modelFactors, z2_start(i), geometryFlatBerms, error)
 
          ! calculate convergence criterium
          convergence = (abs(z2_start(i) - z2_end(i)) < z2_margin)
@@ -140,8 +139,8 @@ module waveRunup
          Niterations = Niterations + 1
       
          z2_start(i) = z2k + 2.0_wp * z2_margin * (real(i,wp)-offset)
-      
-         z2_end(i) = innerCalculation(geometry, load, gamma_z, modelFactors, z2_start(i), s0, geometryFlatBerms, error)
+
+         z2_end(i) = innerCalculation(geometry, load, gamma_z, modelFactors, z2_start(i), geometryFlatBerms, error)
 
          ! calculate convergence criterium
          convergence = (abs(z2_start(i) - z2_end(i)) < z2_margin)
@@ -173,7 +172,7 @@ module waveRunup
 !! inner calculation for the wave runup
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   function innerCalculation(geometry, load, gamma_z, modelFactors, z2, s0, &
+   function innerCalculation(geometry, load, gamma_z, modelFactors, z2, &
                              geometryFlatBerms, error) result(z2_end)
 !***********************************************************************************************************
    implicit none
@@ -185,7 +184,6 @@ module waveRunup
    type(tpInfluencefactors),  intent(inout)  :: gamma_z        !< influence factor angle wave attack 2% run-up
    type (tpOvertoppingInput), intent(in)     :: modelFactors       !< structure with model factors
    real(kind=wp),             intent(in)     :: z2                 !< 2% wave run-up (m)
-   real(kind=wp),             intent(in)     :: s0                 !< wave steepness
    type (tpGeometry),         intent(in)     :: geometryFlatBerms  !< structure with geometry data with horizontal berms
    type (tMessage),           intent(inout)  :: error              !< error struct
    real(kind=wp)                             :: z2_end             !< 2% wave run-up at end of inner calculation
@@ -215,7 +213,7 @@ module waveRunup
 
    ! calculate breaker parameter
    if (error%errorCode == 0) then
-      call calculateBreakerParameter (tanAlpha, s0, ksi0, error)
+      call calculateBreakerParameter (tanAlpha, load%s0, ksi0, error)
    endif
 
    ! calculate limit value breaker parameter

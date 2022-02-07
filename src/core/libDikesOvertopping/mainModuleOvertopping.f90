@@ -203,7 +203,7 @@
 !  Input/output parameters
 !
    type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-   type (tpLoadX),            intent(in)     :: load           !< load struct
+   type (tpLoadX),            intent(inout)  :: load           !< load struct
    type(tpInfluencefactors),  intent(inout)  :: gamma_z        !< influence angle wave attack wave run-up
    type(tpInfluencefactors),  intent(inout)  :: gamma_o        !< influence angle wave attack overtopping
    type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
