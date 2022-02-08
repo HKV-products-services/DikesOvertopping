@@ -359,7 +359,7 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 
     if (success) then
 
-        call profileInStructure(geometry%nCoordinates, geometry%xcoordinates, geometry%ycoordinates, dikeHeight, &
+        call profileInStructure(geometry%Coordinates%N, geometry%coordinates%x, geometry%coordinates%y, dikeHeight, &
                             nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, msgStruct)
         success = (msgStruct%errorCode == 0)
     endif

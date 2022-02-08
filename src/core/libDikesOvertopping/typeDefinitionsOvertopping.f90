@@ -38,16 +38,19 @@
    !
    use precision, only : wp
    private :: wp
-   
+
+   type, public :: tpCoordinatePair
+      integer                     :: N                !< number of coordinates
+      real(kind=wp), allocatable  :: x(:)             !< vector with x-coordinates (m)
+      real(kind=wp), allocatable  :: y(:)             !< vector with y-coordinates (m)
+   end type tpCoordinatePair
+
    !> tpGeometry: structure with geometry data
    type, public :: tpGeometry
       real(kind=wp)               :: psi                         !< dike normal (degrees)
-      integer                     :: nCoordinates                !< number of coordinates cross section 
-      real(kind=wp), allocatable  :: xCoordinates(:)             !< vector with x-coordinates cross section (m)
-      real(kind=wp), allocatable  :: yCoordinates(:)             !< vector with y-coordinates cross section (m+NAP)
+      type(tpCoordinatePair)      :: Coordinates                 !< x and y coordinates cross section
       real(kind=wp), allocatable  :: roughnessFactors(:)         !< vector with roughness factors cross section
-      real(kind=wp), allocatable  :: xCoordDiff(:)               !< vector with differences in x-coordinates (m)
-      real(kind=wp), allocatable  :: yCoordDiff(:)               !< vector with differences in y-coordinates (m)
+      type(tpCoordinatePair)      :: CoordDiff                   !< differences in x and y coordinates
       real(kind=wp), allocatable  :: segmentSlopes(:)            !< vector with slopes dike segments
       integer, allocatable        :: segmentTypes(:)             !< vector with segment types (1=slope,2=berm,3=other)
       integer                     :: NbermSegments               !< number of berm segments

@@ -90,19 +90,19 @@
    end if
 
    ! local water level not lower than dike toe (first y-coordinate)
-   if (load%h < geometry%yCoordinates(1)) then
+   if (load%h < geometry%Coordinates%y(1)) then
       error%errorCode = 1
    endif
 
    ! local water level not higher than crest level (last y-coordinate)
-   if (load%h > geometry%yCoordinates(geometry%nCoordinates)) then
+   if (load%h > geometry%Coordinates%y(geometry%Coordinates%N)) then
       error%errorCode = 1
    endif
 
    ! determine cross section without berms
    if (error%errorCode == 0) then
       if (geometry%NbermSegments > 0) then
-         if (geometryNoBerms%nCoordinates == 0) then
+         if (geometryNoBerms%Coordinates%N == 0) then
             call removeBerms (geometry, geometryNoBerms, error)
          endif
          LocalGeometryNoBerms => geometryNoBerms
@@ -115,8 +115,8 @@
    if (error%errorCode == 0) then
 
       ! determine y-coordinates lower and upper bound representative slope
-      yLower = max(load%h-1.5d0*load%Hm0, LocalGeometryNoBerms%yCoordinates(1))
-      yUpper = min(load%h+z2,      LocalGeometryNoBerms%yCoordinates(LocalGeometryNoBerms%nCoordinates))
+      yLower = max(load%h-1.5d0*load%Hm0, LocalGeometryNoBerms%Coordinates%y(1))
+      yUpper = min(load%h+z2,      LocalGeometryNoBerms%Coordinates%y(LocalGeometryNoBerms%Coordinates%N))
 
       ! calculate horizontal distance between lower and upper bound
       call calculateHorzDistance (LocalGeometryNoBerms, yLower, yUpper, dx, error)
@@ -194,8 +194,8 @@
 !
 !  Local parameters
 !
-   real(kind=wp)              :: rFactors(geometry%nCoordinates-1)     !< roughness factors  of segments with influence
-   real(kind=wp)              :: horzLengths(geometry%nCoordinates-1)  !< horizontal lengths of segments with influence (m)
+   real(kind=wp)              :: rFactors(geometry%Coordinates%N-1)     !< roughness factors  of segments with influence
+   real(kind=wp)              :: horzLengths(geometry%Coordinates%N-1)  !< horizontal lengths of segments with influence (m)
    real(kind=wp)              :: yLower          !< y-coordinate lower bound segments with influence (m+NAP)
    real(kind=wp)              :: yUpper          !< y-coordinate upper bound segments with influence (m+NAP)
    integer                    :: iLower          !< index dike segment lower bound
@@ -212,13 +212,13 @@
    error%errorCode = 0
 
    ! local water level not lower than dike toe (first y-coordinate)
-   if (h < geometry%yCoordinates(1)) then
+   if (h < geometry%Coordinates%y(1)) then
       error%errorCode = 1
       call GetMSG_calculateGammaFtoLow(error%Message)
    endif
 
    ! local water level not higher than crest level (last y-coordinate)
-   if (h > geometry%yCoordinates(geometry%nCoordinates)) then
+   if (h > geometry%Coordinates%y(geometry%Coordinates%N)) then
       error%errorCode = 1
       call GetMSG_calculateGammaFtoHigh(error%Message)
    endif
@@ -227,8 +227,8 @@
       ! determine y-coordinates lower and upper bound segments with influence
       dy1 = max(1d-5, 0.25d0*z2)
       dy2 = max(1d-5, 0.50d0*z2)
-      yLower = max(h-dy1, geometry%yCoordinates(1))
-      yUpper = min(h+dy2, geometry%yCoordinates(geometry%nCoordinates))
+      yLower = max(h-dy1, geometry%Coordinates%y(1))
+      yUpper = min(h+dy2, geometry%Coordinates%y(geometry%Coordinates%N))
 
       ! --------------------------------------------------
       ! determine roughness factors and horizontal lengths
@@ -238,12 +238,12 @@
       rFactors = geometry%roughnessFactors
 
       ! determine index first dike segment containing the lower bound
-      iLower = count(geometry%yCoordinates < yLower)
+      iLower = count(geometry%Coordinates%y < yLower)
       if (iLower == 0) iLower = 1
 
       ! determine index last dike segment containing the upper bound
-      iUpper = geometry%nCoordinates - count(geometry%yCoordinates > yUpper)
-      if (iUpper == geometry%nCoordinates) iUpper = geometry%nCoordinates - 1
+      iUpper = geometry%Coordinates%N - count(geometry%Coordinates%y > yUpper)
+      if (iUpper == geometry%Coordinates%N) iUpper = geometry%Coordinates%N - 1
 
       ! set the roughness of all segments before the segment with the lower bound to zero
       if (iLower > 1) then
@@ -251,8 +251,8 @@
       endif
 
       ! set the roughness of all segments after the segment with the upper bound to zero
-      if (iUpper < geometry%nCoordinates-1) then
-         rFactors(iUpper+1:geometry%nCoordinates-1) = 0.0d0
+      if (iUpper < geometry%Coordinates%N-1) then
+         rFactors(iUpper+1:geometry%Coordinates%N-1) = 0.0d0
       endif
 
 
@@ -260,7 +260,7 @@
       ! calculate (and adjust) influence factor roughness
       ! --------------------------------------------------
 
-      if (geometry%nCoordinates == 2) then
+      if (geometry%Coordinates%N == 2) then
           gamma%gammaF = rFactors(1)
       else
           call calculateHorzLengths (geometry, yLower, yUpper, horzLengths, error)
@@ -324,12 +324,12 @@
    error%errorCode = 0
 
    ! local water level not lower than dike toe (first y-coordinate)
-   if (load%h < geometry%yCoordinates(1)) then
+   if (load%h < geometry%Coordinates%y(1)) then
       error%errorCode = 1
    endif
 
    ! local water level not higher than crest level (last y-coordinate)
-   if (load%h > geometry%yCoordinates(geometry%nCoordinates)) then
+   if (load%h > geometry%Coordinates%y(geometry%Coordinates%N)) then
       error%errorCode = 1
    endif
 
@@ -371,7 +371,7 @@
       N = 0
 
       ! loop over possible berm segments
-      do i=2, geometry%nCoordinates - 2
+      do i=2, geometry%Coordinates%N - 2
 
          ! determine if the current dike segment is a berm segment
          if (geometry%segmentTypes(i) == 2) then
@@ -386,14 +386,14 @@
             end if
 
             ! determine the width of the berm segment
-            B(N)  = geometry%xCoordDiff(i)
+            B(N)  = geometry%CoordDiff%x(i)
 
             ! determine the height of the (horizontal) berm segment
-            hB = geometry%yCoordinates(i)
+            hB = geometry%Coordinates%y(i)
 
             ! calculate the influence length
-            yLower = max(hB-load%Hm0, geometry%yCoordinates(1))
-            yUpper = min(hB+load%Hm0, geometry%yCoordinates(geometry%nCoordinates))
+            yLower = max(hB-load%Hm0, geometry%Coordinates%y(1))
+            yUpper = min(hB+load%Hm0, geometry%Coordinates%y(geometry%Coordinates%N))
             call calculateHorzDistance (geometry, yLower, yUpper, LB(N), error)
 
             ! calculate relative berm width

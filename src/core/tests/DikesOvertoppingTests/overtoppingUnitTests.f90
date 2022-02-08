@@ -68,22 +68,22 @@ subroutine testCalculateGammaF
    gamma%gammaB  = 1.0_wp
    z2            = 2.23e-15_wp
 
-   allocate(geometry%xCoordinates(npoints), geometry%yCoordinates(npoints), geometry%roughnessFactors(npoints-1), &
-            geometry%xCoordDiff(npoints-1), geometry%yCoordDiff(npoints-1), geometry%segmentSlopes(npoints-1), stat=ierr)
+   allocate(geometry%Coordinates%x(npoints), geometry%Coordinates%y(npoints), geometry%roughnessFactors(npoints-1), &
+            geometry%CoordDiff%x(npoints-1), geometry%CoordDiff%y(npoints-1), geometry%segmentSlopes(npoints-1), stat=ierr)
    call assert_equal(ierr, 0, 'allocate error')
 
-   geometry%nCoordinates = npoints
+   geometry%Coordinates%N = npoints
    geometry%roughnessFactors = [1.0_wp, 0.9_wp, 0.8_wp, 0.7_wp]
-   geometry%xCoordinates = [ -5.0_wp, -1.73_wp, 33.82_wp, 38.16_wp, 47.34_wp ]
-   geometry%yCoordinates = [ -4.0_wp, -2.89_wp, 6.03_wp, 6.31_wp, 8.64_wp ]
+   geometry%Coordinates%x = [ -5.0_wp, -1.73_wp, 33.82_wp, 38.16_wp, 47.34_wp ]
+   geometry%Coordinates%y = [ -4.0_wp, -2.89_wp, 6.03_wp, 6.31_wp, 8.64_wp ]
    do i = 1, npoints - 1
-       geometry%xCoordDiff(i)    = geometry%xCoordinates(i+1) - geometry%xCoordinates(i)
-       geometry%yCoordDiff(i)    = geometry%yCoordinates(i+1) - geometry%yCoordinates(i)
-       geometry%segmentSlopes(i) = geometry%yCoordDiff(i) / geometry%xCoordDiff(i)
+       geometry%CoordDiff%x(i)   = geometry%Coordinates%x(i+1) - geometry%Coordinates%x(i)
+       geometry%CoordDiff%y(i)   = geometry%Coordinates%y(i+1) - geometry%Coordinates%y(i)
+       geometry%segmentSlopes(i) = geometry%CoordDiff%y(i) / geometry%CoordDiff%x(i)
    enddo
 
    do i = 1, npoints - 1
-       h = 0.5_wp * (geometry%yCoordinates(i+1) + geometry%yCoordinates(i))
+       h = 0.5_wp * (geometry%Coordinates%y(i+1) + geometry%Coordinates%y(i))
        call calculateGammaF(h, ksi0, ksi0Limit, gamma, z2, geometry, error)
        call assert_equal(error%errorCode, 0, error%Message)
        call assert_comparable(gamma%gammaF, geometry%roughnessFactors(i), 1d-6, 'diff in gammaF')
@@ -100,8 +100,8 @@ subroutine testCalculateGammaF
    call GetMSG_calculateGammaFtoHigh(MsgExpected)
    call assert_equal(error%Message, MsgExpected, 'test error handling')
 
-   deallocate(geometry%xCoordinates, geometry%yCoordinates, geometry%roughnessFactors, &
-              geometry%xCoordDiff, geometry%yCoordDiff, geometry%segmentSlopes)
+   deallocate(geometry%Coordinates%x, geometry%Coordinates%y, geometry%roughnessFactors, &
+              geometry%CoordDiff%x, geometry%CoordDiff%y, geometry%segmentSlopes)
 
 end subroutine testCalculateGammaF
 
@@ -125,30 +125,30 @@ subroutine testCalculateGammaF2
    gamma%gammaB = 1.0_wp
    z2           = 1.0_wp
 
-   allocate(geometry%xCoordinates(npoints), geometry%yCoordinates(npoints), geometry%roughnessFactors(npoints-1), &
-            geometry%xCoordDiff(npoints-1), geometry%yCoordDiff(npoints-1), geometry%segmentSlopes(npoints-1), stat=ierr)
+   allocate(geometry%Coordinates%x(npoints), geometry%Coordinates%y(npoints), geometry%roughnessFactors(npoints-1), &
+            geometry%CoordDiff%x(npoints-1), geometry%CoordDiff%y(npoints-1), geometry%segmentSlopes(npoints-1), stat=ierr)
    call assert_equal(ierr, 0, 'allocate error')
 
-   geometry%nCoordinates = npoints
+   geometry%Coordinates%N = npoints
    geometry%roughnessFactors = [1.0_wp, 0.9_wp, 0.8_wp, 0.7_wp]
-   geometry%xCoordinates = [ -5.0_wp, -1.73_wp, 33.82_wp, 38.16_wp, 47.34_wp ]
-   geometry%yCoordinates = [ -4.0_wp, -2.89_wp, 6.03_wp, 6.31_wp, 8.64_wp ]
+   geometry%Coordinates%x = [ -5.0_wp, -1.73_wp, 33.82_wp, 38.16_wp, 47.34_wp ]
+   geometry%Coordinates%y = [ -4.0_wp, -2.89_wp, 6.03_wp, 6.31_wp, 8.64_wp ]
    do i = 1, npoints - 1
-       geometry%xCoordDiff(i)    = geometry%xCoordinates(i+1) - geometry%xCoordinates(i)
-       geometry%yCoordDiff(i)    = geometry%yCoordinates(i+1) - geometry%yCoordinates(i)
-       geometry%segmentSlopes(i) = geometry%yCoordDiff(i) / geometry%xCoordDiff(i)
+       geometry%CoordDiff%x(i)   = geometry%Coordinates%x(i+1) - geometry%Coordinates%x(i)
+       geometry%CoordDiff%y(i)   = geometry%Coordinates%y(i+1) - geometry%Coordinates%y(i)
+       geometry%segmentSlopes(i) = geometry%CoordDiff%y(i) / geometry%CoordDiff%x(i)
    enddo
 
    gammaFexpected = [1.0_wp, 0.926985439830363_wp, 0.802088868478168_wp, 0.766296466268931_wp, 0.7_wp]
    do i = 1, npoints
-       h = geometry%yCoordinates(i)
+       h = geometry%Coordinates%y(i)
        call calculateGammaF(h, ksi0, ksi0Limit, gamma, z2, geometry, error)
        call assert_equal(error%errorCode, 0, error%Message)
        call assert_comparable(gamma%gammaF, gammaFexpected(i), 1d-6, 'diff in gammaF')
    enddo
 
-   deallocate(geometry%xCoordinates, geometry%yCoordinates, geometry%roughnessFactors, &
-              geometry%xCoordDiff, geometry%yCoordDiff, geometry%segmentSlopes)
+   deallocate(geometry%Coordinates%x, geometry%Coordinates%y, geometry%roughnessFactors, &
+              geometry%CoordDiff%x, geometry%CoordDiff%y, geometry%segmentSlopes)
 
 end subroutine testCalculateGammaF2
 

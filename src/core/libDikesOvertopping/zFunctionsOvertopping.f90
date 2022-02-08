@@ -75,7 +75,7 @@ subroutine calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometrie
     geometryAdjusted => geometries%adjWithDikeHeight
     geometry         => geometries%base
 
-    call profileInStructure(geometry%nCoordinates, geometry%xcoordinates, geometry%ycoordinates, dikeHeight, &
+    call profileInStructure(geometry%Coordinates%N, geometry%coordinates%x, geometry%coordinates%y, dikeHeight, &
                             nrCoordsAdjusted, geometries%xCoordsAdjusted, geometries%zCoordsAdjusted, error)
 
     if (error%errorCode == 0) then
@@ -93,7 +93,7 @@ subroutine calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometrie
         overtopping%z2 = 0d0
     endif
 
-    geometries%geometryNoBerms(:)%nCoordinates = 0
+    geometries%geometryNoBerms(:)%Coordinates%N = 0
 end subroutine calculateQoHPC
 
 !>

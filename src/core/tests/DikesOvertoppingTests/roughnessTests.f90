@@ -182,11 +182,11 @@ subroutine TestSeriesRoughness
     write (crossSectionFile,'(a,i1,a)') '../DikesOvertoppingTests/InputOvertopping/Cross_section', crossSectionId, '.txt'
     call readCrossSection(crossSectionFile, geometry, error)
 
-    npoints = geometry%nCoordinates
+    npoints = geometry%Coordinates%N
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     do i = 1, npoints
-        geometryF%xcoords(i)   = geometry%xCoordinates(i)
-        geometryF%ycoords(i)   = geometry%yCoordinates(i)
+        geometryF%xcoords(i)   = geometry%Coordinates%x(i)
+        geometryF%ycoords(i)   = geometry%Coordinates%y(i)
         if (i < npoints) geometryF%roughness(i) = geometry%roughnessFactors(i)
     enddo
     geometryF%normal  = geometry%psi

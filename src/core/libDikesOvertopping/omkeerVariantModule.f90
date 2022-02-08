@@ -132,7 +132,7 @@ subroutine iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, d
     type(tOmkeer)                              :: omkeerProps           ! struct with derived properties
 
     foundValue = .false.
-    nPoints = geometry%nCoordinates
+    nPoints = geometry%Coordinates%N
     allocate(omkeerProps%isBerm(nPoints-1), omkeerProps%dischargeProfile(nPoints), omkeerProps%isValidZ(nPoints), &
              omkeerProps%ZProfile(nPoints), stat=ierr)
     if (ierr /= 0) then
@@ -190,7 +190,7 @@ subroutine getDischargeEndSlope()
 
     call setupGeometries(geometry%parent)
     do i = 1, nPoints
-        nextDikeHeight = geometry%yCoordinates(i)
+        nextDikeHeight = geometry%Coordinates%y(i)
         omkeerProps%isValidZ(i) = nextDikeHeight >= load%H
         if (i > 1) then
             omkeerProps%isValidZ(i) = omkeerProps%isValidZ(i) .and. .not. omkeerProps%isBerm(i-1)
@@ -202,7 +202,7 @@ subroutine getDischargeEndSlope()
                 omkeerProps%ZProfile(i) = nextDikeHeight
                 omkeerProps%dischargeProfile(i) = overtopping%Qo
                 if (i == 1 .or. overtopping%Qo > 0.0_wp) exit
-                nextDikeHeight = 0.5_wp * ( max(geometry%yCoordinates(i-1) + xDiff_min * geometry%segmentSlopes(i-1), load%H) + nextDikeHeight)
+                nextDikeHeight = 0.5_wp * ( max(geometry%Coordinates%y(i-1) + xDiff_min * geometry%segmentSlopes(i-1), load%H) + nextDikeHeight)
             enddo
             if (overtopping%Qo < givenDischarge ) then
                 exit
@@ -275,7 +275,7 @@ subroutine checkIfOnBerm()
     !
     ! check: possibly on berm
     !
-    nPoints = geometry%nCoordinates
+    nPoints = geometry%Coordinates%N
     if (foundValue ) then
         continue
     elseif (iUp > iLow + 1 ) then
@@ -311,7 +311,7 @@ subroutine checkIfOnBerm()
                 return
             endif
         else
-            maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
+            maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%Coordinates%y(nPoints)) + 1.0_wp
             call calculateQoHPC(maxDikeHeight, modelFactors, overtopping, load, geometry%parent, error)
             if (error%errorCode /= 0) return ! only in very exceptional cases
             dis2 = overtopping%Qo
@@ -319,7 +319,7 @@ subroutine checkIfOnBerm()
     else
         minDikeHeight = omkeerProps%ZProfile(iLow)
         dis1 = omkeerProps%dischargeProfile(iLow)
-        maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%yCoordinates(nPoints)) + 1.0_wp
+        maxDikeHeight = max(minDikeHeight, load%h + load%Hm0, geometry%Coordinates%y(nPoints)) + 1.0_wp
         do
             call calculateQoHPC(maxDikeHeight, modelFactors, overtopping, load, geometry%parent, error)
             dis2 = overtopping%Qo
@@ -353,7 +353,7 @@ subroutine BermCheckLoopLowUp()
 
     do i = iLow + 1, iUp - 1
         if (.not. omkeerProps%isBerm(i) ) then
-            nextDikeHeight = geometry%yCoordinates(i) + xDiff_min * geometry%segmentSlopes(i)
+            nextDikeHeight = geometry%Coordinates%y(i) + xDiff_min * geometry%segmentSlopes(i)
             call calculateQoHPC(nextDikeHeight, modelFactors, overtopping, load, geometry%parent, error )
             if (error%errorCode /= 0) return ! only in very exceptional cases
             omkeerProps%ZProfile(i) = nextDikeHeight

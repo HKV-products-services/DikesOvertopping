@@ -104,7 +104,7 @@
 
    ! check minimal distance x-coordinates
    if (error%errorCode == 0) then
-      if (minval(geometry%xCoordDiff) < xDiff_min - marginDiff) then
+      if (minval(geometry%CoordDiff%x) < xDiff_min - marginDiff) then
          error%errorCode = 1
          write (error%Message, GetFMTxcoordinates_must_increase()) xDiff_min
       endif
@@ -112,7 +112,7 @@
 
    ! check minimal distance y-coordinates
    if (error%errorCode == 0) then
-      if (minval(geometry%yCoordDiff) < 0.0d0) then
+      if (minval(geometry%CoordDiff%y) < 0.0d0) then
          error%errorCode = 1
          call GetMSGycoordinates_must_be_nondecreasing(error%Message)
       endif
@@ -161,7 +161,7 @@
    ! check if first and last dike segment is a slope segment
    if (error%errorCode == 0) then
       if ((geometry%segmentTypes(1) == 2) .or. &
-          (geometry%segmentTypes(geometry%nCoordinates-1) == 2)) then
+          (geometry%segmentTypes(geometry%Coordinates%N-1) == 2)) then
          error%errorCode = 1
          call GetMSGfirst_and_last_must_be_slope(error%Message)
       endif
@@ -201,15 +201,15 @@
    geometry%psi = psi
 
    ! copy number of coordinates to structure with geometry data
-   geometry%nCoordinates = nCoordinates
+   geometry%Coordinates%N = nCoordinates
 
    ! allocate vectors in structure with geometry data
    call allocateVectorsGeometry (nCoordinates, geometry, error)
 
    if (error%errorCode == 0) then
    ! copy (x,y)-coordinates and roughness factors to structure with geometry data
-      geometry%xCoordinates     = xCoordinates
-      geometry%yCoordinates     = yCoordinates
+      geometry%Coordinates%x     = xCoordinates
+      geometry%Coordinates%y     = yCoordinates
       geometry%roughnessFactors = roughnessFactors
 
    ! calculate the differences and segment slopes
@@ -222,7 +222,7 @@
    endif
 
    if (error%errorCode == 0) then
-       do i = 1, geometry%nCoordinates - 1
+       do i = 1, geometry%Coordinates%N - 1
            if (geometry%Roughnessfactors(i) < rFactor_min .or. geometry%Roughnessfactors(i) > rFactor_max) then
                error%errorCode = 1
                write(error%Message, GetFMTroughnessfactors_out_of_range(), iostat=ierr) &
@@ -268,19 +268,19 @@
 
 ! ==========================================================================================================
 
-   if (allocated(geometry%xCoordinates)) then
-       if (size(geometry%xCoordinates) == nCoordinates) then
+   if (allocated(geometry%Coordinates%x)) then
+       if (size(geometry%Coordinates%x) == nCoordinates) then
            return
        else
            call deallocateGeometry(geometry)
        end if
    end if
 
-                  allocate (geometry%xCoordinates     (nCoordinates  ), stat=ierr)
-   if (ierr == 0) allocate (geometry%yCoordinates     (nCoordinates  ), stat=ierr)
+                  allocate (geometry%Coordinates%x    (nCoordinates  ), stat=ierr)
+   if (ierr == 0) allocate (geometry%Coordinates%y    (nCoordinates  ), stat=ierr)
    if (ierr == 0) allocate (geometry%roughnessFactors (nCoordinates-1), stat=ierr)
-   if (ierr == 0) allocate (geometry%xCoordDiff       (nCoordinates-1), stat=ierr)
-   if (ierr == 0) allocate (geometry%yCoordDiff       (nCoordinates-1), stat=ierr)
+   if (ierr == 0) allocate (geometry%CoordDiff%x      (nCoordinates-1), stat=ierr)
+   if (ierr == 0) allocate (geometry%CoordDiff%y      (nCoordinates-1), stat=ierr)
    if (ierr == 0) allocate (geometry%segmentSlopes    (nCoordinates-1), stat=ierr)
    if (ierr == 0) allocate (geometry%segmentTypes     (nCoordinates-1), stat=ierr)
 
@@ -305,11 +305,11 @@ subroutine deallocateGeometry(geometry)
 !
 !   source
 !
-    if (allocated(geometry%xCoordinates))     deallocate(geometry%xCoordinates)
-    if (allocated(geometry%yCoordinates))     deallocate(geometry%yCoordinates)
+    if (allocated(geometry%Coordinates%x))    deallocate(geometry%Coordinates%x)
+    if (allocated(geometry%Coordinates%y))    deallocate(geometry%Coordinates%y)
     if (allocated(geometry%roughnessFactors)) deallocate(geometry%roughnessFactors)
-    if (allocated(geometry%xCoordDiff))       deallocate(geometry%xCoordDiff)
-    if (allocated(geometry%yCoordDiff))       deallocate(geometry%yCoordDiff)
+    if (allocated(geometry%CoordDiff%x))      deallocate(geometry%CoordDiff%x)
+    if (allocated(geometry%CoordDiff%y))      deallocate(geometry%CoordDiff%y)
     if (allocated(geometry%segmentSlopes))    deallocate(geometry%segmentSlopes)
     if (allocated(geometry%segmentTypes))     deallocate(geometry%segmentTypes)
 
@@ -333,22 +333,22 @@ end subroutine deallocateGeometry
 
    ! initialize flag for succes and error message
    error%errorCode = 0
-   if (geometry%nCoordinates < 2) then
+   if (geometry%Coordinates%N < 2) then
        error%errorCode = 1
        call GetMSGdimension_cross_section_less_than_2(error%Message)
    else
 
       ! calculate horizontal distances
-      geometry%xCoordDiff = geometry%xCoordinates(2:geometry%nCoordinates  ) - &
-                            geometry%xCoordinates(1:geometry%nCoordinates-1) 
+      geometry%CoordDiff%x = geometry%Coordinates%x(2:geometry%Coordinates%N  ) - &
+                             geometry%Coordinates%x(1:geometry%Coordinates%N-1) 
 
       ! calculate vertical distances
-      geometry%yCoordDiff = geometry%yCoordinates(2:geometry%nCoordinates  ) - &
-                            geometry%yCoordinates(1:geometry%nCoordinates-1) 
+      geometry%CoordDiff%y = geometry%Coordinates%y(2:geometry%Coordinates%N  ) - &
+                             geometry%Coordinates%y(1:geometry%Coordinates%N-1) 
 
       ! calculate the segment slopes
-      if (minval(geometry%xCoordDiff) > 0.0d0) then
-         geometry%segmentSlopes = geometry%yCoordDiff / geometry%xCoordDiff
+      if (minval(geometry%CoordDiff%x) > 0.0d0) then
+         geometry%segmentSlopes = geometry%CoordDiff%y / geometry%CoordDiff%x
       else
          error%errorCode = 1
          call GetMSGslope_negative(error%Message)
@@ -385,7 +385,7 @@ end subroutine deallocateGeometry
    nBerms = 0
 
    ! loop over dike segments
-   do i=1, geometry%nCoordinates - 1
+   do i=1, geometry%Coordinates%N - 1
 
       ! determine type of dike segment
       slopeSegment = ((geometry%segmentSlopes(i) >= slope_min - marginGrad) .and. &
@@ -402,7 +402,7 @@ end subroutine deallocateGeometry
          if (i == 1) then
              error%errorCode = 1
              call GetMSG_first_segment_berm(error%Message)
-         else if (i == geometry%nCoordinates - 1) then
+         else if (i == geometry%Coordinates%N - 1) then
              error%errorCode = 1
              call GetMSG_last_segment_berm(error%Message)
          endif
@@ -443,24 +443,24 @@ end subroutine deallocateGeometry
 ! ==========================================================================================================
 
    ! allocate vectors in structure with geometry data copy
-   call allocateVectorsGeometry (geometry%nCoordinates, geometryCopy, error)
+   call allocateVectorsGeometry (geometry%Coordinates%N, geometryCopy, error)
 
    if (error%errorCode == 0) then
    ! copy dike normal and number of coordinates to structure with geometry data copy
-      geometryCopy%psi          = geometry%psi
-      geometryCopy%nCoordinates = geometry%nCoordinates
+      geometryCopy%psi           = geometry%psi
+      geometryCopy%Coordinates%N = geometry%Coordinates%N
 
       ! copy (x,y)-coordinates to structure with geometry data copy
-      do i=1, geometry%nCoordinates
-         geometryCopy%xCoordinates(i) = geometry%xCoordinates(i)
-         geometryCopy%yCoordinates(i) = geometry%yCoordinates(i)
+      do i=1, geometry%Coordinates%N
+         geometryCopy%Coordinates%x(i) = geometry%Coordinates%x(i)
+         geometryCopy%Coordinates%y(i) = geometry%Coordinates%y(i)
       enddo
 
       ! copy roughness factors and segment data to structure with geometry data copy
-      do i=1, geometry%nCoordinates-1
+      do i=1, geometry%Coordinates%N-1
          geometryCopy%roughnessFactors(i) = geometry%roughnessFactors(i)
-         geometryCopy%xCoordDiff(i)       = geometry%xCoordDiff(i)
-         geometryCopy%yCoordDiff(i)       = geometry%yCoordDiff(i)
+         geometryCopy%CoordDiff%x(i)      = geometry%CoordDiff%x(i)
+         geometryCopy%CoordDiff%y(i)      = geometry%CoordDiff%y(i)
          geometryCopy%segmentSlopes(i)    = geometry%segmentSlopes(i)
          geometryCopy%segmentTypes(i)     = geometry%segmentTypes(i)
       enddo
@@ -515,7 +515,7 @@ end subroutine deallocateGeometry
    sequentialBerms = .false.
 
    ! loop over possible berm segments
-   do i=2, geometry%nCoordinates - 2
+   do i=2, geometry%Coordinates%N - 2
 
       ! determine if the current and the previous dike segment are sequential berms
       sequentialBerms = ((geometry%segmentTypes(i) == 2) .and. ((geometry%segmentTypes(i-1) == 2)))
@@ -523,8 +523,8 @@ end subroutine deallocateGeometry
       ! if these dike segments are indeed sequential berms then index berms and exit loop
       if (sequentialBerms) then
          index    = i-1
-         B1       = geometry%xCoordDiff(index)
-         B2       = geometry%xCoordDiff(index+1)
+         B1       = geometry%CoordDiff%x(index)
+         B2       = geometry%CoordDiff%x(index+1)
          rFactor1 = geometry%roughnessFactors(index)
          rFactor2 = geometry%roughnessFactors(index+1)
          exit
@@ -544,21 +544,21 @@ end subroutine deallocateGeometry
    else
 
       ! sequential berms present
-      geometryMergedBerms%psi           = geometry%psi
-      geometryMergedBerms%nCoordinates  = geometry%nCoordinates  - 1
-      geometryMergedBerms%NbermSegments = geometry%NbermSegments - 1
+      geometryMergedBerms%psi            = geometry%psi
+      geometryMergedBerms%Coordinates%N  = geometry%Coordinates%N  - 1
+      geometryMergedBerms%NbermSegments  = geometry%NbermSegments - 1
 
       ! allocate vectors in structure with new geometry data
-      call allocateVectorsGeometry (geometryMergedBerms%nCoordinates, geometryMergedBerms, error)
+      call allocateVectorsGeometry (geometryMergedBerms%Coordinates%N, geometryMergedBerms, error)
 
       if (error%errorCode == 0) then
          ! remove x-coordinate between sequential berms
-         geometryMergedBerms%xCoordinates(1:index)  = geometry%xCoordinates(1:index)
-         geometryMergedBerms%xCoordinates(index+1:) = geometry%xCoordinates(index+2:)
+         geometryMergedBerms%Coordinates%x(1:index)  = geometry%Coordinates%x(1:index)
+         geometryMergedBerms%Coordinates%x(index+1:) = geometry%Coordinates%x(index+2:)
 
          ! remove y-coordinate between sequential berms
-         geometryMergedBerms%yCoordinates(1:index)  = geometry%yCoordinates(1:index)
-         geometryMergedBerms%yCoordinates(index+1:) = geometry%yCoordinates(index+2:)
+         geometryMergedBerms%Coordinates%y(1:index)  = geometry%Coordinates%y(1:index)
+         geometryMergedBerms%Coordinates%y(index+1:) = geometry%Coordinates%y(index+2:)
 
          ! calculate the influence factor for the compound berm
          geometryMergedBerms%roughnessFactors(1:index-1) = geometry%roughnessFactors(1:index-1)
@@ -616,24 +616,24 @@ end subroutine deallocateGeometry
 
    if (error%errorCode == 0) then
       ! loop over possible berm segments
-      do i=2, geometry%nCoordinates - 2
+      do i=2, geometry%Coordinates%N - 2
 
          ! determine if the current dike segment is a berm segment
          if (geometry%segmentTypes(i) == 2) then
 
             ! calculate average berm height
-            hBerm = (geometry%yCoordinates(i)+geometry%yCoordinates(i+1))/2
+            hBerm = (geometry%Coordinates%y(i)+geometry%Coordinates%y(i+1))/2
 
             ! calculate horizontal distance from previous point to starting point horizontal berm
             if (geometryFlatBerms%segmentSlopes(i-1) > 0.0d0) then
-               dx1 = (hBerm - geometryFlatBerms%yCoordinates(i-1)) / geometryFlatBerms%segmentSlopes(i-1)
+               dx1 = (hBerm - geometryFlatBerms%Coordinates%y(i-1)) / geometryFlatBerms%segmentSlopes(i-1)
             else
                error%errorCode = 1
             endif
 
             ! calculate horizontal distance from end point horizontal berm to next point
             if (geometryFlatBerms%segmentSlopes(i+1) > 0.0d0) then
-               dx2 = (geometryFlatBerms%yCoordinates(i+1) - hBerm) / geometryFlatBerms%segmentSlopes(i+1)
+               dx2 = (geometryFlatBerms%Coordinates%y(i+1) - hBerm) / geometryFlatBerms%segmentSlopes(i+1)
             else
                error%errorCode = 1
             endif
@@ -650,12 +650,12 @@ end subroutine deallocateGeometry
             endif
 
             ! determine new starting point horizontal berm
-            geometryFlatBerms%yCoordinates(i)   = hBerm
-            geometryFlatBerms%xCoordinates(i)   = geometryFlatBerms%xCoordinates(i-1) + dx1
+            geometryFlatBerms%Coordinates%y(i)   = hBerm
+            geometryFlatBerms%Coordinates%x(i)   = geometryFlatBerms%Coordinates%x(i-1) + dx1
 
             ! determine new end point horizontal berm
-            geometryFlatBerms%yCoordinates(i+1) = hBerm
-            geometryFlatBerms%xCoordinates(i+1) = geometryFlatBerms%xCoordinates(i+1) - dx2
+            geometryFlatBerms%Coordinates%y(i+1) = hBerm
+            geometryFlatBerms%Coordinates%x(i+1) = geometryFlatBerms%Coordinates%x(i+1) - dx2
 
             ! recalculate segment slopes
             call calculateSegmentSlopes (geometryFlatBerms, error)
@@ -704,10 +704,10 @@ end subroutine deallocateGeometry
       geometryNoBerms%psi = geometry%psi
 
       ! determine number of coordinates cross section without berms
-      geometryNoBerms%nCoordinates = geometry%nCoordinates - geometry%NbermSegments
+      geometryNoBerms%Coordinates%N = geometry%Coordinates%N - geometry%NbermSegments
 
       ! allocate vectors in structure with new geometry data
-      call allocateVectorsGeometry (geometryNoBerms%nCoordinates, geometryNoBerms, error)
+      call allocateVectorsGeometry (geometryNoBerms%Coordinates%N, geometryNoBerms, error)
 
       if (error%errorCode == 0) then
          ! initialize total berm width
@@ -715,11 +715,11 @@ end subroutine deallocateGeometry
 
          ! add first point to cross section without berms
          N = 1
-         geometryNoBerms%xCoordinates(N) = geometry%xCoordinates(1)
-         geometryNoBerms%yCoordinates(N) = geometry%yCoordinates(1)
+         geometryNoBerms%Coordinates%x(N) = geometry%Coordinates%x(1)
+         geometryNoBerms%Coordinates%y(N) = geometry%Coordinates%y(1)
 
          ! loop over dike segments
-         do i=1, geometry%nCoordinates - 1
+         do i=1, geometry%Coordinates%N - 1
 
             ! determine if the current dike segment is a berm segment
             if (geometry%segmentTypes(i) == 2) then
@@ -731,15 +731,15 @@ end subroutine deallocateGeometry
                endif
 
                ! add the width of the berm segment to the total sum
-               Bsum = Bsum + geometry%xCoordDiff(i)
+               Bsum = Bsum + geometry%CoordDiff%x(i)
 
             else
 
                ! if dike segment is not a berm, then add end point and roughness
                N = N+1
-               geometryNoBerms%xCoordinates(N)       = geometry%xCoordinates(i+1) - Bsum
-               geometryNoBerms%yCoordinates(N)       = geometry%yCoordinates(i+1)
-               geometryNoBerms%roughnessFactors(N-1) = geometry%roughnessFactors(i)
+               geometryNoBerms%Coordinates%x(N)       = geometry%Coordinates%x(i+1) - Bsum
+               geometryNoBerms%Coordinates%y(N)       = geometry%Coordinates%y(i+1)
+               geometryNoBerms%roughnessFactors(N-1)  = geometry%roughnessFactors(i)
          
             endif
          enddo
@@ -791,7 +791,7 @@ end subroutine deallocateGeometry
    error%errorCode = 0
 
    ! check index starting point new cross section
-   if ((index < 1) .or. (index > geometry%nCoordinates-1)) then
+   if ((index < 1) .or. (index > geometry%Coordinates%N-1)) then
       error%errorCode = 1
       call GetMSGremove_dike_segments_index(error%Message)
    endif
@@ -802,15 +802,15 @@ end subroutine deallocateGeometry
       geometryAdjusted%psi = geometry%psi
 
       ! determine the number of coordinates for the new cross section
-      geometryAdjusted%nCoordinates = geometry%nCoordinates - index + 1
+      geometryAdjusted%Coordinates%N = geometry%Coordinates%N - index + 1
 
       ! allocate vectors in structure with geometry data
-      call allocateVectorsGeometry (geometryAdjusted%nCoordinates, geometryAdjusted, error)
+      call allocateVectorsGeometry (geometryAdjusted%Coordinates%N, geometryAdjusted, error)
 
       if (error%errorCode == 0) then
          ! select the remaining dike segments for the new cross section
-         geometryAdjusted%xCoordinates     = geometry%xCoordinates    (index:)
-         geometryAdjusted%yCoordinates     = geometry%yCoordinates    (index:)
+         geometryAdjusted%Coordinates%x    = geometry%Coordinates%x   (index:)
+         geometryAdjusted%Coordinates%y    = geometry%Coordinates%y   (index:)
          geometryAdjusted%roughnessFactors = geometry%roughnessFactors(index:)
 
          ! calculate the differences and segment slopes
@@ -874,13 +874,13 @@ end subroutine deallocateGeometry
 
    if (error%errorCode == 0) then
       ! loop over possible berm segments
-      do i=2, geometry%nCoordinates - 2
+      do i=2, geometry%Coordinates%N - 2
 
          ! determine if the current dike segment is a berm segment
          if (geometry%segmentTypes(i) == 2) then
 
             ! determine the width of the berm segment
-            B = geometry%xCoordDiff(i)
+            B = geometry%CoordDiff%x(i)
 
             ! determine if the berm segment is a wide berm
             if ((B < L0) .and. (B > 0.25d0*L0)) then
@@ -893,8 +893,8 @@ end subroutine deallocateGeometry
                ! shift start point berm along the segment to reduce width to B=L0/4
                horzShift = (B-0.25d0*L0)
                vertShift = (B-0.25d0*L0) * geometry%segmentSlopes(i)
-               geometrySectionB%xCoordinates(i)     = geometrySectionB%xCoordinates(i)     + horzShift
-               geometrySectionB%yCoordinates(i)     = geometrySectionB%yCoordinates(i)     + vertShift
+               geometrySectionB%Coordinates%x(i)     = geometrySectionB%Coordinates%x(i)     + horzShift
+               geometrySectionB%Coordinates%y(i)     = geometrySectionB%Coordinates%y(i)     + vertShift
 
                ! shift preceding points horizontally to keep original segment slopes
                if (geometry%segmentSlopes(i-1) > 0.0d0) then
@@ -908,11 +908,11 @@ end subroutine deallocateGeometry
                   error%errorCode = 1 ! previous dike segment has a more gentle slope
                   call GetMSGsplit_cross_section_seq_berm(error%Message)
                endif
-               geometrySectionB%xCoordinates(1:i-1) = geometrySectionB%xCoordinates(1:i-1) + horzShift
+               geometrySectionB%Coordinates%x(1:i-1) = geometrySectionB%Coordinates%x(1:i-1) + horzShift
 
                ! adapt berm width to B=L0 for cross section with foreshores
                horzShift = B-L0
-               geometrySectionF%xCoordinates(1:i)   = geometrySectionF%xCoordinates(1:i)   + horzShift
+               geometrySectionF%Coordinates%x(1:i)   = geometrySectionF%Coordinates%x(1:i)   + horzShift
 
             endif
 
@@ -947,11 +947,11 @@ end subroutine deallocateGeometry
 !
 !  Input/output parameters
 !
-   type (tpGeometry), intent(in   ) :: geometry                             !< structure with geometry data
-   real(kind=wp),     intent(in   ) :: yLower                               !< y-coord. lower bound (m+NAP)
-   real(kind=wp),     intent(in   ) :: yUpper                               !< y-coord. upper bound (m+NAP)
-   real(kind=wp),     intent(  out) :: horzLengths(geometry%nCoordinates-1) !< horizontal lengths segments (m)
-   type(tMessage),    intent(inout) :: error                                !< error struct
+   type (tpGeometry), intent(in   ) :: geometry                              !< structure with geometry data
+   real(kind=wp),     intent(in   ) :: yLower                                !< y-coord. lower bound (m+NAP)
+   real(kind=wp),     intent(in   ) :: yUpper                                !< y-coord. upper bound (m+NAP)
+   real(kind=wp),     intent(  out) :: horzLengths(geometry%Coordinates%N-1) !< horizontal lengths segments (m)
+   type(tMessage),    intent(inout) :: error                                 !< error struct
 !
 !  Local parameters
 !
@@ -971,27 +971,27 @@ end subroutine deallocateGeometry
    endif
 
    ! y-coordinate lower bound not lower than dike toe (first y-coordinate)
-   if (yLower < geometry%yCoordinates(1)) then
+   if (yLower < geometry%Coordinates%y(1)) then
       error%errorCode = 1
    endif
 
    ! y-coordinate upper bound not higher than crest level (last y-coordinate)
-   if (yUpper > geometry%yCoordinates(geometry%nCoordinates)) then
+   if (yUpper > geometry%Coordinates%y(geometry%Coordinates%N)) then
       error%errorCode = 1
    endif
 
    if (error%errorCode == 0) then
 
       ! initialize horizontal lengths
-      horzLengths = geometry%xCoordDiff
+      horzLengths = geometry%CoordDiff%x
 
       ! determine index first dike segment containing the lower bound
-      iLower = count(geometry%yCoordinates < yLower)
+      iLower = count(geometry%Coordinates%y < yLower)
       if (iLower == 0) iLower = 1
 
       ! determine index last dike segment containing the upper bound
-      iUpper = geometry%nCoordinates - count(geometry%yCoordinates > yUpper)
-      if (iUpper == geometry%nCoordinates) iUpper = geometry%nCoordinates - 1
+      iUpper = geometry%Coordinates%N - count(geometry%Coordinates%y > yUpper)
+      if (iUpper == geometry%Coordinates%N) iUpper = geometry%Coordinates%N - 1
 
       ! ---------------------------------------------------------------------------------------------
       ! NOTE: dike segments corresponding to indices above cannot be horizontal berms (by definition)
@@ -1003,17 +1003,17 @@ end subroutine deallocateGeometry
       endif
 
       ! set the horizontal lengths of all segments after the segment with the upper bound to zero
-      if (iUpper < geometry%nCoordinates-1) then
-         horzLengths(iUpper+1:geometry%nCoordinates-1) = 0.0d0
+      if (iUpper < geometry%Coordinates%N-1) then
+         horzLengths(iUpper+1:geometry%Coordinates%N-1) = 0.0d0
       endif
 
       ! adjust the horizontal length of the segment containing the lower bound
-      dy = yLower - geometry%yCoordinates(iLower)
+      dy = yLower - geometry%Coordinates%y(iLower)
       dx = dy / geometry%segmentSlopes(iLower)
       horzLengths(iLower) = horzLengths(iLower) - dx
       
       ! adjust the horizontal length of the segment containing the upper bound
-      dy = geometry%yCoordinates(iUpper+1) - yUpper
+      dy = geometry%Coordinates%y(iUpper+1) - yUpper
       dx = dy / geometry%segmentSlopes(iUpper)
       horzLengths(iUpper) = horzLengths(iUpper) - dx
       
@@ -1049,7 +1049,7 @@ end subroutine deallocateGeometry
 !
 !  Local parameters
 !
-   real(kind=wp) :: horzLengths(geometry%nCoordinates-1) !< horizontal lengths segments (m)
+   real(kind=wp) :: horzLengths(geometry%Coordinates%N-1) !< horizontal lengths segments (m)
 
 ! ==========================================================================================================
 

@@ -146,11 +146,11 @@ subroutine testSeriesLoad
     !   read the cross section
     call readCrossSection(crossSectionFile, geometry, error)
 
-    npoints = geometry%nCoordinates
+    npoints = geometry%Coordinates%N
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     do ii = 1, npoints
-        geometryF%xcoords(ii)   = geometry%xCoordinates(ii)
-        geometryF%ycoords(ii)   = geometry%yCoordinates(ii)
+        geometryF%xcoords(ii)   = geometry%Coordinates%x(ii)
+        geometryF%ycoords(ii)   = geometry%Coordinates%y(ii)
         if (ii < npoints) geometryF%roughness(ii) = geometry%roughnessFactors(ii)
     enddo
     geometryF%normal  = geometry%psi

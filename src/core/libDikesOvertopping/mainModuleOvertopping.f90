@@ -110,8 +110,8 @@
 
    if (error%errorCode == 0) then
 
-      toe   = geometry%yCoordinates(1)
-      crest = geometry%yCoordinates(geometry%nCoordinates)
+      toe   = geometry%Coordinates%y(1)
+      crest = geometry%Coordinates%y(geometry%Coordinates%N)
 
       ! initialize local values wave height and wave period
       loadAdj%Hm0   = min(load%Hm0, max(load%h - toe, 0.0d0))
@@ -348,19 +348,19 @@ function determineForeshoreCase () result(foreshoreCase)
    if (geometry%NbermSegments > 0) then
 
       ! loop over possible berm segments
-      do i=2, geometry%nCoordinates - 2
+      do i=2, geometry%Coordinates%N - 2
 
          ! determine if the current dike segment is a berm segment
          if (geometry%segmentTypes(i) == 2) then
 
             ! determine the width of the berm segment
-            B = geometry%xCoordDiff(i)
+            B = geometry%CoordDiff%x(i)
 
             ! determine if the berm segment is a foreshore
             if (B >= load%L0) then
 
                ! compare height of the foreshore to local water level
-               if (load%h < geometry%yCoordinates(i)) then
+               if (load%h < geometry%Coordinates%y(i)) then
 
                   ! ---------------------------------
                   ! local water level below foreshore
@@ -374,7 +374,7 @@ function determineForeshoreCase () result(foreshoreCase)
                   endif
 
                   ! calculate average berm height
-                  hBerm = (geometry%yCoordinates(i)+geometry%yCoordinates(i+1))/2
+                  hBerm = (geometry%Coordinates%y(i)+geometry%Coordinates%y(i+1))/2
 
                   ! maximum z2% equals average berm height minus local water level
                   z2max = hBerm - load%h
@@ -382,7 +382,7 @@ function determineForeshoreCase () result(foreshoreCase)
                   ! exit loop over dike segments
                   exit
 
-               elseif (load%h > geometry%yCoordinates(i+1)) then
+               elseif (load%h > geometry%Coordinates%y(i+1)) then
 
                   ! ---------------------------------
                   ! local water level above foreshore
@@ -390,7 +390,7 @@ function determineForeshoreCase () result(foreshoreCase)
                   foreshoreCase = 2
 
                   ! water depth at the end of the foreshore
-                  dH = load%h - geometry%yCoordinates(i+1)
+                  dH = load%h - geometry%Coordinates%y(i+1)
 
                   ! index coordinates at the end of the foreshore
                   index = i+1
@@ -451,7 +451,7 @@ end subroutine calculateOvertoppingSection
    ! if applicable adjust non-horizontal berms
    geometryFlatBerms => geometry%parent%geometryFlatBerms
    if (error%errorCode == 0) then
-      if (geometryFlatBerms%nCoordinates == 0) then
+      if (geometryFlatBerms%Coordinates%N == 0) then
           call adjustNonHorizontalBerms (geometry, geometryFlatBerms, error)
       end if
    endif
@@ -493,7 +493,7 @@ end subroutine calculateOvertoppingSection
    ! calculate wave overtopping discharge
    if (error%errorCode == 0) then
       call calculateWaveOvertoppingDischarge (load, tanAlpha, gamma, ksi0, &
-                                              geometry%yCoordinates(geometry%nCoordinates),        &
+                                              geometry%Coordinates%y(geometry%Coordinates%N),        &
                                               modelFactors, Qo, error)
    endif
 
@@ -523,7 +523,7 @@ end subroutine calculateOvertoppingSection
 
 ! ==========================================================================================================
 
-   freeBoard = load%h - geometry%yCoordinates(geometry%nCoordinates)
+   freeBoard = load%h - geometry%Coordinates%y(geometry%Coordinates%N)
    if (freeBoard <= 0.0d0) then 
       succes = .false.
       call GetMSGwl_above_crest_not_allowed(errorMessage)
@@ -532,7 +532,7 @@ end subroutine calculateOvertoppingSection
       overtopping%Qo = overtopping%Qo + overtoppingOverflow
    endif
 
-   end subroutine calculateOvertoppingNegativeFreeboard 
+   end subroutine calculateOvertoppingNegativeFreeboard
 
 !> interpolateResultsSections:
 !! interpolate results for split cross sections
@@ -573,13 +573,13 @@ end subroutine calculateOvertoppingSection
    Bsum = 0.0d0
 
    ! loop over possible berm segments
-   do i=2, geometry%nCoordinates - 2
+   do i=2, geometry%Coordinates%N - 2
 
       ! determine if the current dike segment is a berm segment
       if (geometry%segmentTypes(i) == 2) then
 
          ! determine the width of the berm segment
-         B = geometry%xCoordDiff(i)
+         B = geometry%CoordDiff%x(i)
 
          ! add to total width if the berm segment is a wide berm
          if ((B < L0) .and. (B > 0.25d0*L0)) then
@@ -639,7 +639,7 @@ end subroutine calculateOvertoppingSection
       if (isnan(load%h)) then
          error%errorCode = 1
          error%Message = 'load%h is NaN'
-      else if (load%h > geometry%yCoordinates(geometry%nCoordinates)) then 
+      else if (load%h > geometry%Coordinates%y(geometry%Coordinates%N)) then 
          error%errorCode = 1
          call GetMSGwl_above_crest(error%Message)
       endif

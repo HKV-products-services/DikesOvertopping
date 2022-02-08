@@ -223,16 +223,16 @@ subroutine TestSeriesCrossSections
     modelFactors%fShallow = 0.92
     modelFactors%relaxationFactor = 1.0d0
 
-    nCoordinates = geometry%nCoordinates
+    nCoordinates = geometry%Coordinates%N
     allocate (xCoordinates    (nCoordinates))
     allocate (yCoordinates    (nCoordinates))
     allocate (roughnessFactors(nCoordinates-1))
 
-    xCoordinates     = geometry%xCoordinates
-    yCoordinates     = geometry%yCoordinates
+    xCoordinates     = geometry%Coordinates%x
+    yCoordinates     = geometry%Coordinates%y
     roughnessFactors = geometry%roughnessFactors
 
-    npoints = geometry%nCoordinates
+    npoints = geometry%Coordinates%N
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
 
     !
@@ -267,13 +267,13 @@ subroutine TestSeriesCrossSections
         call initializeGeometry (psi, nCoordinates, xCoordinates, yCoordinates, &
                                  roughnessFactors(1:nCoordinates-1), geometry, error)
 
-        call checkCrossSection (geometry%psi, geometry%nCoordinates,            &
-                                geometry%xCoordinates, geometry%yCoordinates,   &
+        call checkCrossSection (geometry%psi, geometry%Coordinates%N,            &
+                                geometry%Coordinates%x, geometry%Coordinates%y,   &
                                 geometry%roughnessFactors, error)
 
         do i = 1, npoints
-            geometryF%xcoords(i)   = geometry%xCoordinates(i)
-            geometryF%ycoords(i)   = geometry%yCoordinates(i)
+            geometryF%xcoords(i)   = geometry%Coordinates%x(i)
+            geometryF%ycoords(i)   = geometry%Coordinates%y(i)
             if (i < npoints) geometryF%roughness(i) = geometry%roughnessFactors(i)
         enddo
         geometryF%normal  = geometry%psi
@@ -315,10 +315,10 @@ subroutine TestSeriesCrossSections
                             load%h+z2, q0, HBN_4, HBN_3, HBN_2
                     endif
                 elseif ((crossSectionId == 2) .or. (crossSectionId == 3)) then
-                    write (ounit,'(f9.3,f8.3,f15.10,f8.3,f8.3,f8.3)') geometry%yCoordinates(2), &
+                    write (ounit,'(f9.3,f8.3,f15.10,f8.3,f8.3,f8.3)') geometry%Coordinates%y(2), &
                             load%h+z2, q0, HBN_4, HBN_3, HBN_2
                 elseif (crossSectionId == 4) then
-                    write (ounit,'(f9.1,f8.3,f15.10,f8.3,f8.3,f8.3)') geometry%xCoordinates(3) - geometry%xCoordinates(2), &
+                    write (ounit,'(f9.1,f8.3,f15.10,f8.3,f8.3,f8.3)') geometry%Coordinates%x(3) - geometry%Coordinates%x(2), &
                             load%h+z2, q0, HBN_4, HBN_3, HBN_2
                 endif
  !           endif
