@@ -38,6 +38,7 @@
 
    use precision, only : wp
    use typeDefinitionsOvertopping
+   use parametersOvertopping
    use formulaModuleOvertopping
    use OvertoppingMessages
    use errorMessages

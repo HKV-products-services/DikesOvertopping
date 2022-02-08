@@ -38,6 +38,7 @@ module waveRunup
    use precision, only : wp
    use factorModuleOvertopping
    use typeDefinitionsOvertopping
+   use parametersOvertopping
    use formulaModuleOvertopping
    use geometryModuleOvertopping
    use OvertoppingMessages

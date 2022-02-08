@@ -33,6 +33,7 @@
 module omkeerVariantModule
 use geometryModuleOvertopping
 use typeDefinitionsOvertopping
+use parametersOvertopping
 use overtoppingInterface
 use ModuleLogging
 use vectorUtilities, only : logLinearInterpolate
@@ -271,7 +272,6 @@ subroutine checkIfOnBerm()
     real(kind=wp)            :: nextDikeheight  ! dike heigth for next calculation
     real(kind=wp)            :: X(2)            ! argument for logInterpolate
     real(kind=wp)            :: Y(2)            ! argument for logInterpolate
-    real(kind=wp), parameter :: eps = 1e-4_wp   ! epsilon for waterlevel near berm
     !
     ! check: possibly on berm
     !
@@ -283,35 +283,7 @@ subroutine checkIfOnBerm()
         dis1 = omkeerProps%dischargeProfile(iLow)
         maxDikeHeight = omkeerProps%ZProfile(iUp)
         dis2 = omkeerProps%dischargeProfile(iUp)
-        do i = iLow + 1, iUp - 1
-            if (.not. omkeerProps%isBerm(i) ) then
-                nextDikeHeight = geometry%yCoordinates(i) + xDiff_min * geometry%segmentSlopes(i)
-                call calculateQoHPC(nextDikeHeight, modelFactors, overtopping, load, geometry%parent, error )
-                if (error%errorCode /= 0) return ! only in very exceptional cases
-                omkeerProps%ZProfile(i) = nextDikeHeight
-                omkeerProps%dischargeProfile(i) = overtopping%Qo
-                omkeerProps%isValidZ(i) = .true.
-                if (omkeerProps%dischargeProfile(i) < givenDischarge) then
-                    if (omkeerProps%ZProfile(i) - omkeerProps%ZProfile(iLow) > minZberm ) then
-                        X = (/ omkeerProps%dischargeProfile(iLow), omkeerProps%dischargeProfile(i) /)
-                        Y = (/ omkeerProps%ZProfile(iLow), omkeerProps%ZProfile(i) /)
-                    else
-                        nextDikeHeight = max(load%H + eps, omkeerProps%ZProfile(i) - minZberm)
-                        call calculateQoHPC(nextDikeHeight, modelFactors, overtopping, load, geometry%parent, error)
-                        if (error%errorCode /= 0) return ! only in very exceptional cases
-                        X = (/ overtopping%Qo, omkeerProps%dischargeProfile(i) /)
-                        Y = (/ nextDikeHeight, omkeerProps%ZProfile(i) /)
-                    endif
-                    X = max(X, tiny(X))
-                    dikeHeight = LogLinearInterpolate(X, Y, givenDischarge, error)
-                    overtopping%Qo = givenDischarge
-                    foundValue = .true.
-                else
-                    minDikeHeight = omkeerProps%ZProfile(i)
-                    dis1 = omkeerProps%dischargeProfile(i)
-                endif
-            endif
-        enddo
+        call BermCheckLoopLowUp()
     else if (iUp == iLow + 1 ) then
         minDikeHeight = omkeerProps%ZProfile(iLow)
         dis1 = omkeerProps%dischargeProfile(iLow)
@@ -371,6 +343,44 @@ subroutine checkIfOnBerm()
     endif
 
 end subroutine checkIfOnBerm
+
+subroutine BermCheckLoopLowUp()
+    integer :: i
+    real(kind=wp)            :: nextDikeheight  ! dike heigth for next calculation
+    real(kind=wp)            :: X(2)            ! argument for logInterpolate
+    real(kind=wp)            :: Y(2)            ! argument for logInterpolate
+    real(kind=wp), parameter :: eps = 1e-4_wp   ! epsilon for waterlevel near berm
+
+    do i = iLow + 1, iUp - 1
+        if (.not. omkeerProps%isBerm(i) ) then
+            nextDikeHeight = geometry%yCoordinates(i) + xDiff_min * geometry%segmentSlopes(i)
+            call calculateQoHPC(nextDikeHeight, modelFactors, overtopping, load, geometry%parent, error )
+            if (error%errorCode /= 0) return ! only in very exceptional cases
+            omkeerProps%ZProfile(i) = nextDikeHeight
+            omkeerProps%dischargeProfile(i) = overtopping%Qo
+            omkeerProps%isValidZ(i) = .true.
+            if (omkeerProps%dischargeProfile(i) < givenDischarge) then
+                if (omkeerProps%ZProfile(i) - omkeerProps%ZProfile(iLow) > minZberm ) then
+                    X = (/ omkeerProps%dischargeProfile(iLow), omkeerProps%dischargeProfile(i) /)
+                    Y = (/ omkeerProps%ZProfile(iLow), omkeerProps%ZProfile(i) /)
+                else
+                    nextDikeHeight = max(load%H + eps, omkeerProps%ZProfile(i) - minZberm)
+                    call calculateQoHPC(nextDikeHeight, modelFactors, overtopping, load, geometry%parent, error)
+                    if (error%errorCode /= 0) return ! only in very exceptional cases
+                    X = (/ overtopping%Qo, omkeerProps%dischargeProfile(i) /)
+                    Y = (/ nextDikeHeight, omkeerProps%ZProfile(i) /)
+                endif
+                X = max(X, tiny(X))
+                dikeHeight = LogLinearInterpolate(X, Y, givenDischarge, error)
+                overtopping%Qo = givenDischarge
+                foundValue = .true.
+            else
+                minDikeHeight = omkeerProps%ZProfile(i)
+                dis1 = omkeerProps%dischargeProfile(i)
+            endif
+        endif
+    enddo
+end subroutine BermCheckLoopLowUp
 
 end subroutine iterateToGivenDischargeValidProfile
 

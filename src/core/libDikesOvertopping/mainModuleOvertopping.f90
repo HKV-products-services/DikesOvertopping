@@ -38,6 +38,7 @@
 
    use factorModuleOvertopping
    use typeDefinitionsOvertopping
+   use parametersOvertopping
    use formulaModuleOvertopping
    use geometryModuleOvertopping
    use overtoppingInterface

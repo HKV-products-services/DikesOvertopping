@@ -33,8 +33,8 @@
 module zFunctionsOvertopping
     use precision,                   only : wp
     use overtoppingInterface,        only : tpProfileCoordinate, varModelFactorCriticalOvertopping
-    use typeDefinitionsOvertopping,  only : xDiff_min, slope_min, tpGeometry, tpLoad, tpOvertoppingInput, tpOvertopping, &
-                                            tpGeometries
+    use typeDefinitionsOvertopping,  only : tpGeometry, tpLoad, tpOvertoppingInput, tpOvertopping, tpGeometries
+    use parametersOvertopping,       only : slope_min, xdiff_min
     use mainModuleOvertopping,       only : calculateOvertopping, setupGeometries, cleanupGeometry
     use geometryModuleOvertopping,   only : initializeGeometry, deallocateGeometry
     use OvertoppingMessages

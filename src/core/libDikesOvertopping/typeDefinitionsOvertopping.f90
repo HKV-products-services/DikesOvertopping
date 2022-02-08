@@ -88,10 +88,6 @@
        real(kind=wp)         :: gammaF            !< influence factor roughness
     end type tpInfluenceFactors
 
-   real(kind=wp), parameter :: fRunup1 = 1.65_wp
-   real(kind=wp), parameter :: fRunup2 = 4.00_wp
-   real(kind=wp), parameter :: fRunup3 = 1.50_wp
-
    !> OvertoppingModelFactors: C-structure with model factors
    type, public, bind(C) :: tpOvertoppingInput
       real(kind=wp) :: factorDeterminationQ_b_f_n         !< model factor for non-breaking waves
@@ -109,6 +105,18 @@
       real(kind=wp)         :: z2                      !< 2% wave run-up (m)
       real(kind=wp)         :: Qo                      !< wave overtopping discharge (m3/m per s)
    end type
+
+!***********************************************************************************************************
+    end module typeDefinitionsOvertopping
+!***********************************************************************************************************
+
+module parametersOvertopping
+   use precision, only : wp
+   private :: wp
+
+   real(kind=wp), parameter :: fRunup1 = 1.65_wp
+   real(kind=wp), parameter :: fRunup2 = 4.00_wp
+   real(kind=wp), parameter :: fRunup3 = 1.50_wp
 
    ! -------------------------------------
    !  Public parameters
@@ -135,7 +143,4 @@
    integer,   parameter      :: z2_iter_max1  =  49               !< maximal number of iterations for calculation z2 part 1
    integer,   parameter      :: z2_iter_max2  =  70               !< maximal number of iterations for calculation z2 part 1 & 2
    real(kind=wp),  parameter :: z2_margin     = 0.001d0           !< margin for convergence criterium calculation z2
-
-!***********************************************************************************************************
-   end module typeDefinitionsOvertopping
-!***********************************************************************************************************
+end module parametersOvertopping
