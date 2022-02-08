@@ -63,7 +63,6 @@ subroutine calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometrie
     type (tpLoad),                 intent(in)    :: load           !< structure with load parameters
     type(tMessage),                intent(inout) :: error          !< error struct
 
-    integer                       :: nrCoordsAdjusted       !< number of coordinates of the adjusted profile
     type (tpGeometry), pointer    :: geometryAdjusted       !< structure for the adjusted profile
     type (tpGeometry), pointer    :: geometry               !< structure for the base profile
 
@@ -75,11 +74,10 @@ subroutine calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometrie
     geometryAdjusted => geometries%adjWithDikeHeight
     geometry         => geometries%base
 
-    call profileInStructure(geometry%Coordinates%N, geometry%coordinates%x, geometry%coordinates%y, dikeHeight, &
-                            nrCoordsAdjusted, geometries%xCoordsAdjusted, geometries%zCoordsAdjusted, error)
+    call profileInStructure(geometry%Coordinates, dikeHeight, geometries%CoordsAdjusted, error)
 
     if (error%errorCode == 0) then
-        call initializeGeometry (geometry%psi, nrCoordsAdjusted, geometries%xCoordsAdjusted, geometries%zCoordsAdjusted, &
+        call initializeGeometry (geometry%psi, geometries%CoordsAdjusted%N, geometries%CoordsAdjusted%x, geometries%CoordsAdjusted%y, &
                                  geometry%roughnessFactors, geometryAdjusted, error)
     endif
 
@@ -99,47 +97,11 @@ end subroutine calculateQoHPC
 !>
 !! Subroutine to fill the profile in a structure and call the adjustment function of the profile due to a desired dike height
 !! @ingroup LibOvertopping
-subroutine profileInStructure(nrCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, &
-                               xCoordsAdjusted, zCoordsAdjusted, error)
-    integer,            intent(in)          :: nrCoordinates                !< number of coordinates of the profile
-    real(kind=wp),      intent(in)          :: xcoordinates(nrCoordinates)  !< vector with x-coordinates of the profile
-    real(kind=wp),      intent(in)          :: ycoordinates(nrCoordinates)  !< vector with y-coordinates of the profile
-    real(kind=wp),      intent(in)          :: dikeHeight                   !< dike height
-    integer,            intent(out)         :: nrCoordsAdjusted             !< number of coordinates in the adjusted profile
-    real(kind=wp),      allocatable         :: xCoordsAdjusted(:)           !< vector with x-coordinates of the adjusted profile
-    real(kind=wp),      allocatable         :: zCoordsAdjusted(:)           !< vector with y-coordinates of the adjusted profile
-    type(tMessage),     intent(inout)       :: error                        !< error struct
-
-    type(tpCoordinatePair)       :: coordinates   !< structure for the profile
-    integer                       :: i             !< do-loop counter
-
-    type(tpCoordinatePair)  :: coordsAdjusted      !< coordinates in the adjusted profile
-
-    allocate(coordinates%x(nrCoordinates), coordinates%y(nrCoordinates)) ! TODO
-    do i = 1, nrCoordinates
-        coordinates%x(i) = xcoordinates(i)
-        coordinates%y(i) = ycoordinates(i)
-    enddo
-    call adjustProfile(nrCoordinates, coordinates, dikeHeight, coordsAdjusted, error)
-    nrCoordsAdjusted = coordsAdjusted%N
-    if (.not. allocated(xCoordsAdjusted)) then
-        allocate(xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted)) ! TODO
-    end if
-    xCoordsAdjusted = coordsAdjusted%x
-    zCoordsAdjusted = coordsAdjusted%y
-
-end subroutine profileInStructure
-
-!>
-!! Subroutine adjust the profile due to a desired dike height
-!! @ingroup LibOvertopping
-subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, coordsAdjusted, error)
-
-    integer,                    intent(in)  :: nrCoordinates       !< number of coordinates of the profile
-    type(tpCoordinatePair),     intent(in)  :: coordinates         !< structure for the profile
-    real(kind=wp),              intent(in)  :: dikeHeight          !< dike height
-    type(tpCoordinatePair),     intent(inout) :: coordsAdjusted      !< coordinates in the adjusted profile
-    type(tMessage),             intent(inout) :: error             !< error struct
+subroutine profileInStructure(coordinates, dikeHeight, coordsAdjusted, error)
+    type(tpCoordinatePair),  intent(in)     :: coordinates     !< structure for the profile
+    real(kind=wp),           intent(in)     :: dikeHeight      !< dike height
+    type(tMessage),          intent(inout)  :: error           !< error struct
+    type(tpCoordinatePair),  intent(inout)  :: coordsAdjusted  !< coordinates in the adjusted profile
 
     ! locals
     !
@@ -151,7 +113,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, coordsAdjusted,
     logical           :: previousWasBerm        !< previous segment is a berm
 
     error%errorCode = 1
-    if (nrCoordinates < 2) then
+    if (Coordinates%N < 2) then
         call GetMSGdimension_cross_section_less_than_2(error%Message)
         return
     endif
@@ -165,7 +127,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, coordsAdjusted,
     ! First the situation where the new dike height is close to the dike toe
     if (dikeHeight <= auxiliaryHeightToe) then
         CoordsAdjusted%N = 2
-        call reallocAdjustedCoordinates(CoordsAdjusted%x, CoordsAdjusted%y, CoordsAdjusted%N, error)
+        call reallocAdjustedCoordinates(CoordsAdjusted, error)
         if (error%errorCode == 0) then
             CoordsAdjusted%y(2) = dikeHeight
             CoordsAdjusted%x(2) = interpolateLine(coordinates%y(1), coordinates%y(2), coordinates%x(1), coordinates%x(2), dikeHeight, error)
@@ -177,11 +139,11 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, coordsAdjusted,
             return
         endif
     else
-        CoordsAdjusted%n = nrCoordinates
+        CoordsAdjusted%n = Coordinates%N
         previousWasBerm = .false.
-        do i = 2, nrCoordinates - 1
+        do i = 2, Coordinates%N - 1
             slope = (coordinates%y(i+1) - coordinates%y(i  )) / (coordinates%x(i+1) - coordinates%x(i  ))
-            if (slope < slope_min .and. i < nrCoordinates - 1) then
+            if (slope < slope_min .and. i < Coordinates%N - 1) then
                 !
                 ! the next segment of the cross section is a berm segment
                 auxiliaryHeightBerm = interpolateLine(coordinates%x(i+1), coordinates%x(i+2), coordinates%y(i+1), coordinates%y(i+2), coordinates%x(i+1) + xDiff_min, error)
@@ -210,7 +172,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, coordsAdjusted,
         !
         ! allocate xCoordsAdjusted and zCoordsAdjusted and check result
         !
-        call reallocAdjustedCoordinates(CoordsAdjusted%x, CoordsAdjusted%y, CoordsAdjusted%N, error)
+        call reallocAdjustedCoordinates(CoordsAdjusted, error)
         if (error%errorCode == 0) then
 
             ! all segments of the profile except the last
@@ -234,24 +196,23 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, coordsAdjusted,
         endif
     endif
     error%errorCode = 0
-end subroutine adjustProfile
+end subroutine profileInStructure
 
-subroutine reallocAdjustedCoordinates(xCoordsAdjusted, zCoordsAdjusted, nrCoordsAdjusted, error)
-    real(kind=wp),    allocatable   :: xCoordsAdjusted(:), zCoordsAdjusted(:)
-    integer,          intent(in)    :: nrCoordsAdjusted
-    type(tMessage),   intent(inout) :: error
+subroutine reallocAdjustedCoordinates(CoordsAdjusted, error)
+    type(tpCoordinatePair),  intent(inout)  :: coordsAdjusted  !< coordinates in the adjusted profile
+    type(tMessage),          intent(inout) :: error
 
     error%errorCode = 0
-    if (allocated(xCoordsAdjusted)) then
-        if (size(xCoordsAdjusted) == nrCoordsAdjusted) then
+    if (allocated(CoordsAdjusted%x)) then
+        if (size(CoordsAdjusted%x) == CoordsAdjusted%N) then
             return
         endif
-        deallocate(xCoordsAdjusted, zCoordsAdjusted)
+        deallocate(CoordsAdjusted%x, CoordsAdjusted%y)
     end if
 
-    allocate(xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted), stat=error%errorCode)
+    allocate(CoordsAdjusted%x(CoordsAdjusted%N), CoordsAdjusted%y(CoordsAdjusted%N), stat=error%errorCode)
     if (error%errorCode /= 0) then
-        write(error%Message, GetFMTallocateError()) 2*nrCoordsAdjusted
+        write(error%Message, GetFMTallocateError()) 2*CoordsAdjusted%N
     end if
 end subroutine reallocAdjustedCoordinates
 

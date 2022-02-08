@@ -68,8 +68,7 @@
       type(tpGeometry), allocatable :: geometryFlatBerms
       type(tpGeometry), allocatable :: geometryNoBerms(:)
       type(tpGeometry), allocatable :: geometryRemoveDikeSegments
-      real(kind=wp)   , allocatable :: xCoordsAdjusted(:)          !< vector with x-coordinates of the adjusted profile
-      real(kind=wp)   , allocatable :: zCoordsAdjusted(:)          !< vector with y-coordinates of the adjusted profile
+      type(tpCoordinatePair)        :: CoordsAdjusted              !< vector with x/y-coordinates of the adjusted profile
    end type tpGeometries
 
    !> tpLoad: structure with load parameters

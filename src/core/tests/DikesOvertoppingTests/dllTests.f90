@@ -37,6 +37,7 @@ use ModuleLogging
 use waveParametersUtilities, only : computeWavePeriod
 use zFunctionsOvertopping, only : profileInStructure
 use testHelper, only : init_modelfactors_and_load
+use geometryModuleOvertopping, only : cleanupCoordinatePair
 use ftnunit
 use errorMessages
 use user32
@@ -670,43 +671,30 @@ subroutine TestProfileAdjustment
 !
 !   Local parameters
 !
-    integer                    :: nCoordinates         ! number of coordinates
-    integer                    :: nrCoordsAdjusted     ! number of coordinates
-    real(kind=wp), allocatable :: xCoordinates(:)      ! x-coordinates (m)
-    real(kind=wp), allocatable :: yCoordinates(:)      ! y-coordinates (m+NAP)
-    real(kind=wp), allocatable :: xCoordsAdjusted(:)   ! vector with x-coordinates of the adjusted profile
-    real(kind=wp), allocatable :: zCoordsAdjusted(:)   ! vector with y-coordinates of the adjusted profile
+    type(tpCoordinatePair)     :: coordinates          !< x/y coordinates
+    type(tpCoordinatePair)     :: coordsAdjusted       !< x/y coordinates of the adjusted profile
     real(kind=wp)              :: dikeHeight           ! vector with x-coordinates of the adjusted profile
     integer                    :: i                    ! do-loop counter
     type(tMessage)             :: error                ! error struct
 
-    nCoordinates = 4
-    allocate (xCoordinates (nCoordinates))
-    allocate (yCoordinates (nCoordinates))
-    
-    xCoordinates(1) = 28.5d0
-    xCoordinates(2) = 30.55d0
-    xCoordinates(3) = 34.17d0
-    xCoordinates(4) = 37.0d0
-    
-    yCoordinates(1) = 0.02d0
-    yCoordinates(2) = 0.36d0
-    yCoordinates(3) = 1.12d0
-    yCoordinates(4) = 1.74d0
-    
+    Coordinates%N = 4
+    allocate (Coordinates%x(Coordinates%N))
+    allocate (Coordinates%y(Coordinates%N))
+
+    Coordinates%x = (/ 28.5d0, 30.55d0, 34.17d0, 37.0d0 /)
+
+    Coordinates%y = (/ 0.02d0, 0.36d0, 1.12d0, 1.74d0 /)
+
     dikeHeight = 0.74d0
+
+    call profileInStructure(Coordinates,dikeHeight, coordsAdjusted, error)
     
-    call profileInStructure(nCoordinates, xcoordinates, ycoordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, error)
-    
-    do i = 2, nrCoordsAdjusted
-        call assert_true (xCoordsAdjusted(i) > xCoordsAdjusted(i-1), "X coordinates increasing")
+    do i = 2, CoordsAdjusted%N
+        call assert_true (CoordsAdjusted%x(i) > CoordsAdjusted%x(i-1), "X coordinates increasing")
     enddo
 
-    deallocate(xCoordinates)
-    deallocate(yCoordinates)
-
-    deallocate(xCoordsAdjusted)
-    deallocate(zCoordsAdjusted)
+    call cleanupCoordinatePair(Coordinates)
+    call cleanupCoordinatePair(CoordsAdjusted)
 
 end subroutine TestProfileAdjustment
 

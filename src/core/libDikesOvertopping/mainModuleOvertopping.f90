@@ -796,8 +796,7 @@ end subroutine calculateOvertoppingSection
       deallocate(geometries%geometryNoBerms)
       deallocate(geometries%geometryRemoveDikeSegments)
 
-      if (allocated(geometries%xCoordsAdjusted)) deallocate(geometries%xCoordsAdjusted)
-      if (allocated(geometries%zCoordsAdjusted)) deallocate(geometries%zCoordsAdjusted)
+      call cleanupCoordinatePair(geometries%CoordsAdjusted)
 
    end subroutine cleanupGeometry
 !***********************************************************************************************************

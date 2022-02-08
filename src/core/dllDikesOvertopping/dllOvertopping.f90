@@ -327,9 +327,7 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 !   locals
 !
     type (tpGeometry)                          :: geometry            !< structure with geometry data
-    integer                                    :: nrCoordsAdjusted    !< number of coordinates of the adjusted profile
-    real(kind=wp), allocatable                 :: xCoordsAdjusted(:)  !< vector with x-coordinates of the adjusted profile
-    real(kind=wp), allocatable                 :: zCoordsAdjusted(:)  !< vector with y-coordinates of the adjusted profile
+    type (tpCoordinatePair)                    :: CoordsAdjusted      !< vector with x/y-coordinates of the adjusted profile
     type (tpGeometry)                          :: geometryAdjusted    !< structure for the adjusted profile
     character(len=StrLenMessages)              :: errorText           !< local error or validation message
     integer, parameter                         :: maxErr = 32         !< max. number of validation messages
@@ -359,13 +357,12 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 
     if (success) then
 
-        call profileInStructure(geometry%Coordinates%N, geometry%coordinates%x, geometry%coordinates%y, dikeHeight, &
-                            nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, msgStruct)
+        call profileInStructure(geometry%Coordinates, dikeHeight, CoordsAdjusted, msgStruct)
         success = (msgStruct%errorCode == 0)
     endif
 
     if (success) then
-        call initializeGeometry(geometry%psi, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, &
+        call initializeGeometry(geometry%psi, CoordsAdjusted%N, CoordsAdjusted%x, CoordsAdjusted%y, &
                                 geometry%roughnessFactors, geometryAdjusted, msgStruct)
         call deallocateGeometry(geometryAdjusted)
         call deallocateGeometry(geometry)
@@ -388,8 +385,7 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
        call addMessage(errorStruct, msgStruct)
     enddo
 
-    if (allocated(xCoordsAdjusted)) deallocate(xCoordsAdjusted)
-    if (allocated(zCoordsAdjusted)) deallocate(zCoordsAdjusted)
+    call cleanupCoordinatePair(CoordsAdjusted)
 end subroutine ValidateInputF
 
 !>
