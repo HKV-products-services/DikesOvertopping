@@ -65,19 +65,17 @@ subroutine readCrossSection(crossSectionFile, geometry, error)
 
     integer                     :: i                    ! counter
     real(kind=wp)               :: psi                  ! dike normal (degree)
-    integer                     :: nCoordinates         ! number of coordinates
-    real(kind=wp), allocatable  :: xCoordinates    (:)  ! x-coordinates (m)
-    real(kind=wp), allocatable  :: yCoordinates    (:)  ! y-coordinates (m+NAP)
+    type (tpCoordinatePair)     :: coordinates          !< vector with x/y-coordinates
     real(kind=wp), allocatable  :: roughnessFactors(:)  ! roughness factors
 !
 !   source
 !
     !
     ! Read the number of coordinates of the cross section
-    call readNumberOfRelevantLines(crossSectionFile, nCoordinates)
-    allocate (xCoordinates    (nCoordinates))
-    allocate (yCoordinates    (nCoordinates))
-    allocate (roughnessFactors(nCoordinates))
+    call readNumberOfRelevantLines(crossSectionFile, coordinates%N)
+    allocate (coordinates%x(coordinates%N))
+    allocate (coordinates%y(coordinates%N))
+    allocate (roughnessFactors(coordinates%N))
 
     ios=0
     open (newunit=punit, file=trim(crossSectionFile), status='old', iostat=ios)
@@ -92,8 +90,8 @@ subroutine readCrossSection(crossSectionFile, geometry, error)
     backspace(unit=punit)
     !
     ! Read the cross section 
-    do i = 1, nCoordinates
-        read(punit,*,iostat=ios) xcoordinates(i), ycoordinates(i), roughnessfactors(i)
+    do i = 1, coordinates%N
+        read(punit,*,iostat=ios) coordinates%x(i), coordinates%y(i), roughnessfactors(i)
         call assert_equal(ios, 0, 'Read error from the file: ' // trim(crossSectionFile))
     enddo
     close(punit)
@@ -102,11 +100,9 @@ subroutine readCrossSection(crossSectionFile, geometry, error)
     psi = 0.0d0
     !
     ! Initialize geometry structure
-    call initializeGeometry (psi, nCoordinates, xCoordinates, yCoordinates, &
-                             roughnessFactors(1:nCoordinates-1), geometry, error)
+    call initializeGeometry (psi, coordinates, roughnessFactors(1:coordinates%N-1), geometry, error)
 
-    deallocate (xCoordinates)
-    deallocate (yCoordinates)
+    call cleanupCoordinatePair(coordinates)
     deallocate (roughnessFactors)
 
 end subroutine readCrossSection

@@ -179,9 +179,7 @@ subroutine TestSeriesCrossSections
     integer                    :: ounit                ! unit-number for the output file
 
     real(kind=wp)              :: psi                  ! dike normal (degree)
-    integer                    :: nCoordinates         ! number of coordinates
-    real(kind=wp), allocatable :: xCoordinates    (:)  ! x-coordinates (m)
-    real(kind=wp), allocatable :: yCoordinates    (:)  ! y-coordinates (m+NAP)
+    type (tpCoordinatePair)    :: coordinates          !< vector with x/y-coordinates
     real(kind=wp), allocatable :: roughnessFactors(:)  ! roughness factors
 
     integer                    :: ios                  ! input/output-status
@@ -223,13 +221,13 @@ subroutine TestSeriesCrossSections
     modelFactors%fShallow = 0.92
     modelFactors%relaxationFactor = 1.0d0
 
-    nCoordinates = geometry%Coordinates%N
-    allocate (xCoordinates    (nCoordinates))
-    allocate (yCoordinates    (nCoordinates))
-    allocate (roughnessFactors(nCoordinates-1))
+    coordinates%N = geometry%Coordinates%N
+    allocate (coordinates%x(coordinates%N))
+    allocate (coordinates%y(coordinates%N))
+    allocate (roughnessFactors(coordinates%N-1))
 
-    xCoordinates     = geometry%Coordinates%x
-    yCoordinates     = geometry%Coordinates%y
+    coordinates%x     = geometry%Coordinates%x
+    coordinates%y     = geometry%Coordinates%y
     roughnessFactors = geometry%roughnessFactors
 
     npoints = geometry%Coordinates%N
@@ -261,15 +259,11 @@ subroutine TestSeriesCrossSections
         ! Adapt the cross section
         var = varmin + dble(istep) * varstep
 
-        call adaptCrossSection (crossSectionId, numberTestSerie, var, nCoordinates, xCoordinates, &
-                                yCoordinates)
+        call adaptCrossSection (crossSectionId, numberTestSerie, var, coordinates)
 
-        call initializeGeometry (psi, nCoordinates, xCoordinates, yCoordinates, &
-                                 roughnessFactors(1:nCoordinates-1), geometry, error)
+        call initializeGeometry (psi, coordinates, roughnessFactors(1:coordinates%N-1), geometry, error)
 
-        call checkCrossSection (geometry%psi, geometry%Coordinates%N,            &
-                                geometry%Coordinates%x, geometry%Coordinates%y,   &
-                                geometry%roughnessFactors, error)
+        call checkCrossSection (geometry%psi, geometry%Coordinates, geometry%roughnessFactors, error)
 
         do i = 1, npoints
             geometryF%xcoords(i)   = geometry%Coordinates%x(i)
@@ -332,8 +326,7 @@ subroutine TestSeriesCrossSections
     end if
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
-    deallocate(xCoordinates)
-    deallocate(yCoordinates)
+    call cleanupCoordinatePair(coordinates)
     deallocate(roughnessFactors)
 
     call assert_files_comparable(outputFile, frozenFile, trim(ModuleErrorMessage))
@@ -496,115 +489,113 @@ end subroutine variableBoundaries
 !> Routine to adapt the cross section
 !!
 !! @ingroup DikesOvertoppingTests
-subroutine adaptCrossSection (crossSectionId, numberTestSerie, var, nCoordinates, xCoordinates, yCoordinates)
+subroutine adaptCrossSection (crossSectionId, numberTestSerie, var, coordinates)
 !
 !   Input/output parameters
 !
-    integer,        intent(in)    :: crossSectionId             !< id-number of the cross section 
-    integer,        intent(in)    :: numberTestSerie            !< number of test serie
-    real(kind=wp),  intent(in)    :: var                        !< value of the variable in the test serie
-    integer,        intent(in)    :: nCoordinates               !< number of coordinates
-    real(kind=wp),  intent(inout) :: xCoordinates(nCoordinates) !< x-coordinates (m)
-    real(kind=wp),  intent(inout) :: yCoordinates(nCoordinates) !< y-coordinates (m+NAP)
+    integer,                 intent(in)    :: crossSectionId       !< id-number of the cross section 
+    integer,                 intent(in)    :: numberTestSerie      !< number of test serie
+    real(kind=wp),           intent(in)    :: var                  !< value of the variable in the test serie
+    type (tpCoordinatePair), intent(inout) :: coordinates          !< vector with x/y-coordinates
 !
 !   source
 !
     if (crossSectionId == 1) then
         ! slope
-        xCoordinates(2) = var
+        coordinates%x(2) = var
     elseif (crossSectionId == 2) then
         if ((numberTestSerie == 8) .or. (numberTestSerie == 9)) then
 
             ! lower slope
-            xCoordinates(2) = var
-            xCoordinates(3) = xCoordinates(2) + 2.0d0
+            coordinates%x(2) = var
+            coordinates%x(3) = coordinates%x(2) + 2.0d0
         elseif ((numberTestSerie == 10) .or. (numberTestSerie == 11)) then
 
             ! upper slope
-            xCoordinates(3)  = var
+            coordinates%x(3)  = var
         elseif ((numberTestSerie == 12) .or. (numberTestSerie == 13)) then
 
             ! bucking point
-            xCoordinates(2) = var
-            yCoordinates(2) = xCoordinates(2) / 8 - 2.0d0
-            xCoordinates(3) = xCoordinates(2) + (6.0d0 - yCoordinates(2))
+            coordinates%x(2) = var
+            coordinates%y(2) = coordinates%x(2) / 8 - 2.0d0
+            coordinates%x(3) = coordinates%x(2) + (6.0d0 - coordinates%y(2))
         endif
     elseif (crossSectionId == 3) then
         if ((numberTestSerie == 8) .or. (numberTestSerie == 9)) then
 
             ! lower slope
-            xCoordinates(2) = var
-            xCoordinates(3) = xCoordinates(2) + 16.0d0
+            coordinates%x(2) = var
+            coordinates%x(3) = coordinates%x(2) + 16.0d0
         elseif ((numberTestSerie == 10) .or. (numberTestSerie == 11)) then
 
             ! upper slope
-            xCoordinates(3)  = var
+            coordinates%x(3)  = var
         elseif ((numberTestSerie == 12) .or. (numberTestSerie == 13)) then
 
             ! bucking point
-            xCoordinates(2) = var
-            yCoordinates(2) = xCoordinates(2) - 2.0d0
-            xCoordinates(3) = xCoordinates(2) + (6.0d0 - yCoordinates(2)) * 8.0d0 
+            coordinates%x(2) = var
+            coordinates%y(2) = coordinates%x(2) - 2.0d0
+            coordinates%x(3) = coordinates%x(2) + (6.0d0 - coordinates%y(2)) * 8.0d0
         endif
     elseif (crossSectionId == 4) then
         if ((numberTestSerie == 8) .or. (numberTestSerie == 9)) then
 
             ! berm slope
-            yCoordinates(2) = 4.0d0 - 4.0d0 / var
-            xCoordinates(2) = xCoordinates(1) + (yCoordinates(2) - yCoordinates(1)) * 4.0d0
-            xCoordinates(3) = xCoordinates(2) + 4.0d0
-            xCoordinates(4) = xCoordinates(3) + (yCoordinates(4) - yCoordinates(3)) * 3.0d0
+            coordinates%y(2) = 4.0d0 - 4.0d0 / var
+            coordinates%x(2) = coordinates%x(1) + (coordinates%y(2) - coordinates%y(1)) * 4.0d0
+            coordinates%x(3) = coordinates%x(2) + 4.0d0
+            coordinates%x(4) = coordinates%x(3) + (coordinates%y(4) - coordinates%y(3)) * 3.0d0
         elseif ((numberTestSerie == 10) .or. (numberTestSerie == 11)) then
 
             ! lower and upper slope
-            xCoordinates(2) = xCoordinates(1) + var
-            xCoordinates(3) = xCoordinates(2) + 4.0d0
-            xCoordinates(4) = xCoordinates(3) + var / 3.0d0
+            coordinates%x(2) = coordinates%x(1) + var
+            coordinates%x(3) = coordinates%x(2) + 4.0d0
+            coordinates%x(4) = coordinates%x(3) + var / 3.0d0
         elseif ((numberTestSerie == 12) .or. (numberTestSerie == 13)) then
 
             ! length Berm
-            xCoordinates(3) = xCoordinates(2) + var
-            xCoordinates(4) = xCoordinates(3) + 6.0d0
+            coordinates%x(3) = coordinates%x(2) + var
+            coordinates%x(4) = coordinates%x(3) + 6.0d0
         endif
     elseif (crossSectionId == 5) then
         if ((numberTestSerie == 8) .or. (numberTestSerie == 9)) then
 
             ! first berm slope
-            yCoordinates(2) = 4.0d0 - 4.0d0 / var
-            xCoordinates(2) = xCoordinates(1) + (yCoordinates(2) - yCoordinates(1)) * 4.0d0
-            xCoordinates(3) = xCoordinates(2) + 4.0d0
-            xCoordinates(4) = xCoordinates(3) + 4.0d0
-            xCoordinates(5) = xCoordinates(4) + (yCoordinates(5) - yCoordinates(4)) * 3.0d0
+            coordinates%y(2) = 4.0d0 - 4.0d0 / var
+            coordinates%x(2) = coordinates%x(1) + (coordinates%y(2) - coordinates%y(1)) * 4.0d0
+            coordinates%x(3) = coordinates%x(2) + 4.0d0
+            coordinates%x(4) = coordinates%x(3) + 4.0d0
+            coordinates%x(5) = coordinates%x(4) + (coordinates%y(5) - coordinates%y(4)) * 3.0d0
         elseif ((numberTestSerie == 10) .or. (numberTestSerie == 11)) then
 
             ! lower and upper slope
-            xCoordinates(2) = xCoordinates(1) + (yCoordinates(2) - yCoordinates(1)) * var
-            xCoordinates(3) = xCoordinates(2) + 4.0d0
-            xCoordinates(4) = xCoordinates(3) + 4.0d0
-            xCoordinates(5) = xCoordinates(4) + (yCoordinates(5) - yCoordinates(4)) * var
+            coordinates%x(2) = coordinates%x(1) + (coordinates%y(2) - coordinates%y(1)) * var
+            coordinates%x(3) = coordinates%x(2) + 4.0d0
+            coordinates%x(4) = coordinates%x(3) + 4.0d0
+            coordinates%x(5) = coordinates%x(4) + (coordinates%y(5) - coordinates%y(4)) * var
         endif
     elseif (crossSectionId == 6) then
         if ((numberTestSerie == 8) .or. (numberTestSerie == 9)) then
 
             ! second berm slope
-            yCoordinates(4) = yCoordinates(3) + (xCoordinates(4) - xCoordinates(3)) / var
-            xCoordinates(5) = xCoordinates(4) + (yCoordinates(5) - yCoordinates(4)) * 3.0d0
+            coordinates%y(4) = coordinates%y(3) + (coordinates%x(4) - coordinates%x(3)) / var
+            coordinates%x(5) = coordinates%x(4) + (coordinates%y(5) - coordinates%y(4)) * 3.0d0
         elseif ((numberTestSerie == 10) .or. (numberTestSerie == 11)) then
 
             ! lower and upper slope
-            xCoordinates(2) = xCoordinates(1) + (yCoordinates(2) - yCoordinates(1)) * var
-            xCoordinates(3) = xCoordinates(2) + 4.0d0
-            xCoordinates(4) = xCoordinates(3) + 4.0d0
-            xCoordinates(5) = xCoordinates(4) + (yCoordinates(5) - yCoordinates(4)) * var
+            coordinates%x(2) = coordinates%x(1) + (coordinates%y(2) - coordinates%y(1)) * var
+            coordinates%x(3) = coordinates%x(2) + 4.0d0
+            coordinates%x(4) = coordinates%x(3) + 4.0d0
+            coordinates%x(5) = coordinates%x(4) + (coordinates%y(5) - coordinates%y(4)) * var
         endif
     elseif ((crossSectionId == 7) .or. (crossSectionId == 8)) then
 
         ! lower, middle and upper slope
-        xCoordinates(2) = xCoordinates(1) + (yCoordinates(2) - yCoordinates(1)) * var
-        xCoordinates(3) = xCoordinates(2) + 4.0d0
-        xCoordinates(4) = xCoordinates(3) + (yCoordinates(4) - yCoordinates(3)) * var
-        xCoordinates(5) = xCoordinates(4) + 4.0d0
-        xCoordinates(6) = xCoordinates(5) + (yCoordinates(6) - yCoordinates(5)) * var
+        coordinates%x(2) = coordinates%x(1) + (coordinates%y(2) - coordinates%y(1)) * var
+        coordinates%x(3) = coordinates%x(2) + 4.0d0
+        coordinates%x(4) = coordinates%x(3) + (coordinates%y(4) - coordinates%y(3)) * var
+        coordinates%x(5) = coordinates%x(4) + 4.0d0
+        coordinates%x(6) = coordinates%x(5) + (coordinates%y(6) - coordinates%y(5)) * var
     endif
 
 end subroutine adaptCrossSection

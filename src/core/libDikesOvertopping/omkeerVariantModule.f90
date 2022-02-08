@@ -72,7 +72,8 @@ subroutine iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, 
     type(tpOvertoppingInput), intent(inout)    :: modelFactors   !< struct with modelFactors
     type (tpOvertopping), intent(inout)        :: overtopping    !< structure with overtopping results
     type(tMessage), intent(inout)              :: error          !< error struct
-!
+
+    type (tpCoordinatePair)                    :: coordinates    !< vector with x/y-coordinates
     type (tpGeometry)                          :: geometry       ! structure with geometry data
 !
     !
@@ -84,8 +85,10 @@ subroutine iterateToGivenDischarge(load, geometryF, givenDischarge, dikeHeight, 
         overtopping%z2 = 0d0
         overtopping%Qo = 0d0
     else
-        call initializeGeometry (geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
-                                 geometryF%roughness, geometry, error)
+        coordinates%N = geometryF%npoints
+        coordinates%x = geometryF%xcoords
+        coordinates%y = geometryF%ycoords
+        call initializeGeometry (geometryF%normal, coordinates, geometryF%roughness, geometry, error)
 
         if (error%errorCode == 0) then
             call iterateToGivenDischargeValidProfile(load, geometry, givenDischarge, dikeHeight, modelFactors, overtopping, error )

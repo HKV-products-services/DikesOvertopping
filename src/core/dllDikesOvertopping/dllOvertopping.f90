@@ -327,6 +327,7 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
 !   locals
 !
     type (tpGeometry)                          :: geometry            !< structure with geometry data
+    type (tpCoordinatePair)                    :: coordinates         !< vector with x/y-coordinates
     type (tpCoordinatePair)                    :: CoordsAdjusted      !< vector with x/y-coordinates of the adjusted profile
     type (tpGeometry)                          :: geometryAdjusted    !< structure for the adjusted profile
     character(len=StrLenMessages)              :: errorText           !< local error or validation message
@@ -345,8 +346,10 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     endif
 
     if (success) then
-        call initializeGeometry (geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
-                             geometryF%roughness, geometry, msgStruct)
+        coordinates%N = geometryF%npoints
+        coordinates%x = geometryF%xcoords
+        coordinates%y = geometryF%ycoords
+        call initializeGeometry (geometryF%normal, coordinates, geometryF%roughness, geometry, msgStruct)
         success = (msgStruct%errorCode == 0)
     endif
 
@@ -362,7 +365,7 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     endif
 
     if (success) then
-        call initializeGeometry(geometry%psi, CoordsAdjusted%N, CoordsAdjusted%x, CoordsAdjusted%y, &
+        call initializeGeometry(geometry%psi, CoordsAdjusted, &
                                 geometry%roughnessFactors, geometryAdjusted, msgStruct)
         call deallocateGeometry(geometryAdjusted)
         call deallocateGeometry(geometry)

@@ -77,7 +77,7 @@ subroutine calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometrie
     call profileInStructure(geometry%Coordinates, dikeHeight, geometries%CoordsAdjusted, error)
 
     if (error%errorCode == 0) then
-        call initializeGeometry (geometry%psi, geometries%CoordsAdjusted%N, geometries%CoordsAdjusted%x, geometries%CoordsAdjusted%y, &
+        call initializeGeometry (geometry%psi, geometries%CoordsAdjusted, &
                                  geometry%roughnessFactors, geometryAdjusted, error)
     endif
 

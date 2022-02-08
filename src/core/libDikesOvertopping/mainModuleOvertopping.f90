@@ -753,8 +753,12 @@ end subroutine calculateOvertoppingSection
       type(tpGeometry), intent(inout) :: geometry
       type(tMessage)  , intent(inout) :: error
 
-      call initializeGeometry(geometryF%normal, geometryF%npoints, geometryF%xcoords, geometryF%ycoords, &
-                             geometryF%roughness, geometry, error)
+      type (tpCoordinatePair)         :: coordinates         !< vector with x/y-coordinates
+
+      coordinates%N = geometryF%npoints
+      coordinates%x = geometryF%xcoords
+      coordinates%y = geometryF%ycoords
+      call initializeGeometry(geometryF%normal, coordinates, geometryF%roughness, geometry, error)
       call setupGeometries(geometry%parent)
    end subroutine initGeometries
 

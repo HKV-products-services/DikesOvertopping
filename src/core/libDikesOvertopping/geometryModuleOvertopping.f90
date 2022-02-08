@@ -59,19 +59,17 @@
 !! check cross section
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine checkCrossSection (psi, nCoordinates, xCoordinates, yCoordinates, roughnessFactors, error)
+   subroutine checkCrossSection (psi, coordinates, roughnessFactors, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   real(kind=wp),    intent(in)    :: psi                              !< dike normal (degrees)
-   integer,          intent(in)    :: nCoordinates                     !< number of coordinates
-   real(kind=wp),    intent(in)    :: xCoordinates    (nCoordinates)   !< x-coordinates (m)
-   real(kind=wp),    intent(in)    :: yCoordinates    (nCoordinates)   !< y-coordinates (m+NAP)
-   real(kind=wp),    intent(in)    :: roughnessFactors(nCoordinates-1) !< roughness factors
-   type(tMessage),   intent(inout) :: error                            !< error struct
+   real(kind=wp),          intent(in)    :: psi                               !< dike normal (degrees)
+   type(tpCoordinatePair), intent(in)    :: coordinates                       !< x/y coordinates
+   real(kind=wp),          intent(in)    :: roughnessFactors(coordinates%N-1) !< roughness factors
+   type(tMessage),         intent(inout) :: error                             !< error struct
 !
 !  Local parameters
 !
@@ -91,7 +89,7 @@
 
    ! check number of coordinates
    if (error%errorCode == 0) then
-      if (nCoordinates < 2) then
+      if (coordinates%N < 2) then
          error%errorCode = 1
          call GetMSGdimension_cross_section_less_than_2(error%Message)
       endif
@@ -99,7 +97,7 @@
 
    ! initialize structure with geometry data
    if (error%errorCode == 0) then
-      call initializeGeometry (psi, nCoordinates, xCoordinates, yCoordinates, roughnessFactors, geometry, error)
+      call initializeGeometry (psi, coordinates, roughnessFactors, geometry, error)
    endif
 
    ! check minimal distance x-coordinates
@@ -172,7 +170,7 @@
 !! initialize the geometry
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine initializeGeometry (psi, nCoordinates, xCoordinates, yCoordinates, roughnessFactors, geometry, error)
+   subroutine initializeGeometry (psi, coordinates, roughnessFactors, geometry, error)
 !***********************************************************************************************************
 !
    implicit none
@@ -180,10 +178,8 @@
 !  Input/output parameters
 !
    real(kind=wp),       intent(in   ) :: psi                              !< dike normal (degree)
-   integer,             intent(in   ) :: nCoordinates                     !< number of coordinates
-   real(kind=wp),       intent(in   ) :: xCoordinates(nCoordinates)       !< x-coordinates (m)
-   real(kind=wp),       intent(in   ) :: yCoordinates(nCoordinates)       !< y-coordinates (m+NAP)
-   real(kind=wp),       intent(in   ) :: roughnessFactors(nCoordinates-1) !< roughness factors
+   type (tpCoordinatePair), intent(in) :: coordinates                     !< x/y-coordinates
+   real(kind=wp),       intent(in   ) :: roughnessFactors(coordinates%N-1) !< roughness factors
    type (tpGeometry), target, intent(inout) :: geometry                   !< structure with geometry data
    type (tMessage),     intent(inout) :: error                            !< error struct
 !
@@ -201,15 +197,15 @@
    geometry%psi = psi
 
    ! copy number of coordinates to structure with geometry data
-   geometry%Coordinates%N = nCoordinates
+   geometry%Coordinates%N = coordinates%N
 
    ! allocate vectors in structure with geometry data
-   call allocateVectorsGeometry (nCoordinates, geometry, error)
+   call allocateVectorsGeometry (coordinates%N, geometry, error)
 
    if (error%errorCode == 0) then
    ! copy (x,y)-coordinates and roughness factors to structure with geometry data
-      geometry%Coordinates%x     = xCoordinates
-      geometry%Coordinates%y     = yCoordinates
+      geometry%Coordinates%x     = Coordinates%x
+      geometry%Coordinates%y     = Coordinates%y
       geometry%roughnessFactors = roughnessFactors
 
    ! calculate the differences and segment slopes
