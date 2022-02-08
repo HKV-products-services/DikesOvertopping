@@ -55,6 +55,6 @@ module overtoppingInterface
 
     private
     
-    public :: tpProfileCoordinate, OvertoppingGeometryType, OvertoppingGeometryTypeF, varModelFactorCriticalOvertopping
+    public :: OvertoppingGeometryType, OvertoppingGeometryTypeF, varModelFactorCriticalOvertopping
 
 end module overtoppingInterface

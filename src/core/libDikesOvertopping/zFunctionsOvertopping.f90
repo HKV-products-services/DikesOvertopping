@@ -32,7 +32,7 @@
 !<
 module zFunctionsOvertopping
     use precision,                   only : wp
-    use overtoppingInterface,        only : tpProfileCoordinate, varModelFactorCriticalOvertopping
+    use overtoppingInterface,        only : varModelFactorCriticalOvertopping
     use typeDefinitionsOvertopping,  only : tpGeometry, tpLoad, tpOvertoppingInput, tpOvertopping, tpGeometries, tpCoordinatePair
     use parametersOvertopping,       only : slope_min, xdiff_min
     use mainModuleOvertopping,       only : calculateOvertopping, setupGeometries, cleanupGeometry
@@ -113,26 +113,32 @@ subroutine profileInStructure(nrCoordinates, xcoordinates, ycoordinates, dikeHei
     type(tpCoordinatePair)       :: coordinates   !< structure for the profile
     integer                       :: i             !< do-loop counter
 
+    type(tpCoordinatePair)  :: coordsAdjusted      !< coordinates in the adjusted profile
+
     allocate(coordinates%x(nrCoordinates), coordinates%y(nrCoordinates)) ! TODO
     do i = 1, nrCoordinates
         coordinates%x(i) = xcoordinates(i)
         coordinates%y(i) = ycoordinates(i)
     enddo
-    call adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, error)
+    call adjustProfile(nrCoordinates, coordinates, dikeHeight, coordsAdjusted, error)
+    nrCoordsAdjusted = coordsAdjusted%N
+    if (.not. allocated(xCoordsAdjusted)) then
+        allocate(xCoordsAdjusted(nrCoordsAdjusted), zCoordsAdjusted(nrCoordsAdjusted)) ! TODO
+    end if
+    xCoordsAdjusted = coordsAdjusted%x
+    zCoordsAdjusted = coordsAdjusted%y
 
 end subroutine profileInStructure
 
 !>
 !! Subroutine adjust the profile due to a desired dike height
 !! @ingroup LibOvertopping
-subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, error)
+subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, coordsAdjusted, error)
 
     integer,                    intent(in)  :: nrCoordinates       !< number of coordinates of the profile
     type(tpCoordinatePair),     intent(in)  :: coordinates         !< structure for the profile
     real(kind=wp),              intent(in)  :: dikeHeight          !< dike height
-    integer,                    intent(out) :: nrCoordsAdjusted    !< number of coordinates in the adjusted profile
-    real(kind=wp),              allocatable :: xCoordsAdjusted(:)  !< vector with x-coordinates of the adjusted profile
-    real(kind=wp),              allocatable :: zCoordsAdjusted(:)  !< vector with y-coordinates of the adjusted profile
+    type(tpCoordinatePair),     intent(inout) :: coordsAdjusted      !< coordinates in the adjusted profile
     type(tMessage),             intent(inout) :: error             !< error struct
 
     ! locals
@@ -158,20 +164,20 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
 
     ! First the situation where the new dike height is close to the dike toe
     if (dikeHeight <= auxiliaryHeightToe) then
-        nrCoordsAdjusted = 2
-        call reallocAdjustedCoordinates(xCoordsAdjusted, zCoordsAdjusted, nrCoordsAdjusted, error)
+        CoordsAdjusted%N = 2
+        call reallocAdjustedCoordinates(CoordsAdjusted%x, CoordsAdjusted%y, CoordsAdjusted%N, error)
         if (error%errorCode == 0) then
-            zCoordsAdjusted(2) = dikeHeight
-            xCoordsAdjusted(2) = interpolateLine(coordinates%y(1), coordinates%y(2), coordinates%x(1), coordinates%x(2), dikeHeight, error)
+            CoordsAdjusted%y(2) = dikeHeight
+            CoordsAdjusted%x(2) = interpolateLine(coordinates%y(1), coordinates%y(2), coordinates%x(1), coordinates%x(2), dikeHeight, error)
             if (error%errorCode /= 0) return
-            xCoordsAdjusted(1) = xCoordsAdjusted(2) - xDiff_min
-            zCoordsAdjusted(1) = interpolateLine(coordinates%x(1), coordinates%x(2), coordinates%y(1), coordinates%y(2), xCoordsAdjusted(1), error)
+            CoordsAdjusted%x(1) = CoordsAdjusted%x(2) - xDiff_min
+            CoordsAdjusted%y(1) = interpolateLine(coordinates%x(1), coordinates%x(2), coordinates%y(1), coordinates%y(2), CoordsAdjusted%x(1), error)
             if (error%errorCode /= 0) return
         else
             return
         endif
     else
-        nrCoordsAdjusted = nrCoordinates
+        CoordsAdjusted%n = nrCoordinates
         previousWasBerm = .false.
         do i = 2, nrCoordinates - 1
             slope = (coordinates%y(i+1) - coordinates%y(i  )) / (coordinates%x(i+1) - coordinates%x(i  ))
@@ -181,20 +187,20 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
                 auxiliaryHeightBerm = interpolateLine(coordinates%x(i+1), coordinates%x(i+2), coordinates%y(i+1), coordinates%y(i+2), coordinates%x(i+1) + xDiff_min, error)
                 if (error%errorCode /= 0) return
                 if (dikeHeight < auxiliaryHeightBerm) then
-                    nrCoordsAdjusted = merge(i-1, i, previousWasBerm)
+                    CoordsAdjusted%N = merge(i-1, i, previousWasBerm)
                     exit
                 endif
             else
                 auxiliaryHeight = interpolateLine(coordinates%x(i-1), coordinates%x(i), coordinates%y(i-1), coordinates%y(i), coordinates%x(i-1) + xDiff_min, error)
                 if (error%errorCode /= 0) return
                 if (dikeHeight < auxiliaryHeight) then
-                    nrCoordsAdjusted = i - 1
+                    CoordsAdjusted%N = i - 1
                     exit
                 elseif (equalRealsRelative(dikeHeight, coordinates%y(i), 1d-12)) then
-                    nrCoordsAdjusted = i
+                    CoordsAdjusted%N = i
                     exit
                 elseif (dikeHeight < coordinates%y(i)) then
-                    nrCoordsAdjusted = i
+                    CoordsAdjusted%N = i
                     exit
                 endif
             endif
@@ -204,22 +210,22 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
         !
         ! allocate xCoordsAdjusted and zCoordsAdjusted and check result
         !
-        call reallocAdjustedCoordinates(xCoordsAdjusted, zCoordsAdjusted, nrCoordsAdjusted, error)
+        call reallocAdjustedCoordinates(CoordsAdjusted%x, CoordsAdjusted%y, CoordsAdjusted%N, error)
         if (error%errorCode == 0) then
 
             ! all segments of the profile except the last
-            do i = 1, nrCoordsAdjusted - 1
-                xCoordsAdjusted(i) = coordinates%x(i)
-                zCoordsAdjusted(i) = coordinates%y(i)
+            do i = 1, CoordsAdjusted%N - 1
+                CoordsAdjusted%x(i) = coordinates%x(i)
+                CoordsAdjusted%y(i) = coordinates%y(i)
             enddo
 
             ! last segment of the profile
-            zCoordsAdjusted(nrCoordsAdjusted) = dikeHeight
-            xCoordsAdjusted(nrCoordsAdjusted) = interpolateLine(coordinates%y(nrCoordsAdjusted-1), coordinates%y(nrCoordsAdjusted), &
-                coordinates%x(nrCoordsAdjusted-1), coordinates%x(nrCoordsAdjusted), dikeHeight, error)
+            CoordsAdjusted%y(CoordsAdjusted%N) = dikeHeight
+            CoordsAdjusted%x(CoordsAdjusted%n) = interpolateLine(coordinates%y(CoordsAdjusted%N-1), coordinates%y(CoordsAdjusted%N), &
+                coordinates%x(CoordsAdjusted%N-1), coordinates%x(CoordsAdjusted%N), dikeHeight, error)
             if (error%errorCode /= 0) return
 
-            if (xCoordsAdjusted(nrCoordsAdjusted) < xCoordsAdjusted(nrCoordsAdjusted-1)) then
+            if (CoordsAdjusted%x(CoordsAdjusted%N) < CoordsAdjusted%x(CoordsAdjusted%N-1)) then
                 call GetMSGadjusted_xcoordinates(error%Message)
                 return
             endif
