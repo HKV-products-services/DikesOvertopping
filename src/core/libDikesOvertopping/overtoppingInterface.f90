@@ -37,12 +37,6 @@ module overtoppingInterface
     
     integer, parameter :: varModelFactorCriticalOvertopping =   8   !< Model factor critical overtopping
 
-    type :: tpProfileCoordinate
-        real(kind=wp)               :: xCoordinate                  !< X-coordinate foreland profile
-        real(kind=wp)               :: zCoordinate                  !< Z-coordinate foreland profile
-        real(kind=wp)               :: roughness                    !< Roughness of the area between two points
-    end type
-    
     type, bind(C) :: OvertoppingGeometryType
         real(kind=wp) :: normal
         integer       :: nPoints

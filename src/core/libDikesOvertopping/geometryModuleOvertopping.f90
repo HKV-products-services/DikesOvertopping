@@ -51,7 +51,7 @@
    public :: determineSegmentTypes, copyGeometry, mergeSequentialBerms, adjustNonHorizontalBerms
    public :: removeBerms, removeDikeSegments, splitCrossSection, calculateHorzLengths
    public :: calculateHorzDistance, deallocateGeometry, basicGeometryTest
-   public :: checkSegmentTypes
+   public :: checkSegmentTypes, cleanupCoordinatePair
 
    contains
 
@@ -292,6 +292,13 @@
 
    end subroutine allocateVectorsGeometry
 
+   subroutine cleanupCoordinatePair(xy)
+      type(tpCoordinatePair), intent(inout) :: xy
+
+      if (allocated(xy%x)) deallocate(xy%x)
+      if (allocated(xy%y)) deallocate(xy%y)
+   end subroutine cleanupCoordinatePair
+
 !> deallocateGeometry:
 !! deallocate the geometry vectors
 !!   @ingroup LibOvertopping
@@ -305,11 +312,9 @@ subroutine deallocateGeometry(geometry)
 !
 !   source
 !
-    if (allocated(geometry%Coordinates%x))    deallocate(geometry%Coordinates%x)
-    if (allocated(geometry%Coordinates%y))    deallocate(geometry%Coordinates%y)
+    call cleanupCoordinatePair(geometry%Coordinates)
+    call cleanupCoordinatePair(geometry%CoordDiff)
     if (allocated(geometry%roughnessFactors)) deallocate(geometry%roughnessFactors)
-    if (allocated(geometry%CoordDiff%x))      deallocate(geometry%CoordDiff%x)
-    if (allocated(geometry%CoordDiff%y))      deallocate(geometry%CoordDiff%y)
     if (allocated(geometry%segmentSlopes))    deallocate(geometry%segmentSlopes)
     if (allocated(geometry%segmentTypes))     deallocate(geometry%segmentTypes)
 

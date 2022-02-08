@@ -33,7 +33,7 @@
 module zFunctionsOvertopping
     use precision,                   only : wp
     use overtoppingInterface,        only : tpProfileCoordinate, varModelFactorCriticalOvertopping
-    use typeDefinitionsOvertopping,  only : tpGeometry, tpLoad, tpOvertoppingInput, tpOvertopping, tpGeometries
+    use typeDefinitionsOvertopping,  only : tpGeometry, tpLoad, tpOvertoppingInput, tpOvertopping, tpGeometries, tpCoordinatePair
     use parametersOvertopping,       only : slope_min, xdiff_min
     use mainModuleOvertopping,       only : calculateOvertopping, setupGeometries, cleanupGeometry
     use geometryModuleOvertopping,   only : initializeGeometry, deallocateGeometry
@@ -110,12 +110,13 @@ subroutine profileInStructure(nrCoordinates, xcoordinates, ycoordinates, dikeHei
     real(kind=wp),      allocatable         :: zCoordsAdjusted(:)           !< vector with y-coordinates of the adjusted profile
     type(tMessage),     intent(inout)       :: error                        !< error struct
 
-    type(tpProfileCoordinate)     :: coordinates(nrCoordinates)             !< structure for the profile
-    integer                       :: i                                      !< do-loop counter
+    type(tpCoordinatePair)       :: coordinates   !< structure for the profile
+    integer                       :: i             !< do-loop counter
 
+    allocate(coordinates%x(nrCoordinates), coordinates%y(nrCoordinates)) ! TODO
     do i = 1, nrCoordinates
-        coordinates(i)%xCoordinate = xcoordinates(i)
-        coordinates(i)%zCoordinate = ycoordinates(i)
+        coordinates%x(i) = xcoordinates(i)
+        coordinates%y(i) = ycoordinates(i)
     enddo
     call adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, error)
 
@@ -126,13 +127,13 @@ end subroutine profileInStructure
 !! @ingroup LibOvertopping
 subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjusted, xCoordsAdjusted, zCoordsAdjusted, error)
 
-    integer,                    intent(in)  :: nrCoordinates                !< number of coordinates of the profile
-    type(tpProfileCoordinate),  intent(in)  :: coordinates(nrCoordinates)   !< structure for the profile
-    real(kind=wp),              intent(in)  :: dikeHeight                   !< dike height
-    integer,                    intent(out) :: nrCoordsAdjusted             !< number of coordinates in the adjusted profile
-    real(kind=wp),              allocatable :: xCoordsAdjusted(:)           !< vector with x-coordinates of the adjusted profile
-    real(kind=wp),              allocatable :: zCoordsAdjusted(:)           !< vector with y-coordinates of the adjusted profile
-    type(tMessage),             intent(inout) :: error                      !< error struct
+    integer,                    intent(in)  :: nrCoordinates       !< number of coordinates of the profile
+    type(tpCoordinatePair),     intent(in)  :: coordinates         !< structure for the profile
+    real(kind=wp),              intent(in)  :: dikeHeight          !< dike height
+    integer,                    intent(out) :: nrCoordsAdjusted    !< number of coordinates in the adjusted profile
+    real(kind=wp),              allocatable :: xCoordsAdjusted(:)  !< vector with x-coordinates of the adjusted profile
+    real(kind=wp),              allocatable :: zCoordsAdjusted(:)  !< vector with y-coordinates of the adjusted profile
+    type(tMessage),             intent(inout) :: error             !< error struct
 
     ! locals
     !
@@ -152,7 +153,7 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
     ! the minimal distance between two x-coordinates of the cross section is xDiff_min 
     ! compute the height of the cross section on the point xDiff_min meters after the toe
 
-    auxiliaryHeightToe = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate + xDiff_min, error)
+    auxiliaryHeightToe = interpolateLine(coordinates%x(1), coordinates%x(2), coordinates%y(1), coordinates%y(2), coordinates%x(1) + xDiff_min, error)
     if (error%errorCode /= 0) return
 
     ! First the situation where the new dike height is close to the dike toe
@@ -161,10 +162,10 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
         call reallocAdjustedCoordinates(xCoordsAdjusted, zCoordsAdjusted, nrCoordsAdjusted, error)
         if (error%errorCode == 0) then
             zCoordsAdjusted(2) = dikeHeight
-            xCoordsAdjusted(2) = interpolateLine(coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, dikeHeight, error)
+            xCoordsAdjusted(2) = interpolateLine(coordinates%y(1), coordinates%y(2), coordinates%x(1), coordinates%x(2), dikeHeight, error)
             if (error%errorCode /= 0) return
             xCoordsAdjusted(1) = xCoordsAdjusted(2) - xDiff_min
-            zCoordsAdjusted(1) = interpolateLine(coordinates(1)%xCoordinate, coordinates(2)%xCoordinate, coordinates(1)%zCoordinate, coordinates(2)%zCoordinate, xCoordsAdjusted(1), error)
+            zCoordsAdjusted(1) = interpolateLine(coordinates%x(1), coordinates%x(2), coordinates%y(1), coordinates%y(2), xCoordsAdjusted(1), error)
             if (error%errorCode /= 0) return
         else
             return
@@ -173,26 +174,26 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
         nrCoordsAdjusted = nrCoordinates
         previousWasBerm = .false.
         do i = 2, nrCoordinates - 1
-            slope = (coordinates(i+1)%zCoordinate - coordinates(i  )%zCoordinate) / (coordinates(i+1)%xCoordinate - coordinates(i  )%xCoordinate)
+            slope = (coordinates%y(i+1) - coordinates%y(i  )) / (coordinates%x(i+1) - coordinates%x(i  ))
             if (slope < slope_min .and. i < nrCoordinates - 1) then
                 !
                 ! the next segment of the cross section is a berm segment
-                auxiliaryHeightBerm = interpolateLine(coordinates(i+1)%xCoordinate, coordinates(i+2)%xCoordinate, coordinates(i+1)%zCoordinate, coordinates(i+2)%zCoordinate, coordinates(i+1)%xCoordinate + xDiff_min, error)
+                auxiliaryHeightBerm = interpolateLine(coordinates%x(i+1), coordinates%x(i+2), coordinates%y(i+1), coordinates%y(i+2), coordinates%x(i+1) + xDiff_min, error)
                 if (error%errorCode /= 0) return
                 if (dikeHeight < auxiliaryHeightBerm) then
                     nrCoordsAdjusted = merge(i-1, i, previousWasBerm)
                     exit
                 endif
             else
-                auxiliaryHeight = interpolateLine(coordinates(i-1)%xCoordinate, coordinates(i)%xCoordinate, coordinates(i-1)%zCoordinate, coordinates(i)%zCoordinate, coordinates(i-1)%xCoordinate + xDiff_min, error)
+                auxiliaryHeight = interpolateLine(coordinates%x(i-1), coordinates%x(i), coordinates%y(i-1), coordinates%y(i), coordinates%x(i-1) + xDiff_min, error)
                 if (error%errorCode /= 0) return
                 if (dikeHeight < auxiliaryHeight) then
                     nrCoordsAdjusted = i - 1
                     exit
-                elseif (equalRealsRelative(dikeHeight, coordinates(i)%zCoordinate, 1d-12)) then
+                elseif (equalRealsRelative(dikeHeight, coordinates%y(i), 1d-12)) then
                     nrCoordsAdjusted = i
                     exit
-                elseif (dikeHeight < coordinates(i)%zCoordinate) then
+                elseif (dikeHeight < coordinates%y(i)) then
                     nrCoordsAdjusted = i
                     exit
                 endif
@@ -208,14 +209,14 @@ subroutine adjustProfile(nrCoordinates, coordinates, dikeHeight, nrCoordsAdjuste
 
             ! all segments of the profile except the last
             do i = 1, nrCoordsAdjusted - 1
-                xCoordsAdjusted(i) = coordinates(i)%xCoordinate
-                zCoordsAdjusted(i) = coordinates(i)%zCoordinate
+                xCoordsAdjusted(i) = coordinates%x(i)
+                zCoordsAdjusted(i) = coordinates%y(i)
             enddo
 
             ! last segment of the profile
             zCoordsAdjusted(nrCoordsAdjusted) = dikeHeight
-            xCoordsAdjusted(nrCoordsAdjusted) = interpolateLine(coordinates(nrCoordsAdjusted-1)%zCoordinate, coordinates(nrCoordsAdjusted)%zCoordinate, &
-                coordinates(nrCoordsAdjusted-1)%xCoordinate, coordinates(nrCoordsAdjusted)%xCoordinate, dikeHeight, error)
+            xCoordsAdjusted(nrCoordsAdjusted) = interpolateLine(coordinates%y(nrCoordsAdjusted-1), coordinates%y(nrCoordsAdjusted), &
+                coordinates%x(nrCoordsAdjusted-1), coordinates%x(nrCoordsAdjusted), dikeHeight, error)
             if (error%errorCode /= 0) return
 
             if (xCoordsAdjusted(nrCoordsAdjusted) < xCoordsAdjusted(nrCoordsAdjusted-1)) then
