@@ -85,13 +85,9 @@
          z2 = Hm0 * fRunup1 * gamma%gammaB * gamma%gammaF * gamma%gammaBeta * ksi0
 
       ! calculate 2% wave run-up for large breaker parameters
-      else if (ksi0 > 0.0d0) then
+      else
          z2 = Hm0 * gamma%gammaF * gamma%gammaBeta * (fRunup2 - fRunup3/sqrt(ksi0))
          z2 = max(z2, 0.0d0)
-      else
-         call GetMSGbreaker_param_is_zero(error%Message)
-         error%errorCode = 1
-         z2 = 0d0
       endif
       z2 = z2 * modelFactors%m_z2
 
@@ -154,10 +150,7 @@
       Qs = (10.0d0 ** -modelFactors%fshallow) * exp(-(hCrest-load%h) / &
                (gamma%gammaBeta * gamma%gammaF * load%Hm0 * (0.33d0+0.022d0*max(ksi0,7.0d0))))
 
-   endif
-
-   ! calculate wave overtopping discharge
-   if (error%errorCode == 0) then
+      ! calculate wave overtopping discharge
 
       ! check value breaker parameter
       if (ksi0 > 5.0d0) then
@@ -166,7 +159,7 @@
 
             ! 5 < breaker parameter < 7
             if (Qn > 0d0 .and. Qs > 0d0) then
-               Qo = max(Qn, exp(log(Qn) + (log(Qs)-log(Qn))*(ksi0-5.0d0)/2)) * sqrt(gravityConstant * load%Hm0**3)
+               Qo = max(Qn, exp(log(Qn) + (log(Qs)-log(Qn))*(ksi0-5.0d0)/2.0d0)) * sqrt(gravityConstant * load%Hm0**3)
             else
                Qo = 0d0
             endif
@@ -185,10 +178,8 @@
 
       endif
 
-   endif
-
-   ! determine possible error message
-   if (error%errorCode /= 0) then
+   else
+      ! determine possible error message
       call GetMSGcalc_wave_overtopping_discharge(error%Message)
    endif
 

@@ -282,15 +282,6 @@ character(len=*), dimension(2), parameter :: string_msg = [&
     message = trim(string_msg(language))
 end subroutine GetMSGcalc_wave_overtopping_discharge
 
-subroutine GetMSGbreaker_param_is_zero(message)
-character(len=*), intent(out) :: message
-character(len=*), dimension(2), parameter :: string_msg = [&
-        'Error calculating 2% wave run-up: breaker parameter equals zero', &
-        'Fout in berekening 2% golf oploop: brekerparameter is nul      ']
-
-    message = trim(string_msg(language))
-end subroutine GetMSGbreaker_param_is_zero
-
 subroutine GetMSGcalc_wave_steepness_period_is_zero(message)
 character(len=*), intent(out) :: message
 character(len=*), dimension(2), parameter :: string_msg = [&

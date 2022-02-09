@@ -200,9 +200,6 @@
    real(kind=wp)              :: yUpper          !< y-coordinate upper bound segments with influence (m+NAP)
    integer                    :: iLower          !< index dike segment lower bound
    integer                    :: iUpper          !< index dike segment upper bound
-   real(kind=wp)              :: sum_horzLengths !< sum of all horzLengths
-   real(kind=wp), parameter   :: one = 1.0_wp    !< constant in comparision with breaker parameters
-   real(kind=wp), parameter   :: ten = 10.0_wp   !< constant in comparision with breaker parameters
    real(kind=wp)              :: dy1             !< delta y in calculation yLower
    real(kind=wp)              :: dy2             !< delta y in calculation yUpper
 
@@ -234,6 +231,27 @@
       ! determine roughness factors and horizontal lengths
       ! --------------------------------------------------
 
+      call determineRoughnessFactors()
+
+      ! --------------------------------------------------
+      ! calculate (and adjust) influence factor roughness
+      ! --------------------------------------------------
+
+      call calculateInfluenceFactorRoughness()
+
+   endif
+
+   ! determine possible error message
+   if (error%errorCode /= 0) then
+       if (error%Message == ' ') then
+           call GetMSG_calc_influence_roughness(error%Message)
+       endif
+   endif
+
+   contains
+
+   subroutine determineRoughnessFactors()
+
       ! initialize roughness factors
       rFactors = geometry%roughnessFactors
 
@@ -254,11 +272,12 @@
       if (iUpper < geometry%Coordinates%N-1) then
          rFactors(iUpper+1:geometry%Coordinates%N-1) = 0.0d0
       endif
+   end subroutine determineRoughnessFactors
 
-
-      ! --------------------------------------------------
-      ! calculate (and adjust) influence factor roughness
-      ! --------------------------------------------------
+   subroutine calculateInfluenceFactorRoughness()
+      real(kind=wp)              :: sum_horzLengths !< sum of all horzLengths
+      real(kind=wp), parameter   :: one = 1.0_wp    !< constant in comparision with breaker parameters
+      real(kind=wp), parameter   :: ten = 10.0_wp   !< constant in comparision with breaker parameters
 
       if (geometry%Coordinates%N == 2) then
           gamma%gammaF = rFactors(1)
@@ -281,15 +300,7 @@
          endif
          gamma%gammaF = min(one, gamma%gammaF)
       endif
-
-   endif
-
-   ! determine possible error message
-   if (error%errorCode /= 0) then
-       if (error%Message == ' ') then
-           call GetMSG_calc_influence_roughness(error%Message)
-       endif
-   endif
+   end subroutine calculateInfluenceFactorRoughness
 
    end subroutine calculateGammaF
 

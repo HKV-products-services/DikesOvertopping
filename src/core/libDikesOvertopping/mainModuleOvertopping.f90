@@ -157,32 +157,7 @@
          ! start calculation for each cross section
          if (error%errorCode == 0) then
 
-            if (NwideBerms == 0) then
-
-               ! no wide berms (geometrySectionB = geometrySectionF)
-               call calculateOvertoppingSection (geometrySectionB, loadAdj,  &
-                                                 gamma_z, gamma_o, modelFactors,    &
-                                                 overtopping, error)
-            else
-
-               ! geometrySectionB equals geometry with all wide berms reduced to B=L0/4
-               call calculateOvertoppingSection (geometrySectionB, loadAdj,   &
-                                                 gamma_z, gamma_o, modelFactors,    &
-                                                 overtoppingB, error)
-
-               ! geometrySectionF equals geometry with all wide berms extended B=L0
-               if (error%errorCode == 0) then
-                  call calculateOvertoppingSection (geometrySectionF, loadAdj,  &
-                                                    gamma_z, gamma_o, modelFactors, &
-                                                    overtoppingF, error)
-               endif
-               
-               ! interpolation of results for both cross sections
-               if (error%errorCode == 0) then
-                  call interpolateResultsSections (geometryMergedBerms, loadAdj%L0, NwideBerms,     &
-                                                   overtoppingB, overtoppingF, overtopping, error)
-               endif
-            endif
+            call startCalculationCrossSections()
          endif
       endif
 
@@ -190,7 +165,37 @@
 
    if (needCleanUp) then
        call cleanupGeometry(geometry%parent)
-    end if
+   end if
+
+contains
+
+   subroutine startCalculationCrossSections()
+
+      if (NwideBerms == 0) then
+
+         ! no wide berms (geometrySectionB = geometrySectionF)
+         call calculateOvertoppingSection (geometrySectionB, loadAdj,  &
+                                           gamma_z, gamma_o, modelFactors, overtopping, error)
+      else
+
+         ! geometrySectionB equals geometry with all wide berms reduced to B=L0/4
+         call calculateOvertoppingSection (geometrySectionB, loadAdj,   &
+                                           gamma_z, gamma_o, modelFactors, overtoppingB, error)
+
+         ! geometrySectionF equals geometry with all wide berms extended B=L0
+         if (error%errorCode == 0) then
+            call calculateOvertoppingSection (geometrySectionF, loadAdj,  &
+                                              gamma_z, gamma_o, modelFactors, overtoppingF, error)
+         endif
+         
+         ! interpolation of results for both cross sections
+         if (error%errorCode == 0) then
+            call interpolateResultsSections (geometryMergedBerms, loadAdj%L0, NwideBerms,     &
+                                             overtoppingB, overtoppingF, overtopping, error)
+         endif
+      endif
+   end subroutine startCalculationCrossSections
+
    end subroutine calculateOvertopping
 
 !> calculateOvertoppingSection:

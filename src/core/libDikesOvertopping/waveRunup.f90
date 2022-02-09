@@ -182,7 +182,7 @@ module waveRunup
 !
    type (tpGeometry),         intent(in)     :: geometry           !< structure with geometry data
    type (tpLoadX),            intent(in)     :: load               !< load struct
-   type(tpInfluencefactors),  intent(inout)  :: gamma_z        !< influence factor angle wave attack 2% run-up
+   type(tpInfluencefactors),  intent(inout)  :: gamma_z            !< influence factor angle wave attack 2% run-up
    type (tpOvertoppingInput), intent(in)     :: modelFactors       !< structure with model factors
    real(kind=wp),             intent(in)     :: z2                 !< 2% wave run-up (m)
    type (tpGeometry),         intent(in)     :: geometryFlatBerms  !< structure with geometry data with horizontal berms
@@ -202,7 +202,7 @@ module waveRunup
    ! initialize influence factor berms and roughness and z2_end
    gamma_z%gammaB  = 1.0d0
    gamma_z%gammaF  = 1.0d0
-   z2_end        = 0.0d0
+   z2_end          = 0.0d0
 
    ! calculate representative slope angle
    if (z2 > 0.0d0) then
