@@ -33,6 +33,18 @@ add_library(DikesOvertoppingLib
     libDikesOvertopping/waveRunup.f90
     libDikesOvertopping/overtoppingInterface.f90
     libDikesOvertopping/zFunctionsOvertopping.f90
+    libDikesOvertopping/submAdjNonHorizBerms.f90
+    libDikesOvertopping/submAllocsGeometry.f90
+    libDikesOvertopping/submBasicGeometryValidation.f90
+    libDikesOvertopping/submCalcHorzProps.f90
+    libDikesOvertopping/submCalcSegmentSlopes.f90
+    libDikesOvertopping/submCheckCrossSection.f90
+    libDikesOvertopping/submCheckSegmentTypes.f90
+    libDikesOvertopping/submDetermineSegmentTypes.f90
+    libDikesOvertopping/submInitializeGeometry.f90
+    libDikesOvertopping/submMergeSequentialBerms.f90
+    libDikesOvertopping/submRemoveSegments.f90
+    libDikesOvertopping/submSplitCrossSection.f90
 )
 
 set_target_properties(DikesOvertoppingLib
