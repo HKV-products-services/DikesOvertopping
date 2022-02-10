@@ -1,4 +1,5 @@
 submodule (geometryModuleOvertopping) submRemoveSegments
+   use OvertoppingMessages
 contains
 
 !> removeBerms:

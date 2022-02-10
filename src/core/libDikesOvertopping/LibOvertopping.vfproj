@@ -48,9 +48,22 @@
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<Filter Name="geometryOvertopping">
+		<File RelativePath=".\geometryModuleOvertopping.f90"/>
+		<File RelativePath=".\submAdjNonHorizBerms.f90"/>
+		<File RelativePath=".\submAllocsGeometry.f90"/>
+		<File RelativePath=".\submBasicGeometryValidation.f90"/>
+		<File RelativePath=".\submCalcHorzProps.f90"/>
+		<File RelativePath=".\submCalcSegmentSlopes.f90"/>
+		<File RelativePath=".\submCheckCrossSection.f90"/>
+		<File RelativePath=".\submCheckSegmentTypes.f90"/>
+		<File RelativePath=".\submDetermineSegmentTypes.f90"/>
+		<File RelativePath=".\submInitializeGeometry.f90"/>
+		<File RelativePath=".\submMergeSequentialBerms.f90"/>
+		<File RelativePath=".\submRemoveSegments.f90"/>
+		<File RelativePath=".\submSplitCrossSection.f90"/></Filter>
 		<File RelativePath=".\factorModuleOvertopping.f90"/>
 		<File RelativePath=".\formulaModuleOvertopping.f90"/>
-		<File RelativePath=".\geometryModuleOvertopping.f90"/>
 		<File RelativePath=".\mainModuleOvertopping.f90"/>
 		<File RelativePath=".\ModuleLogging.f90"/>
 		<File RelativePath=".\omkeerVariantModule.f90"/>

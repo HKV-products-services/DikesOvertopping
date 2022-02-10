@@ -1,4 +1,6 @@
 submodule (geometryModuleOvertopping) submInitializeGeometry
+   use parametersOvertopping
+   use OvertoppingMessages
 contains
 
 !> initializeGeometry:

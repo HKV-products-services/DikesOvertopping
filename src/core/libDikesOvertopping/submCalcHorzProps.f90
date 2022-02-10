@@ -1,4 +1,5 @@
 submodule (geometryModuleOvertopping) submCalcHorzProps
+   use OvertoppingMessages
 contains
 
 !> calculateHorzLengths:

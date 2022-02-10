@@ -38,10 +38,8 @@
 
    use precision, only : wp
    use typeDefinitionsOvertopping
-   use parametersOvertopping
-   use formulaModuleOvertopping
-   use OvertoppingMessages
-   use errorMessages
+   use overtoppingInterface, only : OvertoppingGeometryTypeF
+   use errorMessages, only : TErrorMessages, TMessage
 
    implicit none
 
@@ -55,10 +53,10 @@
 
    interface
        module subroutine checkCrossSection (psi, coordinates, roughnessFactors, error)
-          real(kind=wp),          intent(in)    :: psi                               !< dike normal (degrees)
-          type(tpCoordinatePair), intent(in)    :: coordinates                       !< x/y coordinates
-          real(kind=wp),          intent(in)    :: roughnessFactors(coordinates%N-1) !< roughness factors
-          type(tMessage),         intent(inout) :: error                             !< error struct
+          real(kind=wp),          intent(in)    :: psi                 !< dike normal (degrees)
+          type(tpCoordinatePair), intent(in)    :: coordinates         !< x/y coordinates
+          real(kind=wp),          intent(in)    :: roughnessFactors(:) !< roughness factors
+          type(tMessage),         intent(inout) :: error               !< error struct
       end subroutine checkCrossSection
    end interface
 
@@ -71,11 +69,11 @@
 
    interface
       module subroutine initializeGeometry (psi, coordinates, roughnessFactors, geometry, error)
-         real(kind=wp),       intent(in   ) :: psi                              !< dike normal (degree)
-         type (tpCoordinatePair), intent(in) :: coordinates                     !< x/y-coordinates
-         real(kind=wp),       intent(in   ) :: roughnessFactors(coordinates%N-1) !< roughness factors
-         type (tpGeometry), target, intent(inout) :: geometry                   !< structure with geometry data
-         type (tMessage),     intent(inout) :: error                            !< error struct
+         real(kind=wp),             intent(in   ) :: psi                 !< dike normal (degree)
+         type (tpCoordinatePair),   intent(in   ) :: coordinates         !< x/y-coordinates
+         real(kind=wp),             intent(in   ) :: roughnessFactors(:) !< roughness factors
+         type (tpGeometry), target, intent(inout) :: geometry            !< structure with geometry data
+         type (tMessage),           intent(inout) :: error               !< error struct
       end subroutine initializeGeometry
    end interface
 
@@ -164,14 +162,13 @@
        end subroutine splitCrossSection
     end interface
 
-
     interface
        module subroutine calculateHorzLengths (geometry, yLower, yUpper, horzLengths, error)
-          type (tpGeometry), intent(in   ) :: geometry                              !< structure with geometry data
-          real(kind=wp),     intent(in   ) :: yLower                                !< y-coord. lower bound (m+NAP)
-          real(kind=wp),     intent(in   ) :: yUpper                                !< y-coord. upper bound (m+NAP)
-          real(kind=wp),     intent(  out) :: horzLengths(geometry%Coordinates%N-1) !< horizontal lengths segments (m)
-          type(tMessage),    intent(inout) :: error                                 !< error struct
+          type (tpGeometry), intent(in   ) :: geometry       !< structure with geometry data
+          real(kind=wp),     intent(in   ) :: yLower         !< y-coord. lower bound (m+NAP)
+          real(kind=wp),     intent(in   ) :: yUpper         !< y-coord. upper bound (m+NAP)
+          real(kind=wp),     intent(  out) :: horzLengths(:) !< horizontal lengths segments (m)
+          type(tMessage),    intent(inout) :: error          !< error struct
        end subroutine calculateHorzLengths
     end interface
 
@@ -187,10 +184,9 @@
 
     interface
        module subroutine basicGeometryValidation(geometryF, success, errorStruct)
-          use overtoppingInterface
           type(OvertoppingGeometryTypeF), intent(in) :: geometryF           !< struct with geometry and roughness
           type(TErrorMessages), intent(inout)        :: errorStruct         !< error message (only set if not successful)
-          logical, intent(out)                       :: success             !< success flag 
+          logical, intent(out)                       :: success             !< success flag
        end subroutine basicGeometryValidation
     end interface
 

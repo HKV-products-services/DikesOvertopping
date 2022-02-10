@@ -1,4 +1,5 @@
 submodule (geometryModuleOvertopping) submSplitCrossSection
+   use OvertoppingMessages
 contains
 
 !> splitCrossSection:

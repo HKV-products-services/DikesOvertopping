@@ -1,4 +1,6 @@
 submodule (geometryModuleOvertopping) submAllocGeometry
+   use OvertoppingMessages
+   use OvertoppingMessages
 contains
 
 !> allocateVectorsGeometry:

@@ -1,4 +1,5 @@
 submodule (geometryModuleOvertopping) submCheckSegmentTypes
+   use OvertoppingMessages
 contains
 
 ! validation routine for segment types

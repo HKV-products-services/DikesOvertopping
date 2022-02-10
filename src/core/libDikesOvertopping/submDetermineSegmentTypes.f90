@@ -1,4 +1,6 @@
 submodule (geometryModuleOvertopping) submDetermineSegmentTypes
+   use OvertoppingMessages
+   use parametersOvertopping
 contains
 
 !> determineSegmentTypes:

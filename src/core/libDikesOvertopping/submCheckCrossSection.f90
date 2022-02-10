@@ -1,4 +1,7 @@
 submodule (geometryModuleOvertopping) submCheckCrossSection
+   use OvertoppingMessages
+   use parametersOvertopping
+   use OvertoppingMessages
 contains
 !> checkCrossSection:
 !! check cross section

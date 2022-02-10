@@ -1,4 +1,5 @@
 submodule (geometryModuleOvertopping) submMergeSequentialBerms
+   use OvertoppingMessages
 contains
 
 !> mergeSequentialBerms:

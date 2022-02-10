@@ -1,4 +1,5 @@
 submodule (geometryModuleOvertopping) submCalcSegmentSlopes
+   use OvertoppingMessages
 contains
 
 !> calculateSegmentSlopes:

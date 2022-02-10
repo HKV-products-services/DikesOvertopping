@@ -342,7 +342,7 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
     errorText = ' '
 
     if (success) then
-        call basicGeometryTest(geometryF, success, errorStruct)
+        call basicGeometryValidation(geometryF, success, errorStruct)
     endif
 
     if (success) then
