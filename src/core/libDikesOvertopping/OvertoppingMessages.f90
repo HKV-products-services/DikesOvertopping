@@ -363,15 +363,6 @@ character(len=*), dimension(2), parameter :: string_msg = [&
     message = trim(string_msg(language))
 end subroutine GetMSGfirst_and_last_must_be_slope
 
-subroutine GetMSGwl_above_crest_not_allowed(message)
-character(len=*), intent(out) :: message
-character(len=*), dimension(2), parameter :: string_msg = [&
-        'In the overtopping freeboard routine is a local water level below crest not allowed.', &
-        'In the overtopping module is een lokale waterstand boven de kruin niet toegestaan.  ']
-
-    message = trim(string_msg(language))
-end subroutine GetMSGwl_above_crest_not_allowed
-
 subroutine GetMSGinterpolation_error_split_cross_sections(message)
 character(len=*), intent(out) :: message
 character(len=*), dimension(2), parameter :: string_msg = [&

@@ -1,5 +1,5 @@
 submodule (geometryModuleOvertopping) submBasicGeometryValidation
-   use errorMessages, only : TErrorMessages, TMessage, severityError, addMessage
+   use errorMessages, only : severityError, addMessage
    use OvertoppingMessages
    use parametersOvertopping
 contains

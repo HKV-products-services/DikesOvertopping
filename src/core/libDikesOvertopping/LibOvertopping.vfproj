@@ -62,9 +62,16 @@
 		<File RelativePath=".\submMergeSequentialBerms.f90"/>
 		<File RelativePath=".\submRemoveSegments.f90"/>
 		<File RelativePath=".\submSplitCrossSection.f90"/></Filter>
+		<Filter Name="mainOvertopping">
+		<File RelativePath=".\mainModuleOvertopping.f90"/>
+		<File RelativePath=".\submAllocOvertopping.f90"/>
+		<File RelativePath=".\submCalcOvertopping.f90"/>
+		<File RelativePath=".\submCalcOvertoppingSection.f90"/>
+		<File RelativePath=".\submCalcWaveOvertopping.f90"/>
+		<File RelativePath=".\submInterpResultsSections.f90"/>
+		<File RelativePath=".\submOvertoppingChecks.f90"/></Filter>
 		<File RelativePath=".\factorModuleOvertopping.f90"/>
 		<File RelativePath=".\formulaModuleOvertopping.f90"/>
-		<File RelativePath=".\mainModuleOvertopping.f90"/>
 		<File RelativePath=".\ModuleLogging.f90"/>
 		<File RelativePath=".\omkeerVariantModule.f90"/>
 		<File RelativePath=".\overtoppingInterface.f90"/>

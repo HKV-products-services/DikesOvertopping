@@ -45,6 +45,13 @@ add_library(DikesOvertoppingLib
     libDikesOvertopping/submMergeSequentialBerms.f90
     libDikesOvertopping/submRemoveSegments.f90
     libDikesOvertopping/submSplitCrossSection.f90
+    libDikesOvertopping/submAllocOvertopping.f90
+    libDikesOvertopping/submCalcOvertopping.f90
+    libDikesOvertopping/submCalcOvertoppingSection.f90
+    libDikesOvertopping/submCalcWaveOvertopping.f90
+    libDikesOvertopping/submInterpResultsSections.f90
+    libDikesOvertopping/submOvertoppingChecks.f90
+    libDikesOvertopping/factorModuleOvertopping.f90
 )
 
 set_target_properties(DikesOvertoppingLib
