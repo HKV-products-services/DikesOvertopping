@@ -1,4 +1,5 @@
 submodule (mainModuleOvertopping) submAllocOvertopping
+   use geometryModuleOvertopping
 contains
 module procedure initGeometries
       type (tpCoordinatePair)         :: coordinates         !< vector with x/y-coordinates

@@ -1,4 +1,7 @@
 submodule (mainModuleOvertopping) submCalcWaveOvertopping
+   use formulaModuleOvertopping
+   use geometryModuleOvertopping
+   use factorModuleOvertopping
 contains
 
 !> calculateWaveOvertopping:

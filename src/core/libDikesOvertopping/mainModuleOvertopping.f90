@@ -6,7 +6,7 @@
 ! it under the terms of the GNU Affero General Public License as published by
 ! the Free Software Foundation, either version 3 of the License, or
 ! (at your option) any later version.
-! 
+!
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
@@ -36,17 +36,10 @@
    module mainModuleOvertopping
 !***********************************************************************************************************
 
-   use factorModuleOvertopping
    use typeDefinitionsOvertopping
-   use parametersOvertopping
-   use formulaModuleOvertopping
-   use geometryModuleOvertopping
    use overtoppingInterface
-   use waveRunup
-   use OvertoppingMessages
-   use ModuleLogging
    use errorMessages
-   use precision
+   use precision, only : wp
 
    implicit none
 
@@ -113,10 +106,10 @@
 
    interface
       module subroutine checkModelFactors (modelFactors, dimErrMessage, errorMessages, ierr)
-         type (tpOvertoppingInput), intent(in)  :: modelFactors                   !< structure with model factors
-         integer,                   intent(in)  :: dimErrMessage                  !< max. number of error messages
-         integer,                   intent(out) :: ierr                           !< number of errors found
-         character(len=*),          intent(out) :: errorMessages(dimErrMessage)   !< error message
+         type (tpOvertoppingInput), intent(in)  :: modelFactors       !< structure with model factors
+         integer,                   intent(in)  :: dimErrMessage      !< max. number of error messages
+         integer,                   intent(out) :: ierr               !< number of errors found
+         character(len=*),          intent(out) :: errorMessages(:)   !< error message
       end subroutine checkModelFactors
    end interface
 

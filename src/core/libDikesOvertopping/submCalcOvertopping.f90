@@ -1,4 +1,7 @@
 submodule (mainModuleOvertopping) submCalcOvertopping
+   use formulaModuleOvertopping
+   use factorModuleOvertopping
+   use geometryModuleOvertopping
 contains
 
 !> calculateOvertopping:

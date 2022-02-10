@@ -1,4 +1,6 @@
 submodule (mainModuleOvertopping) submOvertoppingChecks
+   use parametersOvertopping
+   use OvertoppingMessages
 contains
 
 !> checkInputdata:
@@ -8,6 +10,7 @@ contains
 module procedure checkInputdata
 !***********************************************************************************************************
    implicit none
+    character(len=StrLenMessages) :: errorTexts(1)  !< local error or validation messages
 
 ! ==========================================================================================================
 
@@ -44,7 +47,10 @@ module procedure checkInputdata
 
    if (error%errorCode == 0) then
       ! liever niet tijdens z-func
-      call checkModelFactors (modelFactors, 1, error%message, error%errorcode)
+      call checkModelFactors (modelFactors, 1, errorTexts , error%errorcode)
+      if (error%errorcode /= 0) then
+         error%message = errorTexts(1)
+      end if
    endif
 
 end procedure checkInputdata

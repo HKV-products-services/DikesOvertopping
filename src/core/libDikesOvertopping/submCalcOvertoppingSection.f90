@@ -1,4 +1,6 @@
 submodule (mainModuleOvertopping) submCalcOvertopSection
+   use waveRunup
+   use geometryModuleOvertopping
 contains
 
 !> calculateOvertoppingSection:
