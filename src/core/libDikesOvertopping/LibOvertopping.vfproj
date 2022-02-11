@@ -48,6 +48,14 @@
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<Filter Name="formulaModuleOvertopping">
+		<File RelativePath=".\formulaModuleOvertopping.f90"/>
+		<File RelativePath=".\submAdjInfluenceFactors.f90"/>
+		<File RelativePath=".\submCalcBreakerLimit.f90"/>
+		<File RelativePath=".\submCalcWaveOvertopDischarge.f90"/>
+		<File RelativePath=".\submCalcWaveProps.f90"/>
+		<File RelativePath=".\submCalcWaveRunup.f90"/>
+		<File RelativePath=".\submCubicRoots.f90"/></Filter>
 		<Filter Name="geometryOvertopping">
 		<File RelativePath=".\geometryModuleOvertopping.f90"/>
 		<File RelativePath=".\submAdjNonHorizBerms.f90"/>
@@ -70,14 +78,10 @@
 		<File RelativePath=".\submCalcWaveOvertopping.f90"/>
 		<File RelativePath=".\submInterpResultsSections.f90"/>
 		<File RelativePath=".\submOvertoppingChecks.f90"/></Filter>
-		<Filter Name="formulaModuleOvertopping">
-		<File RelativePath=".\formulaModuleOvertopping.f90"/>
-		<File RelativePath=".\submAdjInfluenceFactors.f90"/>
-		<File RelativePath=".\submCalcBreakerLimit.f90"/>
-		<File RelativePath=".\submCalcWaveOvertopDischarge.f90"/>
-		<File RelativePath=".\submCalcWaveProps.f90"/>
-		<File RelativePath=".\submCalcWaveRunup.f90"/>
-		<File RelativePath=".\submCubicRoots.f90"/></Filter>
+		<Filter Name="waveRunup">
+		<File RelativePath=".\submInnerCalculation.f90"/>
+		<File RelativePath=".\submIterationWaveRunup.f90"/>
+		<File RelativePath=".\waveRunup.f90"/></Filter>
 		<File RelativePath=".\factorModuleOvertopping.f90"/>
 		<File RelativePath=".\ModuleLogging.f90"/>
 		<File RelativePath=".\omkeerVariantModule.f90"/>
@@ -85,6 +89,5 @@
 		<File RelativePath=".\OvertoppingMessages.f90"/>
 		<File RelativePath=".\typeDefinitionsOvertopping.f90"/>
 		<File RelativePath=".\utils.f90"/>
-		<File RelativePath=".\waveRunup.f90"/>
 		<File RelativePath=".\zFunctionsOvertopping.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>

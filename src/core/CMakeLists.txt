@@ -59,6 +59,8 @@ add_library(DikesOvertoppingLib
     libDikesOvertopping/submCalcWaveProps.f90
     libDikesOvertopping/submCalcWaveRunup.f90
     libDikesOvertopping/submCubicRoots.f90
+    libDikesOvertopping/submInnerCalculation.f90
+    libDikesOvertopping/submIterationWaveRunup.f90
 )
 
 set_target_properties(DikesOvertoppingLib
