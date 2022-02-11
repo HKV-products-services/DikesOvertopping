@@ -1,4 +1,6 @@
 submodule (formulaModuleOvertopping) submCubicRoots
+   use utils
+   use OvertoppingMessages
 contains
 
 !> realRootsCubicFunction:
@@ -132,7 +134,7 @@ end procedure realRootsCubicFunction
    else
       z = 0.0d0 ! only if p=0 and q=0
    endif
-   
+
    end subroutine rootsDepressedCubic
 
 !> cubicRoots:
@@ -166,7 +168,7 @@ end procedure realRootsCubicFunction
 
       ! calculate argument z
       arg = atan2(imag(z),dble(z))
-      
+
       ! calculate cubic roots z
       roots(1) = (abs(z)**(1/3.0d0)) * exp(i* arg/3)
       roots(2) = (abs(z)**(1/3.0d0)) * exp(i*(arg+2*pi)/3)

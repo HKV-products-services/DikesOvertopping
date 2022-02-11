@@ -39,15 +39,12 @@
 !
    use precision
    use typeDefinitionsOvertopping
-   use parametersOvertopping
-   use OvertoppingMessages
-   use utils
    use errorMessages
 
    implicit none
 
    private
-   
+
    public ::  calculateWaveRunup, calculateWaveLength, calculateWaveSteepness
    public ::  calculateBreakerParameter, calculateAngleWaveAttack, calculateBreakerLimit, adjustInfluenceFactors
    public ::  calculateWaveOvertoppingDischarge
@@ -103,21 +100,21 @@
 
    interface
       module subroutine realRootsCubicFunction (a, b, c, d, N, x, error)
-         real(kind=wp),    intent(in  )  :: a              !< coefficient a cubic function
-         real(kind=wp),    intent(in  )  :: b              !< coefficient b cubic function
-         real(kind=wp),    intent(in  )  :: c              !< coefficient c cubic function
-         real(kind=wp),    intent(in  )  :: d              !< coefficient d cubic function
-         integer,          intent(  out) :: N              !< number of real roots cubic function
-         real(kind=wp),    intent(  out) :: x(3)           !< real roots cubic function
-         type(tMessage),   intent(inout) :: error          !< error struct
+         real(kind=wp),    intent(in  )  :: a        !< coefficient a cubic function
+         real(kind=wp),    intent(in  )  :: b        !< coefficient b cubic function
+         real(kind=wp),    intent(in  )  :: c        !< coefficient c cubic function
+         real(kind=wp),    intent(in  )  :: d        !< coefficient d cubic function
+         integer,          intent(  out) :: N        !< number of real roots cubic function
+         real(kind=wp),    intent(  out) :: x(3)     !< real roots cubic function
+         type(tMessage),   intent(inout) :: error    !< error struct
       end subroutine realRootsCubicFunction
    end interface
 
    interface
       module subroutine calculateBreakerLimit (gammaB, ksi0Limit, error)
-         real(kind=wp),             intent(in   ) :: gammaB         ! influence factor for berms
-         real(kind=wp),             intent(  out) :: ksi0Limit      ! limit value breaker parameter
-         type(tMessage),            intent(inout) :: error          ! error struct
+         real(kind=wp),    intent(in   ) :: gammaB         ! influence factor for berms
+         real(kind=wp),    intent(  out) :: ksi0Limit      ! limit value breaker parameter
+         type(tMessage),   intent(inout) :: error          ! error struct
       end subroutine calculateBreakerLimit
    end interface
 

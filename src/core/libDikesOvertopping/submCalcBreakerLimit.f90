@@ -1,4 +1,5 @@
 submodule (formulaModuleOvertopping) submCalcBreakerLimit
+   use parametersOvertopping
 contains
 
 !> calculateBreakerLimit:

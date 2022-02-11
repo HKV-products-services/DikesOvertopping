@@ -1,4 +1,5 @@
 submodule (formulaModuleOvertopping) submCalcWaveProps
+   use OvertoppingMessages
 contains
 
 !> calculateWaveLength:

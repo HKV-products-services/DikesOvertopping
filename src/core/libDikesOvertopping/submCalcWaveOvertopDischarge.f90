@@ -1,4 +1,5 @@
 submodule (formulaModuleOvertopping) submCalcWaveOvertopDischarge
+   use OvertoppingMessages
 contains
 
 !> calculateWaveOvertoppingDischarge:

@@ -1,4 +1,5 @@
 submodule (formulaModuleOvertopping) submCalcWaveRunup
+   use parametersOvertopping
 contains
 
 !> calculateWaveRunup:
