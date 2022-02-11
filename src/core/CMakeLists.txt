@@ -22,6 +22,7 @@ add_subdirectory(external)
 
 add_library(DikesOvertoppingLib
   STATIC
+    libDikesOvertopping/utils.f90
     libDikesOvertopping/factorModuleOvertopping.f90
     libDikesOvertopping/mainModuleOvertopping.f90
     libDikesOvertopping/OvertoppingMessages.f90
@@ -52,6 +53,12 @@ add_library(DikesOvertoppingLib
     libDikesOvertopping/submInterpResultsSections.f90
     libDikesOvertopping/submOvertoppingChecks.f90
     libDikesOvertopping/factorModuleOvertopping.f90
+    libDikesOvertopping/submAdjInfluenceFactors.f90
+    libDikesOvertopping/submCalcBreakerLimit.f90
+    libDikesOvertopping/submCalcWaveOvertopDischarge.f90
+    libDikesOvertopping/submCalcWaveProps.f90
+    libDikesOvertopping/submCalcWaveRunup.f90
+    libDikesOvertopping/submCubicRoots.f90
 )
 
 set_target_properties(DikesOvertoppingLib

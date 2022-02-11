@@ -70,13 +70,21 @@
 		<File RelativePath=".\submCalcWaveOvertopping.f90"/>
 		<File RelativePath=".\submInterpResultsSections.f90"/>
 		<File RelativePath=".\submOvertoppingChecks.f90"/></Filter>
-		<File RelativePath=".\factorModuleOvertopping.f90"/>
+		<Filter Name="formulaModuleOvertopping">
 		<File RelativePath=".\formulaModuleOvertopping.f90"/>
+		<File RelativePath=".\submAdjInfluenceFactors.f90"/>
+		<File RelativePath=".\submCalcBreakerLimit.f90"/>
+		<File RelativePath=".\submCalcWaveOvertopDischarge.f90"/>
+		<File RelativePath=".\submCalcWaveProps.f90"/>
+		<File RelativePath=".\submCalcWaveRunup.f90"/>
+		<File RelativePath=".\submCubicRoots.f90"/></Filter>
+		<File RelativePath=".\factorModuleOvertopping.f90"/>
 		<File RelativePath=".\ModuleLogging.f90"/>
 		<File RelativePath=".\omkeerVariantModule.f90"/>
 		<File RelativePath=".\overtoppingInterface.f90"/>
 		<File RelativePath=".\OvertoppingMessages.f90"/>
 		<File RelativePath=".\typeDefinitionsOvertopping.f90"/>
+		<File RelativePath=".\utils.f90"/>
 		<File RelativePath=".\waveRunup.f90"/>
 		<File RelativePath=".\zFunctionsOvertopping.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>
