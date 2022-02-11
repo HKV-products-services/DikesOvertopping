@@ -78,13 +78,16 @@
 		<File RelativePath=".\submCalcWaveOvertopping.f90"/>
 		<File RelativePath=".\submInterpResultsSections.f90"/>
 		<File RelativePath=".\submOvertoppingChecks.f90"/></Filter>
+		<Filter Name="omkeerVariant">
+		<File RelativePath=".\omkeerVariantModule.f90"/>
+		<File RelativePath=".\submOmkeerMain.f90"/>
+		<File RelativePath=".\submOmkeerValidProfile.f90"/></Filter>
 		<Filter Name="waveRunup">
 		<File RelativePath=".\submInnerCalculation.f90"/>
 		<File RelativePath=".\submIterationWaveRunup.f90"/>
 		<File RelativePath=".\waveRunup.f90"/></Filter>
 		<File RelativePath=".\factorModuleOvertopping.f90"/>
 		<File RelativePath=".\ModuleLogging.f90"/>
-		<File RelativePath=".\omkeerVariantModule.f90"/>
 		<File RelativePath=".\overtoppingInterface.f90"/>
 		<File RelativePath=".\OvertoppingMessages.f90"/>
 		<File RelativePath=".\typeDefinitionsOvertopping.f90"/>

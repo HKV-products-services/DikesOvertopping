@@ -62,6 +62,8 @@ src/core/libDikesOvertopping/submInnerCalculation.f90 -text
 src/core/libDikesOvertopping/submInterpResultsSections.f90 -text
 src/core/libDikesOvertopping/submIterationWaveRunup.f90 -text
 src/core/libDikesOvertopping/submMergeSequentialBerms.f90 -text
+src/core/libDikesOvertopping/submOmkeerMain.f90 -text
+src/core/libDikesOvertopping/submOmkeerValidProfile.f90 -text
 src/core/libDikesOvertopping/submOvertoppingChecks.f90 -text
 src/core/libDikesOvertopping/submRemoveSegments.f90 -text
 src/core/libDikesOvertopping/submSplitCrossSection.f90 -text
