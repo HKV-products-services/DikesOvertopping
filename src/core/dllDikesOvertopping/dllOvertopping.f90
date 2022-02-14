@@ -380,7 +380,7 @@ subroutine ValidateInputF(geometryF, dikeHeight, modelFactors, errorStruct)
         endif
     endif
 
-    call checkModelFactors (modelFactors, maxErr, errorTexts, ierr)
+    call checkModelFactors (modelFactors, errorTexts, ierr)
     do i = 1, ierr
        msgStruct%errorCode = 2
        msgStruct%severity  = severityError

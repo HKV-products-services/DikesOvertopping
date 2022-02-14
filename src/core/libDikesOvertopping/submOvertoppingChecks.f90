@@ -32,7 +32,7 @@ contains
 module procedure checkInputdata
 !***********************************************************************************************************
    implicit none
-    character(len=StrLenMessages) :: errorTexts(1)  !< local error or validation messages
+    character(len=StrLenMessages) :: errorTexts(5)  !< local error or validation messages
 
 ! ==========================================================================================================
 
@@ -69,7 +69,7 @@ module procedure checkInputdata
 
    if (error%errorCode == 0) then
       ! liever niet tijdens z-func
-      call checkModelFactors (modelFactors, 1, errorTexts , error%errorcode)
+      call checkModelFactors (modelFactors, errorTexts , error%errorcode)
       if (error%errorcode /= 0) then
          error%message = errorTexts(1)
       end if
@@ -94,51 +94,42 @@ module procedure checkModelFactors
    ierr = 0
    ! loop over model factors
    do i=4, 8
-      ! determine description model factor
-      select case (i)
-         case (4)
-             par_txt = GetOvertoppingParameter(par_fB)
-         case (5)
-             par_txt = GetOvertoppingParameter(par_fN)
-         case (6)
-             par_txt = GetOvertoppingParameter(par_fS)
-         case (7)
-             par_txt = GetOvertoppingParameter(par_2percent_wave_runup)
-         case (8)
-             par_txt = GetOvertoppingParameter(reductionFactorForeshore)
-      end select
+      ! determine description model factors and
       ! determine value and minimum/maximum model factor
       select case (i)
          case (4)
+             par_txt = GetOvertoppingParameter(par_fB)
              par = modelFactors%factorDeterminationQ_b_f_b
              par_min = fB_min
              par_max = fB_max
          case (5)
+             par_txt = GetOvertoppingParameter(par_fN)
              par = modelFactors%factorDeterminationQ_b_f_n
              par_min = fN_min
              par_max = fN_max
          case (6)
+             par_txt = GetOvertoppingParameter(par_fS)
              par = modelFactors%fshallow
              par_min = fS_min
              par_max = fS_max
          case (7)
+             par_txt = GetOvertoppingParameter(par_2percent_wave_runup)
              par = modelFactors%m_z2
              par_min = mz2_min
              par_max = mz2_max
          case (8)
+             par_txt = GetOvertoppingParameter(reductionFactorForeshore)
              par = modelFactors%reductionFactorForeshore
              par_min = foreshore_min
              par_max = foreshore_max
       end select
       ! check value model factor
-      if (ierr < dimErrMessage) then
-         if ((par < par_min) .or. (par > par_max)) then
-            ierr = ierr + 1
-            if (par_max == huge(par_max)) then
-               write (errorMessages(ierr), GetFMTmodel_factor_smaller_than()) trim(par_txt), par_min
-            else
-               write (errorMessages(ierr), GetFMTmodel_factor_not_between()) trim(par_txt), par_min, par_max
-            endif
+      if ((par < par_min) .or. (par > par_max)) then
+         ierr = ierr + 1
+         if (par_max == huge(par_max)) then
+            write (errorMessages(ierr), GetFMTmodel_factor_smaller_than()) trim(par_txt), par_min
+         else
+            write (errorMessages(ierr), GetFMTmodel_factor_not_between()) trim(par_txt), par_min, par_max
          endif
       endif
    enddo

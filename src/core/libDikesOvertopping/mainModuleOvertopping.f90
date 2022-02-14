@@ -105,9 +105,8 @@
    end interface
 
    interface
-      module subroutine checkModelFactors (modelFactors, dimErrMessage, errorMessages, ierr)
+      module subroutine checkModelFactors (modelFactors, errorMessages, ierr)
          type (tpOvertoppingInput), intent(in)  :: modelFactors       !< structure with model factors
-         integer,                   intent(in)  :: dimErrMessage      !< max. number of error messages
          integer,                   intent(out) :: ierr               !< number of errors found
          character(len=*),          intent(out) :: errorMessages(:)   !< error message
       end subroutine checkModelFactors

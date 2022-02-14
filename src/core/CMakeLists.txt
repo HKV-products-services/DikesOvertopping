@@ -29,6 +29,9 @@ add_library(DikesOvertoppingLib
     libDikesOvertopping/formulaModuleOvertopping.f90
     libDikesOvertopping/ModuleLogging.f90
     libDikesOvertopping/typeDefinitionsOvertopping.f90
+    libDikesOvertopping/typeForLoad.f90
+    libDikesOvertopping/typeForFactors.f90
+    libDikesOvertopping/parametersOvertopping.f90
     libDikesOvertopping/geometryModuleOvertopping.f90
     libDikesOvertopping/omkeerVariantModule.f90
     libDikesOvertopping/waveRunup.f90
