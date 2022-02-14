@@ -36,7 +36,7 @@ module zFunctionsOvertopping
     use typeDefinitionsOvertopping,  only : tpGeometry, tpLoad, tpOvertoppingInput, tpOvertopping, tpGeometries, tpCoordinatePair
     use parametersOvertopping,       only : slope_min, xdiff_min
     use mainModuleOvertopping,       only : calculateOvertopping, setupGeometries, cleanupGeometry
-    use geometryModuleOvertopping,   only : initializeGeometry, deallocateGeometry
+    use geometryModuleOvertopping,   only : initializeGeometry, deallocateGeometry, allocCoordinatePair, copyCoordinates
     use OvertoppingMessages
     use vectorUtilities,             only : interpolateLine
     use ModuleLogging
@@ -118,7 +118,7 @@ subroutine profileInStructure(coordinates, dikeHeight, coordsAdjusted, error)
         return
     endif
 
-    ! the minimal distance between two x-coordinates of the cross section is xDiff_min 
+    ! the minimal distance between two x-coordinates of the cross section is xDiff_min
     ! compute the height of the cross section on the point xDiff_min meters after the toe
 
     auxiliaryHeightToe = interpolateLine(coordinates%x(1), coordinates%x(2), coordinates%y(1), coordinates%y(2), coordinates%x(1) + xDiff_min, error)
@@ -168,7 +168,7 @@ subroutine profileInStructure(coordinates, dikeHeight, coordsAdjusted, error)
             endif
             previousWasBerm = slope < slope_min
         enddo
-        
+
         !
         ! allocate xCoordsAdjusted and zCoordsAdjusted and check result
         !
@@ -176,14 +176,11 @@ subroutine profileInStructure(coordinates, dikeHeight, coordsAdjusted, error)
         if (error%errorCode == 0) then
 
             ! all segments of the profile except the last
-            do i = 1, CoordsAdjusted%N - 1
-                CoordsAdjusted%x(i) = coordinates%x(i)
-                CoordsAdjusted%y(i) = coordinates%y(i)
-            enddo
+            call copyCoordinates(coordinates, CoordsAdjusted)
 
             ! last segment of the profile
             CoordsAdjusted%y(CoordsAdjusted%N) = dikeHeight
-            CoordsAdjusted%x(CoordsAdjusted%n) = interpolateLine(coordinates%y(CoordsAdjusted%N-1), coordinates%y(CoordsAdjusted%N), &
+            CoordsAdjusted%x(CoordsAdjusted%N) = interpolateLine(coordinates%y(CoordsAdjusted%N-1), coordinates%y(CoordsAdjusted%N), &
                 coordinates%x(CoordsAdjusted%N-1), coordinates%x(CoordsAdjusted%N), dikeHeight, error)
             if (error%errorCode /= 0) return
 
@@ -210,7 +207,7 @@ subroutine reallocAdjustedCoordinates(CoordsAdjusted, error)
         deallocate(CoordsAdjusted%x, CoordsAdjusted%y)
     end if
 
-    allocate(CoordsAdjusted%x(CoordsAdjusted%N), CoordsAdjusted%y(CoordsAdjusted%N), stat=error%errorCode)
+    call allocCoordinatePair(CoordsAdjusted, CoordsAdjusted%N, error%errorCode)
     if (error%errorCode /= 0) then
         write(error%Message, GetFMTallocateError()) 2*CoordsAdjusted%N
     end if

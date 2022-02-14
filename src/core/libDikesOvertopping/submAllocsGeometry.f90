@@ -35,7 +35,7 @@ module procedure allocateVectorsGeometry
 !
 !  local parameters
 !
-   integer  :: ierr           !< error code allocate
+   integer  :: ierr(5)        !< error code allocate
    integer  :: sizeArrays     !< total size of arrays to be allocated
 
 ! ==========================================================================================================
@@ -48,21 +48,35 @@ module procedure allocateVectorsGeometry
        end if
    end if
 
-                  allocate (geometry%Coordinates%x    (nCoordinates  ), stat=ierr)
-   if (ierr == 0) allocate (geometry%Coordinates%y    (nCoordinates  ), stat=ierr)
-   if (ierr == 0) allocate (geometry%roughnessFactors (nCoordinates-1), stat=ierr)
-   if (ierr == 0) allocate (geometry%CoordDiff%x      (nCoordinates-1), stat=ierr)
-   if (ierr == 0) allocate (geometry%CoordDiff%y      (nCoordinates-1), stat=ierr)
-   if (ierr == 0) allocate (geometry%segmentSlopes    (nCoordinates-1), stat=ierr)
-   if (ierr == 0) allocate (geometry%segmentTypes     (nCoordinates-1), stat=ierr)
+   call allocCoordinatePair (geometry%Coordinates, nCoordinates, ierr(1))
+   call allocCoordinatePair (geometry%CoordDiff, nCoordinates-1, ierr(2))
+   allocate (geometry%roughnessFactors (nCoordinates-1), stat=ierr(3))
+   allocate (geometry%segmentSlopes    (nCoordinates-1), stat=ierr(4))
+   allocate (geometry%segmentTypes     (nCoordinates-1), stat=ierr(5))
 
-   error%errorCode = ierr
-   if (ierr /= 0) then
+   error%errorCode = merge(0, 1, all(ierr==0))
+   if (error%errorCode /= 0) then
        sizeArrays  = 2 * nCoordinates + 5 * (nCoordinates-1)
        write(error%Message, GetFMTallocateError()) sizeArrays
    endif
 
 end procedure allocateVectorsGeometry
+
+module procedure copyCoordinates
+    integer :: i
+    integer :: length
+
+    length = min(size(coordIn%x), size(coordOut%x))
+    do i = 1, length
+        coordOut%x(i) = coordIn%x(i)
+        coordOut%y(i) = coordIn%y(i)
+    end do
+end procedure copyCoordinates
+
+module procedure allocCoordinatePair
+                  allocate(xy%x(n), stat=ierr)
+   if (ierr == 0) allocate(xy%y(n), stat=ierr)
+end procedure allocCoordinatePair
 
 module procedure cleanupCoordinatePair
    if (allocated(xy%x)) deallocate(xy%x)
@@ -104,16 +118,12 @@ module procedure copyGeometry
       geometryCopy%Coordinates%N = geometry%Coordinates%N
 
       ! copy (x,y)-coordinates to structure with geometry data copy
-      do i=1, geometry%Coordinates%N
-         geometryCopy%Coordinates%x(i) = geometry%Coordinates%x(i)
-         geometryCopy%Coordinates%y(i) = geometry%Coordinates%y(i)
-      enddo
+      call copyCoordinates(geometry%Coordinates, geometryCopy%Coordinates)
+      call copyCoordinates(geometry%CoordDiff, geometryCopy%CoordDiff)
 
       ! copy roughness factors and segment data to structure with geometry data copy
       do i=1, geometry%Coordinates%N-1
          geometryCopy%roughnessFactors(i) = geometry%roughnessFactors(i)
-         geometryCopy%CoordDiff%x(i)      = geometry%CoordDiff%x(i)
-         geometryCopy%CoordDiff%y(i)      = geometry%CoordDiff%y(i)
          geometryCopy%segmentSlopes(i)    = geometry%segmentSlopes(i)
          geometryCopy%segmentTypes(i)     = geometry%segmentTypes(i)
       enddo

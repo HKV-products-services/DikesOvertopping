@@ -49,7 +49,7 @@
    public :: copyGeometry, mergeSequentialBerms, adjustNonHorizontalBerms
    public :: removeBerms, removeDikeSegments, splitCrossSection, calculateHorzLengths
    public :: calculateHorzDistance, deallocateGeometry, basicGeometryValidation
-   public :: checkSegmentTypes, cleanupCoordinatePair
+   public :: checkSegmentTypes, cleanupCoordinatePair, allocCoordinatePair, copyCoordinates
 
    interface
        module subroutine checkCrossSection (psi, coordinates, roughnessFactors, error)
@@ -89,7 +89,22 @@
          module subroutine cleanupCoordinatePair(xy)
            type(tpCoordinatePair), intent(inout) :: xy
          end subroutine cleanupCoordinatePair
-    end interface
+      end interface
+
+      interface
+         module subroutine allocCoordinatePair(xy, n, ierr)
+           type(tpCoordinatePair), intent(inout) :: xy
+           integer               , intent(in   ) :: n
+           integer               , intent(  out) :: ierr
+         end subroutine allocCoordinatePair
+      end interface
+
+      interface
+         module subroutine copyCoordinates(coordIn, coordOut)
+           type(tpCoordinatePair), intent(in   ) :: coordIn
+           type(tpCoordinatePair), intent(inout) :: coordOut
+         end subroutine copyCoordinates
+      end interface
 
     interface
        module subroutine deallocateGeometry(geometry)
