@@ -99,11 +99,8 @@
    end interface
 
    interface
-      module subroutine realRootsCubicFunction (a, b, c, d, N, x, error)
-         real(kind=wp),    intent(in  )  :: a        !< coefficient a cubic function
-         real(kind=wp),    intent(in  )  :: b        !< coefficient b cubic function
-         real(kind=wp),    intent(in  )  :: c        !< coefficient c cubic function
-         real(kind=wp),    intent(in  )  :: d        !< coefficient d cubic function
+      module subroutine realRootsCubicFunction (coeff, N, x, error)
+         real(kind=wp),    intent(in  )  :: coeff(:) !< four coefficients cubic function
          integer,          intent(  out) :: N        !< number of real roots cubic function
          real(kind=wp),    intent(  out) :: x(3)     !< real roots cubic function
          type(tMessage),   intent(inout) :: error    !< error struct

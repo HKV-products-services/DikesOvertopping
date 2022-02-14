@@ -39,7 +39,7 @@ module procedure realRootsCubicFunction
 ! ==========================================================================================================
 
    ! calculate complex roots cubic function
-   call rootsGeneralCubic (a, b, c, d, z, error)
+   call rootsGeneralCubic (coeff, z, error)
 
    ! initialize (number of) real roots
    N = 0
@@ -71,28 +71,31 @@ end procedure realRootsCubicFunction
 !! calculate the roots of a generic cubic function
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine rootsGeneralCubic (a, b, c, d, z, error)
+   subroutine rootsGeneralCubic (coeff, z, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   real(kind=wp),    intent(in   ) :: a              !< coefficients a cubic function
-   real(kind=wp),    intent(in   ) :: b              !< coefficients b cubic function
-   real(kind=wp),    intent(in   ) :: c              !< coefficients c cubic function
-   real(kind=wp),    intent(in   ) :: d              !< coefficients d cubic function
+   real(kind=wp),    intent(in   ) :: coeff(:)       !< four coefficients cubic function
    double complex,   intent(  out) :: z(3)           !< roots cubic function
    type(tMessage),   intent(inout) :: error          !< error struct
 !
 !  Local parameters
 !
+   real(kind=wp)  :: a, b, c, d
    real(kind=wp)  :: p, q  !< coefficients depressed cubic function
 
 ! ==========================================================================================================
 
    ! initialize flag for succes and error message
    error%errorCode = 0
+
+   a = coeff(1)
+   b = coeff(2)
+   c = coeff(3)
+   d = coeff(4)
 
    ! check first coefficient cubic function
    if (isEqualZero (a)) error%errorCode = 1

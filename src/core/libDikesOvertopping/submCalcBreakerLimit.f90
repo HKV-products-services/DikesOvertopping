@@ -32,10 +32,7 @@ module procedure calculateBreakerLimit
 !***********************************************************************************************************
    implicit none
 !
-   real(kind=wp) :: a           !< coefficients cubic function
-   real(kind=wp) :: b           !< coefficients cubic function
-   real(kind=wp) :: c           !< coefficients cubic function
-   real(kind=wp) :: d           !< coefficients cubic function
+   real(kind=wp) :: coeff(4)    !< coefficients cubic function
    integer  :: N                !< number of real roots cubic function
    real(kind=wp) :: x(3)        !< real roots cubic function
    integer  :: i                !< counter real roots cubic function
@@ -58,13 +55,13 @@ module procedure calculateBreakerLimit
    ! fRunup1 * gammaB * x^3 - fRunup2 * x + fRunup3 = 0
    
    ! set the coefficients of the cubic function
-   a =  fRunup1 * gammaB
-   b =  0.0d0
-   c = -fRunup2
-   d =  fRunup3
+   coeff(1) =  fRunup1 * gammaB
+   coeff(2) =  0.0d0
+   coeff(3) = -fRunup2
+   coeff(4) =  fRunup3
 
    ! calculate the real roots of the cubic function
-   call realRootsCubicFunction (a, b, c, d, N, x, error)
+   call realRootsCubicFunction (coeff, N, x, error)
 
    if (error%errorCode == 0) then
 
