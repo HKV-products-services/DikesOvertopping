@@ -27,12 +27,10 @@ release/Dikes[!!-~]Overtopping[!!-~]Kernel[!!-~]-[!!-~]Technical[!!-~]Documentat
 release/LicenseAGPL.txt -text
 release/win32/dllDikesOvertopping.dll -text
 release/win32/dllDikesOvertopping.lib -text
-release/win32/winapi.dll -text
-release/win32/winapi.lib -text
+release/win32/feedbackDLL.dll -text
 release/x64/dllDikesOvertopping.dll -text
 release/x64/dllDikesOvertopping.lib -text
-release/x64/winapi.dll -text
-release/x64/winapi.lib -text
+release/x64/feedbackDLL.dll -text
 src/CreateSigExport.ps1 -text
 src/core/CMakeLists.txt -text
 src/core/external/CMakeLists.txt -text
