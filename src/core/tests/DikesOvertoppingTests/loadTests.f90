@@ -264,10 +264,10 @@ subroutine testSeriesLoad
     enddo
     close(ounit)
 
-    call deallocateGeometry(geometry)
     if (associated(geometry%parent)) then
         deallocate(geometry%parent)
     end if
+    call deallocateGeometry(geometry)
     deallocate(geometryF%xcoords, geometryF%ycoords, geometryF%roughness)
 
     !

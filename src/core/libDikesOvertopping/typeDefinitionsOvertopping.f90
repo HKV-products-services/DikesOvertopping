@@ -66,7 +66,6 @@
       type(tpGeometry), allocatable :: geometryMergedBerms
       type(tpGeometry), allocatable :: geometrySectionB
       type(tpGeometry), allocatable :: geometrySectionF
-      type(tpGeometry), allocatable :: geometryRemovedDikeSegments
       type(tpGeometry), allocatable :: geometryFlatBerms
       type(tpGeometry), allocatable :: geometryNoBerms(:)
       type(tpGeometry), allocatable :: geometryRemoveDikeSegments

@@ -122,7 +122,7 @@ module procedure calculateOvertopping
    endif
 
    if (needCleanUp) then
-       call cleanupGeometry(geometry%parent)
+       call cleanupGeometry(geometry%parent, .false.)
    end if
 
 contains
