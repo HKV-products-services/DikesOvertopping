@@ -40,6 +40,7 @@ src/core/external/versionInfo.f90 -text
 src/core/libDikesOvertopping/submAdjInfluenceFactors.f90 -text
 src/core/libDikesOvertopping/submAdjNonHorizBerms.f90 -text
 src/core/libDikesOvertopping/submAllocOvertopping.f90 -text
+src/core/libDikesOvertopping/submAllocVectorsGeom.f90 -text
 src/core/libDikesOvertopping/submAllocsGeometry.f90 -text
 src/core/libDikesOvertopping/submBasicGeometryValidation.f90 -text
 src/core/libDikesOvertopping/submCalcBreakerLimit.f90 -text
@@ -52,7 +53,10 @@ src/core/libDikesOvertopping/submCalcWaveOvertopping.f90 -text
 src/core/libDikesOvertopping/submCalcWaveProps.f90 -text
 src/core/libDikesOvertopping/submCalcWaveRunup.f90 -text
 src/core/libDikesOvertopping/submCheckCrossSection.f90 -text
+src/core/libDikesOvertopping/submCheckInputData.f90 -text
+src/core/libDikesOvertopping/submCheckModelFactors.f90 -text
 src/core/libDikesOvertopping/submCheckSegmentTypes.f90 -text
+src/core/libDikesOvertopping/submCopyGeom.f90 -text
 src/core/libDikesOvertopping/submCubicRoots.f90 -text
 src/core/libDikesOvertopping/submDetermineSegmentTypes.f90 -text
 src/core/libDikesOvertopping/submInitializeGeometry.f90 -text
@@ -62,7 +66,7 @@ src/core/libDikesOvertopping/submIterationWaveRunup.f90 -text
 src/core/libDikesOvertopping/submMergeSequentialBerms.f90 -text
 src/core/libDikesOvertopping/submOmkeerMain.f90 -text
 src/core/libDikesOvertopping/submOmkeerValidProfile.f90 -text
-src/core/libDikesOvertopping/submOvertoppingChecks.f90 -text
+src/core/libDikesOvertopping/submRemoveBerms.f90 -text
 src/core/libDikesOvertopping/submRemoveSegments.f90 -text
 src/core/libDikesOvertopping/submSplitCrossSection.f90 -text
 src/core/libDikesOvertopping/utils.f90 -text

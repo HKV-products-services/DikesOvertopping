@@ -54,7 +54,6 @@ add_library(DikesOvertoppingLib
     libDikesOvertopping/submCalcOvertoppingSection.f90
     libDikesOvertopping/submCalcWaveOvertopping.f90
     libDikesOvertopping/submInterpResultsSections.f90
-    libDikesOvertopping/submOvertoppingChecks.f90
     libDikesOvertopping/factorModuleOvertopping.f90
     libDikesOvertopping/submAdjInfluenceFactors.f90
     libDikesOvertopping/submCalcBreakerLimit.f90
@@ -66,6 +65,11 @@ add_library(DikesOvertoppingLib
     libDikesOvertopping/submIterationWaveRunup.f90
     libDikesOvertopping/submOmkeerMain.f90
     libDikesOvertopping/submOmkeerValidProfile.f90
+    libDikesOvertopping/submAllocVectorsGeom.f90
+    libDikesOvertopping/submCopyGeom.f90
+    libDikesOvertopping/submRemoveBerms.f90
+    libDikesOvertopping/submCheckInputData.f90
+    libDikesOvertopping/submCheckModelFactors.f90
 )
 
 set_target_properties(DikesOvertoppingLib
