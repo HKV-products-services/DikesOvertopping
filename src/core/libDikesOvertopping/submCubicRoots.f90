@@ -106,7 +106,6 @@ end procedure realRootsCubicFunction
       p = (3*a*c - b**2)/(3*(a**2))
       q = (2*(b**3) -9*a*b*c +27*(a**2)*d)/(27*(a**3))
 
-      ! calculate roots depressed cubic
       call rootsDepressedCubic (p, q, z)
 
       ! calculate roots general cubic
@@ -153,7 +152,6 @@ end procedure realRootsCubicFunction
    ! calculate cubic roots
    call cubicRoots (w3, w)
 
-   ! calculate roots depressed cubic:
    if (minval(abs(w)) > 0.0d0) then
       z = w - p/(3*w)
    else

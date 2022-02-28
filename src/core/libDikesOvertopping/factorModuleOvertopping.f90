@@ -89,13 +89,10 @@
       geometryNoBerms => geometry%parent%geometryNoBerms(1)
    end if
 
-   ! local water level not lower than dike toe (first y-coordinate)
-   if (load%h < geometry%Coordinates%y(1)) then
-      error%errorCode = 1
-   endif
-
-   ! local water level not higher than crest level (last y-coordinate)
-   if (load%h > geometry%Coordinates%y(geometry%Coordinates%N)) then
+   ! check local water level not lower than dike toe (first y-coordinate)
+   !   and local water level not higher than crest level (last y-coordinate)
+   if (load%h < geometry%Coordinates%y(1) .or. &
+       load%h > geometry%Coordinates%y(geometry%Coordinates%N)) then
       error%errorCode = 1
    endif
 
