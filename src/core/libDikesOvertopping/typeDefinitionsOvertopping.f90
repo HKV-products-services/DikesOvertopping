@@ -41,6 +41,7 @@
    use typeForLoad
    private :: wp
 
+   !> tpCoordinatePair: structure with a vector of x and y coordinates
    type, public :: tpCoordinatePair
       integer                     :: N                !< number of coordinates
       real(kind=wp), allocatable  :: x(:)             !< vector with x-coordinates (m)
@@ -60,6 +61,7 @@
       type(tpGeometries), pointer :: parent => null()            !< (temp) pointer to all geometries
    end type tpGeometry
 
+   !> tpGeometries: tree structure with several geometries
    type, public :: tpGeometries
       type(tpGeometry), pointer     :: base
       type(tpGeometry), allocatable :: adjWithDikeHeight
