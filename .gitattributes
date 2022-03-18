@@ -25,6 +25,13 @@ doc/doxygen/RunDoxygen.bat -text
 extern/Utils/svn_insert_version.cmd -text
 release/Dikes[!!-~]Overtopping[!!-~]Kernel[!!-~]-[!!-~]Technical[!!-~]Documentation.pdf -text
 release/LicenseAGPL.txt -text
+release/lnx64/libDikesOvertopping.so -text
+release/lnx64/libFeedbackDll.so -text
+release/lnx64/libifcoremt.so.5 -text
+release/lnx64/libifport.so.5 -text
+release/lnx64/libimf.so -text
+release/lnx64/libintlc.so.5 -text
+release/lnx64/libiomp5.so -text
 release/win32/dllDikesOvertopping.dll -text
 release/win32/dllDikesOvertopping.lib -text
 release/win32/feedbackDLL.dll -text
