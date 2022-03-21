@@ -5,7 +5,7 @@ doc/Overtopping[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]report.docx -text
 doc/Release[!!-~]notes[!!-~]Dikes[!!-~]Overtopping.docx -text
 doc/ScientDoc/TRRunupOvertopping.pdf -text svneol=unset#unset
 doc/ScientDoc/technischrapportgolfoploopengolfoverslagbijdijken.pdf -text
-doc/TestReportAppendixA.pdf -text
+doc/TestReportAppendixA.pdf -text svneol=unset#unset
 doc/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Functional[!!-~]design.docx -text
 doc/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]plan.docx -text
 doc/Wave[!!-~]overtopping[!!-~]at[!!-~]dikes[!!-~]-[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]report.docx -text
