@@ -42,6 +42,8 @@ src/CreateSigExport.ps1 -text
 src/core/CMakeLists.txt -text
 src/core/external/CMakeLists.txt -text
 src/core/external/feedbackDLL.vfproj -text
+src/core/external/intel/win32/libiomp5md.dll -text
+src/core/external/intel/x64/libiomp5md.dll -text
 src/core/external/throwexception.f90 -text
 src/core/external/versionInfo.f90 -text
 src/core/libDikesOvertopping/submAdjInfluenceFactors.f90 -text
