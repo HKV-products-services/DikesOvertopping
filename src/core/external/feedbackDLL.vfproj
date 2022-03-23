@@ -19,7 +19,7 @@
 				<Tool Name="VFLinkerTool" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.10586.0\ucrt\x86;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x86" IgnoreDefaultLibraryNames="MSCRT;UCRT" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
-				<Tool Name="VFCustomBuildTool" CommandLine="copy teamcity_build\win32\feedbackDLL.dll ..\bin\Release\feedbackDLL.dll&#xA;copy teamcity_build\win32\feedbackDLL.lib Release\feedbackDLL.lib" Outputs="..\bin\Release\feedbackDLL.dll;Release\feedbackDLL.lib"/>
+				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool" CommandLine="call HRcommon_src\svnutils\update_version.cmd .\HRcommon_src\feedback_dll\feedback_version_number.vn.rc .\ HRcommon_src\version_number.ini"/>
 				<Tool Name="VFPostBuildEventTool"/>
@@ -39,7 +39,7 @@
 				<Tool Name="VFLinkerTool" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.10586.0\ucrt\x64;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x64" IgnoreDefaultLibraryNames="MSCRT;UCRT" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
-				<Tool Name="VFCustomBuildTool" CommandLine="copy teamcity_build\x64\feedbackDLL.dll ..\bin\x64\Release\feedbackDLL.dll&#xA;copy teamcity_build\x64\feedbackDLL.lib Release\feedbackDLL.lib" Outputs="..\bin\x64\Release\feedbackDLL.dll;Release\feedbackDLL.lib"/>
+				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool" CommandLine="call HRcommon_src\svnutils\update_version.cmd .\HRcommon_src\feedback_dll\feedback_version_number.vn.rc .\ HRcommon_src\version_number.ini"/>
 				<Tool Name="VFPostBuildEventTool"/>
@@ -62,10 +62,10 @@
 		<File RelativePath=".\HRcommon_src\feedback_dll\feedbackDLL_implementation.f90">
 			<FileConfiguration Name="Debug|Win32">
 				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes" PreprocessorDefinitions="maxParallelThreads=8"/></FileConfiguration>
-			<FileConfiguration Name="Release|x64" ExcludedFromBuild="true">
+			<FileConfiguration Name="Release|x64">
 				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes" PreprocessorDefinitions="maxParallelThreads=8"/></FileConfiguration>
 			<FileConfiguration Name="Debug|x64">
 				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes" PreprocessorDefinitions="maxParallelThreads=8"/></FileConfiguration>
-			<FileConfiguration Name="Release|Win32" ExcludedFromBuild="true">
+			<FileConfiguration Name="Release|Win32">
 				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes" PreprocessorDefinitions="maxParallelThreads=8"/></FileConfiguration></File></Filter></Files>
 	<Globals/></VisualStudioProject>
