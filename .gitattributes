@@ -35,9 +35,11 @@ release/lnx64/libiomp5.so -text
 release/win32/dllDikesOvertopping.dll -text
 release/win32/dllDikesOvertopping.lib -text
 release/win32/feedbackDLL.dll -text
+release/win32/libiomp5md.dll -text
 release/x64/dllDikesOvertopping.dll -text
 release/x64/dllDikesOvertopping.lib -text
 release/x64/feedbackDLL.dll -text
+release/x64/libiomp5md.dll -text
 src/CreateSigExport.ps1 -text
 src/core/CMakeLists.txt -text
 src/core/external/CMakeLists.txt -text
