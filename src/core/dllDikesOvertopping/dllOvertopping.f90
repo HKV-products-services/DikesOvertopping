@@ -96,6 +96,8 @@ subroutine calculateQo(load, geometryInput, dikeHeight, modelFactors, overtoppin
 
     call calculateQoF(load, geometry, dikeHeight, modelFactors, overtopping, success, errorText, logging)
 
+    errorText = trim(errorText) // c_null_char
+
 end subroutine calculateQo
 
 !>
@@ -242,6 +244,8 @@ subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, erro
             endif
         enddo
     endif
+
+    errorText = trim(errorText) // c_null_char
 
 end subroutine ValidateInputC
 
@@ -471,6 +475,8 @@ subroutine omkeerVariantC(load, discharge, geometryInput, modelFactors, dikeHeig
     if (.not. success) then
         errorText = error%message
     end if
+
+    errorText = trim(errorText) // c_null_char
 
 end subroutine omkeerVariantC
 
