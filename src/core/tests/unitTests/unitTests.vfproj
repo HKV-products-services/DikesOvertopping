@@ -13,7 +13,7 @@
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
 				<Tool Name="VFPostBuildEventTool"/>
-				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true" EmbedManifest="false"/></Configuration>
 		<Configuration Name="Release|Win32" OutputDirectory="..\..\bin\$(ConfigurationName)" IntermediateDirectory="..\..\bin\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" OmitFramePointers="false" Traceback="true"/>
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" AdditionalLibraryDirectories="$(OSS_UCRTLIBDIR)" SuppressStartupBanner="true" SubSystem="subSystemConsole"/>
@@ -23,7 +23,7 @@
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
 				<Tool Name="VFPostBuildEventTool"/>
-				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true" EmbedManifest="false"/></Configuration>
 		<Configuration Name="Debug|x64" OutputDirectory="..\..\bin\$(PlatformName)\$(ConfigurationName)" IntermediateDirectory="..\..\bin\$(PlatformName)\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Diagnostics="diagnosticsShowAll" WarnInterfaces="true" Traceback="true" BoundsCheck="true" RuntimeLibrary="rtMultiThreadedDebug" Interfaces="true"/>
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OSS_UCRTLIBDIR)" GenerateDebugInformation="true" SubSystem="subSystemConsole"/>
@@ -33,7 +33,7 @@
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
 				<Tool Name="VFPostBuildEventTool"/>
-				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true" EmbedManifest="false"/></Configuration>
 		<Configuration Name="Release|x64" OutputDirectory="..\..\bin\$(PlatformName)\$(ConfigurationName)" IntermediateDirectory="..\..\bin\$(PlatformName)\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" OmitFramePointers="false" Traceback="true"/>
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OSS_UCRTLIBDIR)" SubSystem="subSystemConsole"/>
@@ -43,7 +43,7 @@
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
 				<Tool Name="VFPostBuildEventTool"/>
-				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true" EmbedManifest="false"/></Configuration></Configurations>
 	<Files>
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
