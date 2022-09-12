@@ -186,24 +186,7 @@ namespace TestWrapper
 
         private static string ConvertString(StringBuilder message)
         {
-            for (int i = ErrorMessageLength-1; i > 0; i--)
-            {
-                if (message[i] == ' ') continue;
-
-                var smallCopiedString = new StringBuilder {Length = i + 1};
-                for (int j = 0; j <= i; j++)
-                {
-                    smallCopiedString[j] = message[j];
-                }
-                var str = smallCopiedString.ToString();
-                return str;
-            }
-
-            if (message.Length > ErrorMessageLength)
-            {
-                message[ErrorMessageLength] = '\0';
-            }
-            return message.ToString();  // something went wrong; fall back option
+            return message.ToString();
         }
 
         [DllImport("dllDikesOvertopping.dll", CallingConvention = CallingConvention.Cdecl)]

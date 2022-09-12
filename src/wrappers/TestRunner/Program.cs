@@ -28,6 +28,10 @@ namespace TestRunner
         static void Main(string[] args)
         {
             OvertoppingCalculationTest.TestOvertoppingValidation();
+            OvertoppingCalculationTest.TestOmkeerVariant();
+            OvertoppingCalculationTest.TestOvertoppingValidationGeometry();
+            OvertoppingCalculationTest.TestOvertoppingValidationMultiple();
+            OvertoppingCalculationTest.TestOvertopping();
         }
     }
 }
