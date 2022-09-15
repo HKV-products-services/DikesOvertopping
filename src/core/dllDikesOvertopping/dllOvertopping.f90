@@ -88,15 +88,18 @@ subroutine calculateQo(load, geometryInput, dikeHeight, modelFactors, overtoppin
 
     type(OvertoppingGeometryTypeF)            :: geometry       !< fortran struct with geometry and roughness
     type(tLogging)                            :: logging        !< logging struct
+    character(len=256)                        :: localErrorText !< fortran string for error message
 
     geometry = geometry_c_f(geometryInput)
 
     logging%verbosity = verbosity
     logging%filename = logFile
 
-    call calculateQoF(load, geometry, dikeHeight, modelFactors, overtopping, success, errorText, logging)
+    localErrorText = ' '
 
-    errorText = trim(errorText) // c_null_char
+    call calculateQoF(load, geometry, dikeHeight, modelFactors, overtopping, success, localErrorText, logging)
+
+    errorText = trim(localErrorText) // c_null_char
 
 end subroutine calculateQo
 
@@ -218,6 +221,7 @@ subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, erro
     integer                                   :: i
     integer                                   :: nMessages
     character(len=8)                          :: msgtype
+    character(len=32*256)                     :: localErrorText
 
     geometry = geometry_c_f(geometryInput)
 
@@ -228,7 +232,7 @@ subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, erro
     nMessages = errorStruct%nErrors + errorStruct%nWarnings
     success = nMessages == 0
     if (success) then
-        errorText = ' '
+        localErrorText = ' '
     else
         do i = 1, nMessages
             if (errorStruct%messages(i)%severity == severityError) then
@@ -238,14 +242,14 @@ subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, erro
             endif
 
             if (i == 1) then
-                errorText = trim(msgtype) // ':' // errorStruct%messages(i)%message
+                localErrorText = trim(msgtype) // ':' // errorStruct%messages(i)%message
             else
-                errorText = trim(errorText) // separationChar // trim(msgtype) // ':' // errorStruct%messages(i)%message
+                localErrorText = trim(localErrorText) // separationChar // trim(msgtype) // ':' // errorStruct%messages(i)%message
             endif
         enddo
     endif
 
-    errorText = trim(errorText) // c_null_char
+    errorText = trim(localErrorText) // c_null_char
 
 end subroutine ValidateInputC
 
