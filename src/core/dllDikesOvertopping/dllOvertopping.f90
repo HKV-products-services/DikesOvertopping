@@ -71,8 +71,9 @@ contains
 !! Wrapper for calculateQoF: convert C-like input structures to Fortran input structures
 !!
 !! @ingroup dllDikesOvertopping
-subroutine calculateQo(load, geometryInput, dikeHeight, modelFactors, overtopping, success, errorText, verbosity, logFile)
-!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"calculateQo" :: calculateQo
+subroutine calculateQo(load, geometryInput, dikeHeight, modelFactors, overtopping, success, &
+                       errorText, verbosity, logFile, strlen1, strlen2) bind(c, name="calculateQo")
+!DEC$ ATTRIBUTES DLLEXPORT :: calculateQo
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
     use ModuleLogging
@@ -81,25 +82,36 @@ subroutine calculateQo(load, geometryInput, dikeHeight, modelFactors, overtoppin
     real(kind=wp), intent(in)                 :: dikeHeight     !< dike height
     type(tpOvertoppingInput), intent(inout)   :: modelFactors   !< struct with modelfactors
     type (tpOvertopping), intent(out)         :: overtopping    !< structure with overtopping results
-    logical, intent(out)                      :: success        !< flag for success
-    character(len=*), intent(out)             :: errorText      !< error message (only set if not successful)
+    logical(kind=1), intent(out)              :: success        !< flag for success
+    integer, value                            :: strlen1, strlen2 !< string lengths
+    character(len=1, kind=c_char), intent(out), dimension(strlen1) :: errorText      !< error message (only set if not successful)
     integer, intent(in)                       :: verbosity      !< level of verbosity
-    character(len=*), intent(in)              :: logFile        !< filename of logfile
+    character(len=1, kind=c_char), intent(in), dimension(strlen2) :: logFile        !< filename of logfile
 
     type(OvertoppingGeometryTypeF)            :: geometry       !< fortran struct with geometry and roughness
     type(tLogging)                            :: logging        !< logging struct
     character(len=256)                        :: localErrorText !< fortran string for error message
+    logical                                   :: Fsuccess
+    integer                                   :: i, sizeString
 
     geometry = geometry_c_f(geometryInput)
 
     logging%verbosity = verbosity
-    logging%filename = logFile
+    do i = 1, strlen2
+        logging%filename(i:i) = logFile(i)
+    end do
 
     localErrorText = ' '
 
-    call calculateQoF(load, geometry, dikeHeight, modelFactors, overtopping, success, localErrorText, logging)
+    call calculateQoF(load, geometry, dikeHeight, modelFactors, overtopping, Fsuccess, localErrorText, logging)
 
-    errorText = trim(localErrorText) // c_null_char
+    sizeString = len_trim(localErrorText) + 1
+    do i = 1, sizeString-1
+        errorText(i) = localErrorText(i:i)
+    end do
+    errorText(sizeString) = c_null_char
+
+    success = Fsuccess
 
 end subroutine calculateQo
 
@@ -204,8 +216,8 @@ end subroutine calcZValue
 !! Wrapper for ValidateInputF: convert C-like input structures to Fortran input structures
 !!
 !! @ingroup dllDikesOvertopping
-subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, errorText)
-!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputC" :: ValidateInputC
+subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, errorText, strlen) bind(c, name="ValidateInputC")
+!DEC$ ATTRIBUTES DLLEXPORT :: ValidateInputC
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
     use errorMessages
@@ -213,15 +225,17 @@ subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, erro
     type(OvertoppingGeometryType), intent(in) :: geometryInput                 !< struct with geometry and roughness as c-pointers
     real(kind=wp), intent(in)                 :: dikeHeight                    !< dike height
     type(tpOvertoppingInput), intent(inout)   :: modelFactors                  !< struct with modelfactors
-    logical, intent(out)                      :: success                       !< flag for success
-    character(len=*), intent(out)             :: errorText                     !< error message (only set if not successful)
+    logical(kind=1), intent(out)              :: success                       !< flag for success
+    integer, value                            :: strlen
+    character(len=1,kind=c_char), dimension(strlen) :: errorText                     !< error message (only set if not successful)
 
     type(OvertoppingGeometryTypeF)            :: geometry                      !< fortran struct with geometry and roughness
     type(TErrorMessages)                      :: errorStruct
     integer                                   :: i
     integer                                   :: nMessages
     character(len=8)                          :: msgtype
-    character(len=32*256)                     :: localErrorText
+    character(len=32*255)                     :: localErrorText
+    integer                                   :: sizeString
 
     geometry = geometry_c_f(geometryInput)
 
@@ -249,7 +263,11 @@ subroutine ValidateInputC(geometryInput, dikeHeight, modelFactors, success, erro
         enddo
     endif
 
-    errorText = trim(localErrorText) // c_null_char
+    sizeString = len_trim(localErrorText) + 1
+    do i = 1, sizeString-1
+        errorText(i) = localErrorText(i:i)
+    end do
+    errorText(sizeString) = c_null_char
 
 end subroutine ValidateInputC
 
