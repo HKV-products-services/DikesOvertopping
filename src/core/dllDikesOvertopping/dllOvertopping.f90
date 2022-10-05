@@ -534,12 +534,19 @@ end subroutine omkeerVariantF
 !! Subroutine that sets the language for error and validation messages
 !!
 !! @ingroup dllDikesOvertopping
-subroutine SetLanguage(lang)
-!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"SetLanguage" :: SetLanguage
+subroutine SetLanguage(lang) bind(c, name="SetLanguage")
+!DEC$ ATTRIBUTES DLLEXPORT :: SetLanguage
 use OvertoppingMessages, only : SetLanguageCore => SetLanguage
-character(len=*), intent(in) :: lang
+character(len=1), intent(in) :: lang(*)
 
-call SetLanguageCore(lang)
+character(len=2) :: langF
+integer           :: i
+
+langF = ' '
+do i = 1, 2
+    langF(i:i) = lang(i)
+end do
+call SetLanguageCore(langF)
 
 end subroutine SetLanguage
 
