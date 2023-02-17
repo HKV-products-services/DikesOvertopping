@@ -93,8 +93,6 @@ src/wrappers/TestRunner/App.config -text
 src/wrappers/TestRunner/Properties/AssemblyInfo.cs -text
 src/wrappers/TestRunner/TestRunner.csproj -text
 src/wrappers/TestWrapper.csproj -text
-src/wrappers/lib/Deltares.Standard.dll -text
-src/wrappers/lib/Deltares.Standard.pdb -text
 src/wrappers/lib/nunit.framework.dll -text
 test/PlotResults.m/Analyse_overtoppingmodule_results_all.m -text
 test/PlotResults.m/Compare_overtoppingmodule_results_all.m -text
