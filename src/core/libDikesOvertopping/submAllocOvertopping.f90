@@ -30,7 +30,6 @@ module procedure initGeometries
       coordinates%x = geometryF%xcoords
       coordinates%y = geometryF%ycoords
       call initializeGeometry(geometryF%normal, coordinates, geometryF%roughness, geometry, error)
-      call setupGeometries(geometry%parent)
 end procedure initGeometries
 
 module procedure setupGeometries

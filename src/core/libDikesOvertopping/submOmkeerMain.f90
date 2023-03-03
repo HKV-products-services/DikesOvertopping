@@ -22,6 +22,7 @@
 
 submodule (omkeerVariantModule) submOmkeerMain
    use geometryModuleOvertopping
+   use mainModuleOvertopping
 contains
 
 !>
@@ -30,7 +31,7 @@ contains
 !! @ingroup dllDikesOvertopping
 module procedure iterateToGivenDischarge
     type (tpCoordinatePair)                    :: coordinates    !< vector with x/y-coordinates
-    type (tpGeometry)                          :: geometry       ! structure with geometry data
+    type (tpGeometry), target                  :: geometry       ! structure with geometry data
 !
     !
     ! basic test : water level must be > toe, otherwise return water level
@@ -46,6 +47,10 @@ module procedure iterateToGivenDischarge
         coordinates%y = geometryF%ycoords
         call initializeGeometry (geometryF%normal, coordinates, geometryF%roughness, geometry, error)
 
+        allocate(geometry%parent)
+        geometry%parent%base => geometry
+        call setupGeometries(geometry%parent)
+      
         if (error%errorCode == 0) then
             call OmkeerValidProfile(load, geometry, givenDischarge, dikeHeight, modelFactors, overtopping, error )
         else

@@ -85,11 +85,6 @@ module procedure initializeGeometry
    if (error%errorCode == 0) then
       geometry%NbermSegments = count(geometry%segmentTypes == 2)
    endif
-
-   if ( .not. associated(geometry%parent)) then
-       allocate(geometry%parent)
-       geometry%parent%base => geometry
-   end if
 end procedure initializeGeometry
 
 end submodule submInitializeGeometry

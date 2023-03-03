@@ -110,7 +110,6 @@ subroutine getDischargeEndSlope()
     integer, parameter  :: maxItA = 20           ! maximum number of iterations in first loop
     real(kind=wp)       :: nextDikeHeight        ! dike height for next calculation
 
-    call setupGeometries(geometry%parent)
     do i = 1, nPoints
         nextDikeHeight = geometry%Coordinates%y(i)
         omkeerProps%isValidZ(i) = nextDikeHeight >= load%H

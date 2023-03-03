@@ -34,6 +34,7 @@ module readCrossSectionForTests
 
     use precision
     use geometryModuleOvertopping
+    use mainModuleOvertopping
     use typeDefinitionsOvertopping
     use errorMessages
     use ftnunit
@@ -53,9 +54,9 @@ subroutine readCrossSection(crossSectionFile, geometry, error)
 !
 !   input/output parameters
 !
-    character(len=*),  intent(in   ) :: crossSectionFile  !< file with cross section coordinates
-    type (tpGeometry), intent(  out) :: geometry          !< structure with geometry data
-    type (tMessage),   intent(inout) :: error             !< error struct
+    character(len=*),  intent(in   )            :: crossSectionFile  !< file with cross section coordinates
+    type (tpGeometry), intent(  out), target    :: geometry          !< structure with geometry data
+    type (tMessage),   intent(inout)            :: error             !< error struct
 !
 !   local parameters
 !
@@ -101,6 +102,8 @@ subroutine readCrossSection(crossSectionFile, geometry, error)
     !
     ! Initialize geometry structure
     call initializeGeometry (psi, coordinates, roughnessFactors(1:coordinates%N-1), geometry, error)
+    allocate(geometry%parent)
+    geometry%parent%base => geometry
 
     call cleanupCoordinatePair(coordinates)
     deallocate (roughnessFactors)

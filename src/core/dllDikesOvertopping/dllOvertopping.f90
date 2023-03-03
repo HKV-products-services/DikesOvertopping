@@ -49,7 +49,7 @@ module dllOvertopping
     use typeDefinitionsOvertopping, only : tpGeometry, tpLoad, tpOvertoppingInput
     use overtoppingInterface,       only : OvertoppingGeometryType, OvertoppingGeometryTypeF
     use versionInfo,                only : tpVersionStruct, getFileVersion
-    use mainModuleOvertopping,      only : initGeometries, cleanupGeometry
+    use mainModuleOvertopping,      only : initGeometries, setupGeometries, cleanupGeometry
     use errorMessages, only : tMessage
     use, intrinsic :: iso_c_binding
 
@@ -176,10 +176,14 @@ subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, 
     character(len=*), intent(inout)            :: errorText      !< error message (only set if not successful)
     type(tLogging), intent(in)                 :: logging        !< logging struct
 !
-    type (tpGeometry)                            :: geometry       !< structure with geometry data
-    type (tMessage)                              :: error
+    type (tpGeometry), target                  :: geometry       !< structure with geometry data
+    type (tMessage)                            :: error
 
     call initGeometries(geometryF, geometry, error)
+    allocate(geometry%parent)
+    geometry%parent%base => geometry
+    call setupGeometries(geometry%parent)
+
     if (error%errorCode == 0) then
         call calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometry%parent, error)
     end if
