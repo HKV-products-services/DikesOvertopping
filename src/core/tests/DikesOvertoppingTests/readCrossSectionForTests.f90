@@ -104,7 +104,7 @@ subroutine readCrossSection(crossSectionFile, geometry, error)
     call initializeGeometry (psi, coordinates, roughnessFactors(1:coordinates%N-1), geometry, error)
     allocate(geometry%parent)
     geometry%parent%base => geometry
-
+    
     call cleanupCoordinatePair(coordinates)
     deallocate (roughnessFactors)
 

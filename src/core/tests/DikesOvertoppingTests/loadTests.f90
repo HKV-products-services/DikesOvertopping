@@ -145,7 +145,7 @@ subroutine testSeriesLoad
     !
     !   read the cross section
     call readCrossSection(crossSectionFile, geometry, error)
-
+    
     npoints = geometry%Coordinates%N
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1))
     do ii = 1, npoints
@@ -235,7 +235,10 @@ subroutine testSeriesLoad
         call assert_equal(error%errorCode, 0, error%Message)
         !
         ! Compute the wave runup and the wave overtopping discharge with the Overtopping module
+        call setupGeometries(geometry%parent)
         call calculateOvertopping (geometry, load, modelFactors, overtopping, error)
+        call cleanupGeometry(geometry%parent, .false.)
+        
         if (error%errorCode /= 0) then
             write(ounit, '(2a)') 'Failure: ', trim(error%Message)
         else

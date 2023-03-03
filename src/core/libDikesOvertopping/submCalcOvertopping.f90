@@ -49,19 +49,12 @@ module procedure calculateOvertopping
    type (tpGeometry), pointer :: geometrySectionB     !< geometry data with wide berms to ordinary berms
    type (tpGeometry), pointer :: geometrySectionF     !< geometry data with wide berms to foreshores
    type (tpGeometry), pointer :: geometryMergedBerms  !< structure with merged sequential berms
-   logical                    :: needCleanUp
 
 ! ==========================================================================================================
 
    ! check load parameters and model factors
    call checkInputdata (geometry, load, modelFactors, error)
 
-   if ( .not. allocated (geometry%parent%geometryMergedBerms)) then
-       call setupGeometries(geometry%parent)
-       needCleanUp = .true.
-   else
-       needCleanUp = .false.
-   end if
    geometryMergedBerms => geometry%parent%geometryMergedBerms
    geometrySectionB    => geometry%parent%geometrySectionB
    geometrySectionF    => geometry%parent%geometrySectionF
@@ -120,11 +113,7 @@ module procedure calculateOvertopping
       endif
 
    endif
-
-   if (needCleanUp) then
-       call cleanupGeometry(geometry%parent, .false.)
-   end if
-
+   
 contains
 
    subroutine startCalcCrossSections()
