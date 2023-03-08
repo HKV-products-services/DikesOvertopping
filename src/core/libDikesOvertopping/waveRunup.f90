@@ -46,25 +46,28 @@ module waveRunup
    public :: iterationWaveRunup
 
    interface
-      module subroutine iterationWaveRunup (geometry, load, gamma_z, modelFactors, z2, error)
-         type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-         type (tpLoadX),            intent(inout)  :: load           !< load struct
-         type(tpInfluencefactors),  intent(inout)  :: gamma_z        !< influence factor angle wave attack 2% run-up
-         type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
-         real(kind=wp),             intent(out)    :: z2             !< 2% wave run-up (m)
-         type(tMessage),            intent(inout)  :: error          !< error struct
+      module subroutine iterationWaveRunup (geometry, geometryFlatBerms, geometryNoBerms, load, gamma_z, modelFactors, z2, error)
+         type (tpGeometry),         intent(in)     :: geometry          !< structure with geometry data
+         type (tpGeometry),         intent(inout)  :: geometryFlatBerms !< structure with geometry data with horizontal berms
+         type (tpGeometry),         intent(inout)  :: geometryNoBerms   !< structure with geometry data with no berms
+         type (tpLoadX),            intent(inout)  :: load              !< load struct
+         type(tpInfluencefactors),  intent(inout)  :: gamma_z           !< influence factor angle wave attack 2% run-up
+         type (tpOvertoppingInput), intent(in)     :: modelFactors      !< structure with model factors
+         real(kind=wp),             intent(out)    :: z2                !< 2% wave run-up (m)
+         type(tMessage),            intent(inout)  :: error             !< error struct
       end subroutine iterationWaveRunup
    end interface
 
    interface
       module function innerCalculation(geometry, load, gamma_z, modelFactors, z2, &
-                             geometryFlatBerms, error) result(z2_end)
+                             geometryFlatBerms, geometryNoBerms, error) result(z2_end)
          type (tpGeometry),         intent(in)     :: geometry           !< structure with geometry data
          type (tpLoadX),            intent(in)     :: load               !< load struct
          type(tpInfluencefactors),  intent(inout)  :: gamma_z            !< influence factor angle wave attack 2% run-up
          type (tpOvertoppingInput), intent(in)     :: modelFactors       !< structure with model factors
          real(kind=wp),             intent(in)     :: z2                 !< 2% wave run-up (m)
          type (tpGeometry),         intent(in)     :: geometryFlatBerms  !< structure with geometry data with horizontal berms
+         type (tpGeometry),         intent(inout)  :: geometryNoBerms  !< structure with geometry data with no berms
          type (tMessage),           intent(inout)  :: error              !< error struct
          real(kind=wp)                             :: z2_end             !< 2% wave run-up at end of inner calculation (m)
       end function innerCalculation

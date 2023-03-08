@@ -34,7 +34,6 @@ module procedure iterationWaveRunup
 !***********************************************************************************************************
    implicit none
 !
-   type (tpGeometry), pointer :: geometryFlatBerms        !< structure with geometry data with horizontal berms
    integer                    :: i                        !< counter iteration steps
    real(kind=wp)              :: z2_start  (z2_iter_max2) !< starting value 2% wave run-up for each iteration step
    real(kind=wp)              :: z2_end    (z2_iter_max2) !< ending value 2% wave run-up   for each iteration step
@@ -50,7 +49,6 @@ module procedure iterationWaveRunup
    call calculateWaveSteepness (load, error)
 
    ! if applicable adjust non-horizontal berms
-   geometryFlatBerms => geometry%parent%geometryFlatBerms
    if (error%errorCode == 0) then
       call adjustNonHorizontalBerms (geometry, geometryFlatBerms, error)
    endif
@@ -72,7 +70,7 @@ module procedure iterationWaveRunup
 
          z2_start(i) = determineStartingValue(i, modelFactors%relaxationFactor, z2_start, z2_end, load%Hm0)
 
-         z2_end(i) = innerCalculation(geometry, load, gamma_z, modelFactors, z2_start(i), geometryFlatBerms, error)
+         z2_end(i) = innerCalculation(geometry, load, gamma_z, modelFactors, z2_start(i), geometryFlatBerms, geometryNoBerms, error)
 
          ! calculate convergence criterium
          convergence = (abs(z2_start(i) - z2_end(i)) < z2_margin)
@@ -102,7 +100,7 @@ module procedure iterationWaveRunup
 
          z2_start(i) = z2k + 2.0_wp * z2_margin * (real(i,wp)-offset)
 
-         z2_end(i) = innerCalculation(geometry, load, gamma_z, modelFactors, z2_start(i), geometryFlatBerms, error)
+         z2_end(i) = innerCalculation(geometry, load, gamma_z, modelFactors, z2_start(i), geometryFlatBerms, geometryNoBerms, error)
 
          ! calculate convergence criterium
          convergence = (abs(z2_start(i) - z2_end(i)) < z2_margin)

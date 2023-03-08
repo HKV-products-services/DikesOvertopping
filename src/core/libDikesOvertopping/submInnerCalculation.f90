@@ -49,7 +49,7 @@ module procedure innerCalculation
 
    ! calculate representative slope angle
    if (z2 > 0.0d0) then
-      call calculateTanAlpha (load, z2, geometryFlatBerms, tanAlpha, error)
+      call calculateTanAlpha (load, z2, geometryFlatBerms, geometryNoBerms, tanAlpha, error)
    else
       error%errorCode = 0  ! avoid multiple tests on z2 > 0 which should always be true
       return

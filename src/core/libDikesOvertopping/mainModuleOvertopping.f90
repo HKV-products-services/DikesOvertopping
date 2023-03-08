@@ -60,26 +60,31 @@
    end interface
 
    interface
-      module subroutine calculateOvertoppingSection (geometry, load, gamma_z, gamma_o, modelFactors, overtopping, error)
-         type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-         type (tpLoadX),            intent(inout)  :: load           !< load struct
-         type(tpInfluencefactors),  intent(inout)  :: gamma_z        !< influence angle wave attack wave run-up
-         type(tpInfluencefactors),  intent(inout)  :: gamma_o        !< influence angle wave attack overtopping
-         type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
-         type (tpOvertopping),      intent(out)    :: overtopping    !< structure with overtopping results
-         type(tMessage),            intent(inout)  :: error          !< error struct
+      module subroutine calculateOvertoppingSection (geometry, geometryRemoveDikeSegments, geometryFlatBerms, geometryNoBerms, load, gamma_z, gamma_o, modelFactors, overtopping, error)
+         type (tpGeometry),         intent(in)     :: geometry                   !< structure with geometry data
+         type (tpGeometry),         intent(inout)  :: geometryRemoveDikeSegments !< structure with geometry data with removed dike segements
+         type (tpGeometry),         intent(inout)  :: geometryFlatBerms          !< structure with geometry data with flat berms
+         type (tpGeometry),         intent(inout)  :: geometryNoBerms            !< structure with geometry data with no berms
+         type (tpLoadX),            intent(inout)  :: load                       !< load struct
+         type(tpInfluencefactors),  intent(inout)  :: gamma_z                    !< influence angle wave attack wave run-up
+         type(tpInfluencefactors),  intent(inout)  :: gamma_o                    !< influence angle wave attack overtopping
+         type (tpOvertoppingInput), intent(in)     :: modelFactors               !< structure with model factors
+         type (tpOvertopping),      intent(out)    :: overtopping                !< structure with overtopping results
+         type(tMessage),            intent(inout)  :: error                      !< error struct
       end subroutine calculateOvertoppingSection
    end interface
 
    interface
-      module subroutine calculateWaveOvertopping (geometry, load, z2, gamma, modelFactors, Qo, error)
-         type (tpGeometry),         intent(in)     :: geometry       !< structure with geometry data
-         type (tpLoadX),            intent(inout)  :: load           !< load struct
-         real(kind=wp),             intent(in)     :: z2             !< 2% wave run-up (m)
-         type(tpInfluencefactors),  intent(inout)  :: gamma          !< influence factors
-         type (tpOvertoppingInput), intent(in)     :: modelFactors   !< structure with model factors
-         real(kind=wp),             intent(out)    :: Qo             !< wave overtopping discharge (m3/m per s)
-         type(tMessage),            intent(inout)  :: error          !< error struct
+      module subroutine calculateWaveOvertopping (geometry, geometryFlatBerms, geometryNoBerms, load, z2, gamma, modelFactors, Qo, error)
+         type (tpGeometry),         intent(in)     :: geometry          !< structure with geometry data
+         type (tpGeometry),         intent(inout)  :: geometryFlatBerms !< structure with geometry data with flat berms
+         type (tpGeometry),         intent(inout)  :: geometryNoBerms   !< structure with geometry data with no berms
+         type (tpLoadX),            intent(inout)  :: load              !< load struct
+         real(kind=wp),             intent(in)     :: z2                !< 2% wave run-up (m)
+         type(tpInfluencefactors),  intent(inout)  :: gamma             !< influence factors
+         type (tpOvertoppingInput), intent(in)     :: modelFactors      !< structure with model factors
+         real(kind=wp),             intent(out)    :: Qo                !< wave overtopping discharge (m3/m per s)
+         type(tMessage),            intent(inout)  :: error             !< error struct
       end subroutine calculateWaveOvertopping
    end interface
 

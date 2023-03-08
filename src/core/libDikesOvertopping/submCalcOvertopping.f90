@@ -46,9 +46,13 @@ module procedure calculateOvertopping
    type (tpOvertopping)     :: overtoppingF         !< structure with overtopping results for foreshores
    real(kind=wp), parameter :: tinyWaves = 1d-7     !< waves smaller than tinyWaves can be neglected
 
-   type (tpGeometry), pointer :: geometrySectionB     !< geometry data with wide berms to ordinary berms
-   type (tpGeometry), pointer :: geometrySectionF     !< geometry data with wide berms to foreshores
-   type (tpGeometry), pointer :: geometryMergedBerms  !< structure with merged sequential berms
+   type (tpGeometry), pointer :: geometrySectionB            !< geometry data with wide berms to ordinary berms
+   type (tpGeometry), pointer :: geometrySectionF            !< geometry data with wide berms to foreshores
+   type (tpGeometry), pointer :: geometryNoBermsB            !< geometry data with wide berms to ordinary berms with no berms
+   type (tpGeometry), pointer :: geometryNoBermsF            !< geometry data with wide berms to foreshores with no berms
+   type (tpGeometry), pointer :: geometryMergedBerms         !< structure with merged sequential berms
+   type (tpGeometry), pointer :: geometryRemoveDikeSegments  !< geometry data with removed dike segments
+   type (tpGeometry), pointer :: geometryFlatBerms           !< geometry data with flat berms
 
 ! ==========================================================================================================
 
@@ -56,6 +60,10 @@ module procedure calculateOvertopping
    call checkInputdata (geometry, load, modelFactors, error)
 
    geometryMergedBerms => geometry%parent%geometryMergedBerms
+   geometryRemoveDikeSegments => geometry%parent%geometryRemoveDikeSegments
+   geometryFlatBerms => geometry%parent%geometryFlatBerms
+   geometryNoBermsB    => geometry%parent%geometryNoBerms(2)
+   geometryNoBermsF    => geometry%parent%geometryNoBerms(1)
    geometrySectionB    => geometry%parent%geometrySectionB
    geometrySectionF    => geometry%parent%geometrySectionF
 
@@ -121,17 +129,17 @@ contains
       if (NwideBerms == 0) then
 
          ! no wide berms (geometrySectionB = geometrySectionF)
-         call calculateOvertoppingSection (geometrySectionB, loadAdj,  &
+         call calculateOvertoppingSection (geometrySectionB, geometryRemoveDikeSegments, geometryFlatBerms, geometryNoBermsB, loadAdj,  &
                                            gamma_z, gamma_o, modelFactors, overtopping, error)
       else
 
          ! geometrySectionB equals geometry with all wide berms reduced to B=L0/4
-         call calculateOvertoppingSection (geometrySectionB, loadAdj,   &
+         call calculateOvertoppingSection (geometrySectionB, geometryRemoveDikeSegments, geometryFlatBerms, geometryNoBermsB, loadAdj,   &
                                            gamma_z, gamma_o, modelFactors, overtoppingB, error)
 
          ! geometrySectionF equals geometry with all wide berms extended B=L0
          if (error%errorCode == 0) then
-            call calculateOvertoppingSection (geometrySectionF, loadAdj,  &
+            call calculateOvertoppingSection (geometrySectionF, geometryRemoveDikeSegments, geometryFlatBerms, geometryNoBermsF, loadAdj,  &
                                               gamma_z, gamma_o, modelFactors, overtoppingF, error)
          endif
          

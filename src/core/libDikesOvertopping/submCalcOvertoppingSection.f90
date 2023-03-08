@@ -38,7 +38,6 @@ module procedure calculateOvertoppingSection
    integer                    :: index             !< index coordinates at the end of the foreshore
    real(kind=wp)              :: z2max             !< maximum 2% wave run-up due to foreshore (m)
    type (tpLoadX)             :: load_red          !< load with reduced Hm0
-   type (tpGeometry), pointer :: geometryAdjusted  !< geometry with removed dike segments
 
 ! ==========================================================================================================
 
@@ -46,8 +45,6 @@ module procedure calculateOvertoppingSection
    error%errorCode = 0
    overtopping%z2 = 0.0_wp
    overtopping%Qo = 0.0_wp
-
-   geometryAdjusted => geometry%parent%geometryRemoveDikeSegments
 
    foreshoreCase = getForeshoreCase ()
 
@@ -59,12 +56,12 @@ module procedure calculateOvertoppingSection
       ! ----------------------
 
          ! calculate 2% wave run-up
-         call iterationWaveRunup (geometry, load, gamma_z, modelFactors, overtopping%z2, error)
+         call iterationWaveRunup (geometry, geometryFlatBerms, geometryNoBerms, load, gamma_z, modelFactors, overtopping%z2, error)
 
          ! calculate wave overtopping discharge
          if (error%errorCode == 0) then
             if (overtopping%z2 > 0.0d0) then
-               call calculateWaveOvertopping (geometry, load, overtopping%z2, gamma_o, &
+               call calculateWaveOvertopping (geometry, geometryFlatBerms, geometryNoBerms, load, overtopping%z2, gamma_o, &
                                               modelFactors, overtopping%Qo, error)
             else
                overtopping%Qo = 0.0d0
@@ -76,7 +73,7 @@ module procedure calculateOvertoppingSection
       ! ------------------------------------------------
 
          ! calculate 2% wave run-up
-         call iterationWaveRunup (geometry, load, gamma_z, modelFactors, overtopping%z2, error)
+         call iterationWaveRunup (geometry, geometryFlatBerms, geometryNoBerms, load, gamma_z, modelFactors, overtopping%z2, error)
 
          if (error%errorCode == 0) then
 
@@ -93,7 +90,7 @@ module procedure calculateOvertoppingSection
       ! -----------------------------------------------
 
          ! remove dike segments below local water level
-         call removeDikeSegments (geometry, index, geometryAdjusted, error)
+         call removeDikeSegments (geometry, index, geometryRemoveDikeSegments, error)
 
          ! significant wave height is reduced due to foreshore
          load_red = load
@@ -101,13 +98,13 @@ module procedure calculateOvertoppingSection
 
          ! calculate 2% wave run-up
          if (error%errorCode == 0) then
-            call iterationWaveRunup (geometryAdjusted, load_red, gamma_z, modelFactors, overtopping%z2, error)
+            call iterationWaveRunup (geometryRemoveDikeSegments, geometryFlatBerms, geometryNoBerms, load_red, gamma_z, modelFactors, overtopping%z2, error)
          endif
 
          ! calculate wave overtopping discharge
          if (error%errorCode == 0) then
             if (overtopping%z2 > 0.0d0) then
-               call calculateWaveOvertopping (geometryAdjusted, load_red, overtopping%z2, &
+               call calculateWaveOvertopping (geometryRemoveDikeSegments, geometryFlatBerms, geometryNoBerms, load_red, overtopping%z2, &
                                               gamma_o, modelFactors, overtopping%Qo, error)
             else
                overtopping%Qo = 0.0d0
@@ -119,7 +116,7 @@ module procedure calculateOvertoppingSection
       ! ---------------------------------------------
 
          ! remove dike segments below local water level
-         call removeDikeSegments (geometry, index, geometryAdjusted, error)
+         call removeDikeSegments (geometry, index, geometryRemoveDikeSegments, error)
 
          ! significant wave height is reduced due to foreshore
          load_red = load
@@ -127,7 +124,7 @@ module procedure calculateOvertoppingSection
 
          ! calculate 2% wave run-up
          if (error%errorCode == 0) then
-            call iterationWaveRunup (geometryAdjusted, load_red, gamma_z, modelFactors, overtopping%z2, error)
+            call iterationWaveRunup (geometryRemoveDikeSegments, geometryFlatBerms, geometryNoBerms, load_red, gamma_z, modelFactors, overtopping%z2, error)
          endif
 
          ! 2% wave run-up is limited due to foreshore

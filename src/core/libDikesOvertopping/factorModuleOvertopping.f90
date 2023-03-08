@@ -57,22 +57,22 @@
 !! representative slope angle
 !!   @ingroup LibOvertopping
 !***********************************************************************************************************
-   subroutine calculateTanAlpha (load, z2, geometry, tanAlpha, error)
+   subroutine calculateTanAlpha (load, z2, geometry, geometryNoBerms, tanAlpha, error)
 !***********************************************************************************************************
 !
    implicit none
 !
 !  Input/output parameters
 !
-   type(tpLoadX),            intent(in   ) :: load           !< load struct
-   real(kind=wp),            intent(in   ) :: z2             !< 2% wave run-up (m)
-   type(tpGeometry), target, intent(in   ) :: geometry       !< structure with geometry data
-   real(kind=wp),            intent(  out) :: tanAlpha       !< representative slope angle
-   type(tMessage),           intent(inout) :: error          !< error struct
+   type(tpLoadX),             intent(in   ) :: load            !< load struct
+   real(kind=wp),             intent(in   ) :: z2              !< 2% wave run-up (m)
+   type(tpGeometry), target,  intent(in   ) :: geometry        !< structure with geometry data
+   type(tpGeometry), target,  intent(inout) :: geometryNoBerms !< geometry without berms
+   real(kind=wp),             intent(  out) :: tanAlpha        !< representative slope angle
+   type(tMessage),            intent(inout) :: error           !< error struct
 !
 !  Local parameters
 !
-   type(tpGeometry), pointer :: geometryNoBerms        !< geometry without berms
    type(tpGeometry), pointer :: LocalGeometryNoBerms   !< geometry without berms, as in the computations
    real(kind=wp)             :: yLower                 !< y-coordinate lower bound representative slope (m+NAP)
    real(kind=wp)             :: yUpper                 !< y-coordinate upper bound representative slope (m+NAP)
@@ -82,12 +82,6 @@
 
    ! initialize flag for succes and error message
    error%errorCode = 0
-
-   if (geometry%splitId == 'B') then
-      geometryNoBerms => geometry%parent%geometryNoBerms(2)
-   else
-      geometryNoBerms => geometry%parent%geometryNoBerms(1)
-   end if
 
    ! check local water level not lower than dike toe (first y-coordinate)
    !   and local water level not higher than crest level (last y-coordinate)

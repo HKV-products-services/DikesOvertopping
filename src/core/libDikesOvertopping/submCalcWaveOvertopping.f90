@@ -34,7 +34,6 @@ module procedure calculateWaveOvertopping
 !***********************************************************************************************************
    implicit none
 !
-   type (tpGeometry), pointer :: geometryFlatBerms !< structure with geometry data with horizontal berms
    real(kind=wp)     :: tanAlpha          !< representative slope angle
    real(kind=wp)     :: ksi0              !< breaker parameter
    real(kind=wp)     :: ksi0Limit         !< limit value breaker parameter
@@ -44,8 +43,6 @@ module procedure calculateWaveOvertopping
    ! calculate wave steepness
    call calculateWaveSteepness (load, error)
    
-   ! if applicable adjust non-horizontal berms
-   geometryFlatBerms => geometry%parent%geometryFlatBerms
    if (error%errorCode == 0) then
       if (geometryFlatBerms%Coordinates%N == 0) then
           call adjustNonHorizontalBerms (geometry, geometryFlatBerms, error)
@@ -54,7 +51,7 @@ module procedure calculateWaveOvertopping
 
    ! calculate representative slope angle
    if (error%errorCode == 0) then
-      call calculateTanAlpha (load, z2, geometryFlatBerms, tanAlpha, error)
+      call calculateTanAlpha (load, z2, geometryFlatBerms, geometryNoBerms, tanAlpha, error)
    endif
 
    ! calculate breaker parameter
