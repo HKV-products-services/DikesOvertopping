@@ -92,7 +92,7 @@ subroutine calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometrie
     endif
 
     geometries%geometrySectionBNoBerms%Coordinates%N = 0
-    geometries%geometrySectionBNoBerms%Coordinates%N = 0
+    geometries%geometrySectionFNoBerms%Coordinates%N = 0
 end subroutine calculateQoHPC
 
 !>
