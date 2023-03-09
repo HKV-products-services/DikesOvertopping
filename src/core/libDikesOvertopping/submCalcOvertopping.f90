@@ -62,10 +62,10 @@ module procedure calculateOvertopping
    geometryMergedBerms => geometry%parent%geometryMergedBerms
    geometryRemoveDikeSegments => geometry%parent%geometryRemoveDikeSegments
    geometryFlatBerms => geometry%parent%geometryFlatBerms
-   geometryNoBermsB    => geometry%parent%geometryNoBerms(2)
-   geometryNoBermsF    => geometry%parent%geometryNoBerms(1)
    geometrySectionB    => geometry%parent%geometrySectionB
+   geometryNoBermsB    => geometry%parent%geometrySectionBNoBerms
    geometrySectionF    => geometry%parent%geometrySectionF
+   geometryNoBermsF    => geometry%parent%geometrySectionFNoBerms
 
    if (error%errorCode == 0) then
 

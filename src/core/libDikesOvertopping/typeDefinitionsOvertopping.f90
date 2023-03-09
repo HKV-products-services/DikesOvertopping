@@ -67,9 +67,10 @@
       type(tpGeometry), allocatable :: adjWithDikeHeight
       type(tpGeometry), allocatable :: geometryMergedBerms
       type(tpGeometry), allocatable :: geometrySectionB
+      type(tpGeometry), allocatable :: geometrySectionBNoBerms
       type(tpGeometry), allocatable :: geometrySectionF
+      type(tpGeometry), allocatable :: geometrySectionFNoBerms
       type(tpGeometry), allocatable :: geometryFlatBerms
-      type(tpGeometry), allocatable :: geometryNoBerms(:)
       type(tpGeometry), allocatable :: geometryRemoveDikeSegments
       type(tpCoordinatePair)        :: CoordsAdjusted              !< vector with x/y-coordinates of the adjusted profile
    end type tpGeometries
