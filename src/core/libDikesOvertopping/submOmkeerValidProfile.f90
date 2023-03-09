@@ -95,7 +95,7 @@ implicit none
 
     call DischargeBasedOnLogRelation()
 
-    call cleanupGeometry(geometry%parent, .false.)
+    call cleanupGeometry(geometry%parent)
     call deallocateGeometry(geometry)
 
     deallocate(omkeerProps%isBerm, omkeerProps%dischargeProfile, omkeerProps%isValidZ, omkeerProps%ZProfile)

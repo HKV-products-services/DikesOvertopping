@@ -133,10 +133,9 @@
    end interface
 
    interface
-      module subroutine cleanupGeometry(geometries, evenBase)
+      module subroutine cleanupGeometry(geometries)
 !DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"cleanupGeometry" :: cleanupGeometry
          type(tpGeometries), intent(inout) :: geometries
-         logical           , intent(in   ) :: evenBase
       end subroutine cleanupGeometry
    end interface
 

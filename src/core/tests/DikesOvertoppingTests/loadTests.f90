@@ -237,7 +237,7 @@ subroutine testSeriesLoad
         ! Compute the wave runup and the wave overtopping discharge with the Overtopping module
         call setupGeometries(geometry%parent)
         call calculateOvertopping (geometry, load, modelFactors, overtopping, error)
-        call cleanupGeometry(geometry%parent, .false.)
+        call cleanupGeometry(geometry%parent)
         
         if (error%errorCode /= 0) then
             write(ounit, '(2a)') 'Failure: ', trim(error%Message)

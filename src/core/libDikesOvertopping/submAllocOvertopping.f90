@@ -56,9 +56,6 @@ module procedure cleanupGeometry
       call deallocateGeometry(geometries%geometryNoBerms(1))
       call deallocateGeometry(geometries%geometryNoBerms(2))
       call deallocateGeometry(geometries%geometryRemoveDikeSegments)
-      if (evenBase) then
-          call deallocateGeometry(geometries%base)
-      end if
 
       deallocate(geometries%adjWithDikeHeight)
       deallocate(geometries%geometryMergedBerms)
