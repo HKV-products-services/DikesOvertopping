@@ -55,7 +55,7 @@ set_target_properties(HRgeneral
 add_library(FeedbackDll
   SHARED
     Fortran-Common-Library_src/feedback_dll/feedback_parameters.f90
-    Fortran-Common-Library_src/feedback_dll/feedbackDLL_implementation.f90
+    Fortran-Common-Library_src/feedback_dll/feedbackDLL_implementation.F90
     Fortran-Common-Library_src/feedback_dll/feedbackDLL.f90
 )
 
