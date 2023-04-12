@@ -43,6 +43,8 @@ release/x64/libiomp5md.dll -text
 src/CreateSigExport.ps1 -text
 src/core/CMakeLists.txt -text
 src/core/external/CMakeLists.txt -text
+src/core/external/Fortran-Common-Library_src/HR.Common.Native/HydraRing.Common.Native.rc -text
+src/core/external/Fortran-Common-Library_src/HR.Common.Native/ThrowNative.cpp -text
 src/core/external/Fortran-Common-Library_src/feedback/feedback.f90 -text
 src/core/external/Fortran-Common-Library_src/feedback_dll/feedbackDLL.f90 -text
 src/core/external/Fortran-Common-Library_src/feedback_dll/feedbackDLL_implementation.F90 -text
@@ -75,6 +77,7 @@ src/core/external/Fortran-Common-Library_src/tools/precision.f90 -text
 src/core/external/Fortran-Common-Library_src/tools/rangeCheck.f90 -text
 src/core/external/Fortran-Common-Library_src/tools/utilities.f90 -text
 src/core/external/Fortran-Common-Library_src/version_number.ini -text
+src/core/external/Fortran-Common-Library_src/winapi/winapi.cpp -text
 src/core/external/Fortran-Common-Library_teamcity_build/win32/HRutilitiesDll.dll -text
 src/core/external/Fortran-Common-Library_teamcity_build/win32/HRutilitiesDll.lib -text
 src/core/external/Fortran-Common-Library_teamcity_build/win32/LICENSE -text
