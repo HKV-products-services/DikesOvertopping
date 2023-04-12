@@ -48,11 +48,11 @@
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
-		<File RelativePath=".\HRcommon_src\general\angleUtilities.f90"/>
-		<File RelativePath=".\HRcommon_src\general\fileUtilities.f90"/>
-		<File RelativePath=".\HRcommon_src\general\interpolationTriangular.f90"/>
-		<File RelativePath=".\HRcommon_src\general\vectorUtilities.f90"/>
-		<File RelativePath=".\HRcommon_src\general\versionInfo.f90"/>
-		<File RelativePath=".\HRcommon_src\general\waveParametersUtilities.f90"/>
-		<File RelativePath=".\HRcommon_src\general\writeUtilities.f90"/></Filter></Files>
+		<File RelativePath=".\Fortran-Common-Library_src\general\angleUtilities.f90"/>
+		<File RelativePath=".\Fortran-Common-Library_src\general\fileUtilities.f90"/>
+		<File RelativePath=".\Fortran-Common-Library_src\general\interpolationTriangular.f90"/>
+		<File RelativePath=".\Fortran-Common-Library_src\general\vectorUtilities.f90"/>
+		<File RelativePath=".\Fortran-Common-Library_src\general\versionInfo.f90"/>
+		<File RelativePath=".\Fortran-Common-Library_src\general\waveParametersUtilities.f90"/>
+		<File RelativePath=".\Fortran-Common-Library_src\general\writeUtilities.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>

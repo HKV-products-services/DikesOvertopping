@@ -20,14 +20,14 @@ if(UNIX)
     endif()
 endif(UNIX)
 
-add_compile_definitions(maxParallelThreads=8)
+add_compile_definitions(maxParallelThreads=96)
 
 add_library(HRtools
   STATIC
-    HRcommon_src/tools/precision.f90
-    HRcommon_src/tools/utilities.f90
-    HRcommon_src/tools/errorMessages.f90
-    HRcommon_src/tools/equalReals.f90
+    Fortran-Common-Library_src/tools/precision.f90
+    Fortran-Common-Library_src/tools/utilities.f90
+    Fortran-Common-Library_src/tools/errorMessages.f90
+    Fortran-Common-Library_src/tools/equalReals.f90
 )
 
 set_target_properties(HRtools
@@ -38,11 +38,11 @@ set_target_properties(HRtools
 add_library(HRgeneral
   STATIC
     versionInfo.f90
-    HRcommon_src/general/vectorUtilities.f90
-    HRcommon_src/general/waveParametersUtilities.f90
-    HRcommon_src/general/angleUtilities.f90
-    HRcommon_src/ftnunit/ftnunit.f90  
-    HRcommon_src/ftnunit/ftnunit_hooks_teamcity.f90  
+    Fortran-Common-Library_src/general/vectorUtilities.f90
+    Fortran-Common-Library_src/general/waveParametersUtilities.f90
+    Fortran-Common-Library_src/general/angleUtilities.f90
+    Fortran-Common-Library_src/ftnunit/ftnunit.f90  
+    Fortran-Common-Library_src/ftnunit/ftnunit_hooks_teamcity.f90  
 )
 
 target_link_libraries(HRgeneral Feedback)
@@ -54,9 +54,9 @@ set_target_properties(HRgeneral
 
 add_library(FeedbackDll
   SHARED
-    HRcommon_src/feedback_dll/feedback_parameters.f90
-    HRcommon_src/feedback_dll/feedbackDLL_implementation.f90
-    HRcommon_src/feedback_dll/feedbackDLL.f90
+    Fortran-Common-Library_src/feedback_dll/feedback_parameters.f90
+    Fortran-Common-Library_src/feedback_dll/feedbackDLL_implementation.f90
+    Fortran-Common-Library_src/feedback_dll/feedbackDLL.f90
 )
 
 set_target_properties(FeedbackDll
@@ -72,7 +72,7 @@ endif(WIN32)
 
 add_library(Feedback
   STATIC
-    HRcommon_src/feedback/feedback.f90
+    Fortran-Common-Library_src/feedback/feedback.f90
 )
 
 set_target_properties(Feedback

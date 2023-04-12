@@ -48,10 +48,10 @@
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
-		<File RelativePath=".\HRcommon_src\tools\equalReals.f90"/>
-		<File RelativePath=".\HRcommon_src\tools\errorMessages.f90"/>
-		<File RelativePath=".\HRcommon_src\tools\genericRealToString.f90"/>
-		<File RelativePath=".\HRcommon_src\tools\precision.f90">
+		<File RelativePath=".\Fortran-Common-Library_src\tools\equalReals.f90"/>
+		<File RelativePath=".\Fortran-Common-Library_src\tools\errorMessages.f90"/>
+		<File RelativePath=".\Fortran-Common-Library_src\tools\genericRealToString.f90"/>
+		<File RelativePath=".\Fortran-Common-Library_src\tools\precision.f90">
 			<FileConfiguration Name="Debug|Win32">
 				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
 			<FileConfiguration Name="Release|x64">
@@ -60,6 +60,6 @@
 				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
 			<FileConfiguration Name="Release|Win32">
 				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration></File>
-		<File RelativePath=".\HRcommon_src\tools\rangeCheck.f90"/>
-		<File RelativePath=".\HRcommon_src\tools\utilities.f90"/></Filter></Files>
+		<File RelativePath=".\Fortran-Common-Library_src\tools\rangeCheck.f90"/>
+		<File RelativePath=".\Fortran-Common-Library_src\tools\utilities.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>
