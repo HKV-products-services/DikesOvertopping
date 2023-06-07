@@ -6,7 +6,7 @@
 	<Configurations>
 		<Configuration Name="Debug|Win32" OutputDirectory="..\bin\$(ConfigurationName)" IntermediateDirectory="..\bin\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Diagnostics="diagnosticsShowAll" WarnInterfaces="true" LocalVariableStorage="localStorageAutomatic" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
-				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OSS_UCRTLIBDIR)" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="version.lib"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.22000.0\ucrt\x86" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="version.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
 				<Tool Name="VFCustomBuildTool" CommandLine="copy ..\..\licenses\LicenseAGPL.txt ..\bin\$(ConfigurationName)\LicenseAGPL.txt" Outputs="..\bin\$(ConfigurationName)\LicenseAGPL.txt"/>
@@ -16,7 +16,7 @@
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|Win32" OutputDirectory="..\bin\$(ConfigurationName)" IntermediateDirectory="..\bin\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" OmitFramePointers="false" LocalVariableStorage="localStorageAutomatic" Traceback="true"/>
-				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OSS_UCRTLIBDIR)" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="version.lib"/>
+				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.22000.0\ucrt\x86" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="version.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
 				<Tool Name="VFCustomBuildTool" CommandLine="copy ..\..\licenses\LicenseAGPL.txt ..\bin\$(ConfigurationName)\LicenseAGPL.txt" Outputs="..\bin\$(ConfigurationName)\LicenseAGPL.txt"/>
@@ -26,7 +26,7 @@
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Debug|x64" OutputDirectory="..\bin\$(PlatformName)\$(ConfigurationName)" IntermediateDirectory="..\bin\$(PlatformName)\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Diagnostics="diagnosticsShowAll" WarnInterfaces="true" LocalVariableStorage="localStorageAutomatic" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
-				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OSS_UCRTLIBDIR)" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="version.lib"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.22000.0\ucrt\x64" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="version.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool" CommandLine="copy ..\..\licenses\LicenseAGPL.txt ..\bin\$(ConfigurationName)\LicenseAGPL.txt" Outputs="..\bin\$(ConfigurationName)\LicenseAGPL.txt"/>
@@ -36,7 +36,7 @@
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|x64" OutputDirectory="..\bin\$(PlatformName)\$(ConfigurationName)" IntermediateDirectory="..\bin\$(PlatformName)\$(ConfigurationName)\obj" BuildLogFile="$(IntDir)\BuildLog_$(ProjectName).htm" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" OmitFramePointers="false" LocalVariableStorage="localStorageAutomatic" Traceback="true"/>
-				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(OSS_UCRTLIBDIR)" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="version.lib"/>
+				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.22000.0\ucrt\x64" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="version.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool" CommandLine="copy ..\..\licenses\LicenseAGPL.txt ..\bin\$(ConfigurationName)\LicenseAGPL.txt" Outputs="..\bin\$(ConfigurationName)\LicenseAGPL.txt"/>

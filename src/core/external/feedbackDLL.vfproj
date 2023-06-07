@@ -6,7 +6,7 @@
 	<Configurations>
 		<Configuration Name="Debug|Win32" IntermediateDirectory="Fortran-Common-Library_src\feedback_dll\$(ConfigurationName)" BuildLogFile="$(IntDir)\BuildLogFeedbackDLL.htm" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" WarnInterfaces="true" FloatingPointModel="source" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
-				<Tool Name="VFLinkerTool" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.10586.0\ucrt\x86;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x86" IgnoreDefaultLibraryNames="MSCRTD;UCRTD" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
+				<Tool Name="VFLinkerTool" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.22000.0\ucrt\x86;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x86" IgnoreDefaultLibraryNames="MSCRTD;UCRTD" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
 				<Tool Name="VFCustomBuildTool"/>
@@ -16,7 +16,7 @@
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true" EmbedManifest="false"/></Configuration>
 		<Configuration Name="Release|Win32" IntermediateDirectory="Fortran-Common-Library_src\feedback_dll\$(ConfigurationName)" BuildLogFile="$(IntDir)\BuildLogFeedbackDLL.htm" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" OmitFramePointers="false" FloatingPointModel="source" FloatingPointSpeculation="fpSpeculationSafe" Traceback="true"/>
-				<Tool Name="VFLinkerTool" AdditionalOptions=" /Qopenmp-link:static" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.10586.0\ucrt\x86;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x86" IgnoreDefaultLibraryNames="MSCRT;UCRT" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
+				<Tool Name="VFLinkerTool" AdditionalOptions=" /Qopenmp-link:static" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.22000.0\ucrt\x86;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x86" IgnoreDefaultLibraryNames="MSCRT;UCRT" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
 				<Tool Name="VFCustomBuildTool"/>
@@ -26,7 +26,7 @@
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true" EmbedManifest="false"/></Configuration>
 		<Configuration Name="Debug|x64" BuildLogFile="$(IntDir)\BuildLogFeedbackDLL.htm" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" WarnInterfaces="true" FloatingPointModel="source" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
-				<Tool Name="VFLinkerTool" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.10586.0\ucrt\x64;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x64" IgnoreDefaultLibraryNames="MSCRTD;UCRTD" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
+				<Tool Name="VFLinkerTool" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.22000.0\ucrt\x64;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x64" IgnoreDefaultLibraryNames="MSCRTD;UCRTD" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool"/>
@@ -36,7 +36,7 @@
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true" EmbedManifest="false"/></Configuration>
 		<Configuration Name="Release|x64" OutputDirectory="$(ConfigurationName)" IntermediateDirectory="Fortran-Common-Library_src\feedback_dll\$(ConfigurationName)" BuildLogFile="$(IntDir)\BuildLogFeedbackDLL.htm" ConfigurationType="typeDynamicLibrary">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" OmitFramePointers="false" FloatingPointModel="source" FloatingPointSpeculation="fpSpeculationSafe" Traceback="true"/>
-				<Tool Name="VFLinkerTool" AdditionalOptions=" /Qopenmp-link:static" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.10586.0\ucrt\x64;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x64" IgnoreDefaultLibraryNames="MSCRT;UCRT" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
+				<Tool Name="VFLinkerTool" AdditionalOptions=" /Qopenmp-link:static" OutputFile="$(SolutionDir)\bin\$(ConfigurationName)\$(ProjectName).dll" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(UniversalCRTSdkDir)Lib\10.0.22000.0\ucrt\x64;c:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\Lib\um\x64" IgnoreDefaultLibraryNames="MSCRT;UCRT" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="vcruntime.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool"/>
