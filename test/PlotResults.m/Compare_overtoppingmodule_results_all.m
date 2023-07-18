@@ -2,12 +2,24 @@
 %
 clear all
 
-dirref = 'd:\svn_checkouts\DikesOvertopping\trunk\src\core\tests\DikesOvertoppingTests\OutputOvertopping\';
-dirnew = 'd:\svn_checkouts\DikesOvertopping\trunk\src\core\tests\unitTests\';
+%=== input begin ==========================================================
+dirref = 'd:\3-Test\DikesOvertopping_23_1_1\Windows32bit\1-trendtests\2-results\';
+dirnew = 'd:\3-Test\DikesOvertopping_23_1_1\Windows64bit\1-trendtests\2-results\';
+dirou  = 'd:\3-Test\DikesOvertopping_23_1_1\';
+filnmou= 'comparison_32_64-bit.txt';
+%=== input end ============================================================
+
+% prepare output file
+fidou = fopen([dirou filnmou],'w');
+fprintf(fidou,'%s\n'  ,'Comparison between the output*.txt files in directory');
+fprintf(fidou,'%s\n'  ,['    ' dirref]);
+fprintf(fidou,'%s\n'  ,'and the corresponding files in directory');
+fprintf(fidou,'%s\n\n',['    ' dirnew]);
 
 % generate a list of output file names
 dirtab = dir([dirref 'output*.txt']);
 nfil = size(dirtab,1);
+nfildif = 0;
 
 for ifil=1:nfil % do for each output file
     % open the ref file and skip the first 3 lines
@@ -45,16 +57,26 @@ for ifil=1:nfil % do for each output file
             end
             if ~same
                 % display lines where differences were found
-                disp(['=> Difference in file: ' filnm '; Line: ' num2str(iLine)]);
-                disp(linestringref);
-                disp(linestringnew);
+                fprintf(fidou,'%s\n',['=> Difference in file: ' filnm '; Line: ' num2str(iLine)]);
+                fprintf(fidou,'%s\n',linestringref);
+                fprintf(fidou,'%s\n',linestringnew);
                 founddiffinfile = 1;
             end
         end
     end
-    if ~founddiffinfile
-        disp(['=> No difference in file: ' filnm '; number of compared lines: ' num2str(iLine)]);
+    if founddiffinfile
+        nfildif = nfildif + 1;
+    else
+        fprintf(fidou,'%s\n',['=> No difference in file: ' filnm '; number of compared lines: ' num2str(iLine)]);
     end
     fclose(fidinref);
     fclose(fidinnew);
 end
+
+% finalize output file
+if nfildif==0
+    fprintf(fidou,'\n%s\n','No differences were found.');
+else
+    fprintf(fidou,'\n%s %i %s\n','Differences were found in',nfildif,'files.');
+end
+fclose(fidou);

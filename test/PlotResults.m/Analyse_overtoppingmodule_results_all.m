@@ -1,25 +1,40 @@
 % plot testresults overtopping module
 clear all
 
-[iS,wave_angle,iType,varlabel] = rd_overtoppingmodule_results_layout;
-
-[nT,nC] = size(iS);
-
-%iC = 1;
-%iL = 2;
-%chapternr    = 1;
+%=== input begin ==========================================================
+OnlyFirstFigure = 0;   % use 1 for layout & labels check
 reportlayout = 1;
-figure2pdf   = 0;
-pause_on     = 1;
+figure2pdf   = 1;
+pause_on     = 0;
 
-Fig_pdf_dir  = 'd:\Overtopping_tests\';
-Projectstr   = 'Wave overtopping kernel tests';
-ProjectNrstr = '1220043.002';
-%dirnm = 'd:\svn_checkouts\DikesOvertopping\trunk\src\core\tests\DikesOvertoppingTests\OutputOvertopping\';
-dirnm = 'd:\svn_checkouts\DikesOvertopping\trunk\src\core\tests\unitTests\';
+Projectstr   = 'DikesOvertopping kernel tests';
+Versionstr   = 'Version 23.1.1';
+Vertxt       = '_23_1_1';
+ProjectNrstr = '12209270.002';
+SetNr        = 2;                % 1='Windows 32-bit'; 2='Windows 64-bit'
+
+if SetNr == 1
+    OSstr        = 'Windows 32-bit';
+    dirnm        = ['d:\3-Test\DikesOvertopping' Vertxt '\Windows32bit\1-trendtests\2-results\'];
+    Fig_pdf_dir  = ['d:\3-Test\DikesOvertopping' Vertxt '\Windows32bit\1-trendtests\3-figures_many_pdfs\'];
+elseif SetNr == 2
+    OSstr        = 'Windows 64-bit';
+    dirnm        = ['d:\3-Test\DikesOvertopping' Vertxt '\Windows64bit\1-trendtests\2-results\'];
+    Fig_pdf_dir  = ['d:\3-Test\DikesOvertopping' Vertxt '\Windows64bit\1-trendtests\3-figures_many_pdfs\'];
+end
+%=== input end ============================================================
+
+
+[iS,wave_angle,iType,varlabel] = rd_overtoppingmodule_results_layout;
+if OnlyFirstFigure
+    nC = 1;
+    nT = 1;
+else
+    [nT,nC] = size(iS);
+end
+
 qomin = 10^-10;
-
-for iC=1:8
+for iC=1:nC
     chapternr = iC;
     figurenr  = 0;
     for iT = 1:nT
@@ -190,7 +205,8 @@ for iC=1:8
             % Apply overall settings for layout and printing --------------------------
             if reportlayout
                 md_paper_deltares('a4p','deltares',{centre_title(ReportTitle1,ReportTitle2), ...
-                    '',' ',Projectstr,ProjectNrstr,['Fig. ' num2str(chapternr) '.' num2str(figurenr)]})
+                    Versionstr,OSstr,Projectstr,ProjectNrstr, ...
+                    ['Fig. ' num2str(chapternr) '.' num2str(figurenr)]})
                 if figure2pdf
                     print(gcf,'-dpdf','-painters', ...
                         strcat([Fig_pdf_dir 'Fig' num2str(chapternr) '_' num2str(figurenr,'%02i') '.pdf']));
