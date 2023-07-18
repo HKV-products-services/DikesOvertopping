@@ -1,6 +1,8 @@
 * text=auto !eol
 doc/Dikes[!!-~]Overtopping[!!-~]-[!!-~]Protocol[!!-~]van[!!-~]Overdracht.docx -text
 doc/Dikes[!!-~]Overtopping[!!-~]Kernel[!!-~]-[!!-~]Technical[!!-~]design.docx -text
+doc/DikesOvertopping[!!-~]-[!!-~]Draaiboek[!!-~]voor[!!-~]releasen.docx -text
+doc/DikesOvertopping[!!-~]-[!!-~]bestandenoverzicht.xlsx -text
 doc/Overtopping[!!-~]Kernel[!!-~]-[!!-~]Test[!!-~]report.docx -text
 doc/Release[!!-~]notes[!!-~]Dikes[!!-~]Overtopping.docx -text
 doc/Releasing[!!-~]DikesOvertopping.docx -text
