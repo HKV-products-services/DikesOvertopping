@@ -40,20 +40,24 @@
    private :: wp
 
    !> tpLoad: structure with load parameters
-   type, public              :: tpLoad
+   type, public, bind(C)     :: tpLoad
       real(kind=wp)          :: h                       !< local water level (m+NAP)
       real(kind=wp)          :: Hm0                     !< significant wave height (m)
       real(kind=wp)          :: Tm_10                   !< spectral wave period (s)
       real(kind=wp)          :: phi                     !< wave direction (degrees)
    end type tpLoad
 
-    type, extends(tpLoad), public :: tpLoadX
-        real(kind=wp)        :: L0 !< wave length
-        real(kind=wp)        :: s0 !< wave steepness
-    end type tpLoadX
+   type, public :: tpLoadX
+      real(kind=wp)          :: h                       !< local water level (m+NAP)
+      real(kind=wp)          :: Hm0                     !< significant wave height (m)
+      real(kind=wp)          :: Tm_10                   !< spectral wave period (s)
+      real(kind=wp)          :: phi                     !< wave direction (degrees)
+      real(kind=wp)        :: L0 !< wave length
+      real(kind=wp)        :: s0 !< wave steepness
+   end type tpLoadX
 
    !> tpOvertopping: structure with overtopping results
-   type, public             :: tpOvertopping
+   type, public, bind(C)    :: tpOvertopping
       real(kind=wp)         :: z2                      !< 2% wave run-up (m)
       real(kind=wp)         :: Qo                      !< wave overtopping discharge (m3/m per s)
    end type

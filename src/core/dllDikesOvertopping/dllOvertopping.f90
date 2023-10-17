@@ -63,6 +63,7 @@ module dllOvertopping
               calculateQoJ, ValidateInputJ, omkeerVariantJ
 
     character, parameter :: separationChar = char(9)      !< use horizontal tab for separation
+    integer, parameter   :: msgLength = 256
 
 contains
 
@@ -90,7 +91,7 @@ subroutine calculateQo(load, geometryInput, dikeHeight, modelFactors, overtoppin
 
     type(OvertoppingGeometryTypeF)            :: geometry       !< fortran struct with geometry and roughness
     type(tLogging)                            :: logging        !< logging struct
-    character(len=256)                        :: localErrorText !< fortran string for error message
+    character(len=msgLength)                        :: localErrorText !< fortran string for error message
     logical                                   :: Fsuccess
     integer                                   :: i, sizeString
 
@@ -120,8 +121,8 @@ end subroutine calculateQo
 !! Wrapper for calculateQoF: convert basic types to Fortran input structures
 !!
 !! @ingroup dllDikesOvertopping
-subroutine calculateQoJ(load, xcoords, ycoords, roughness, normal, npoints, dikeHeight, modelFactors, output, succes, errorMessage)
-!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"calculateQoJ" :: calculateQoJ
+subroutine calculateQoJ(load, xcoords, ycoords, roughness, normal, npoints, dikeHeight, modelFactors, output, succes, errorMessage) bind(c, name="calculateQoJ")
+!DEC$ ATTRIBUTES DLLEXPORT :: calculateQoJ
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
     use ModuleLogging
@@ -129,7 +130,7 @@ subroutine calculateQoJ(load, xcoords, ycoords, roughness, normal, npoints, dike
     real(kind=wp), intent(in)                  :: dikeHeight            !< dike height
     real(kind=wp), intent(in)                  :: normal                !< dike normal
     logical, intent(out)                       :: succes                !< flag for success
-    character(len=256), intent(out)            :: errorMessage          !< error message (only set if not successful)
+    character(len=1), intent(out)              :: errorMessage(msgLength) !< error message (only set if not successful)
     real(kind=wp), intent(in)                  :: load(4)               !< input load (wl and 3 wave numbers)
     real(kind=wp), intent(in)                  :: xcoords(npoints)      !< the x coordinates
     real(kind=wp), intent(in)                  :: ycoords(npoints)      !< the y coordinates
@@ -143,19 +144,24 @@ subroutine calculateQoJ(load, xcoords, ycoords, roughness, normal, npoints, dike
     type (tpOvertopping)           :: overtopping    !< structure with overtopping results
     type(tLogging)                 :: logging        !< logging struct
     integer                        :: ierr           !< error code of allocate
+    integer                        :: i              !< loop counter
+    character(len=msgLength)       :: msg            !< error message as Fortran string
     
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1), stat=ierr)
     if (ierr == 0) then
         call input_j_f(xcoords, ycoords, roughness, normal, geometryF, modelFactors, modelFactorsF, load, loadF)
-        call calculateQoF(loadF, geometryF, dikeHeight, modelFactorsF, overtopping, succes, errorMessage, logging)
+        call calculateQoF(loadF, geometryF, dikeHeight, modelFactorsF, overtopping, succes, msg, logging)
         output(1) = overtopping%Qo
         output(2) = overtopping%z2
     else
         succes = .false.
         call set_nan(output(1))
         call set_nan(output(2))
-        errorMessage = 'Allocation error in calculateQoJ'
+        msg = 'Allocation error in calculateQoJ'
     endif
+    do i = 1, msgLength
+        errorMessage(i) = msg(i:i)
+    end do
 end subroutine calculateQoJ
 !>
 !! Subroutine that calculates the discharge needed for the Z-function DikesOvertopping
@@ -280,8 +286,8 @@ end subroutine ValidateInputC
 !! Wrapper for ValidateInputF: convert basic types to Fortran input structures
 !!
 !! @ingroup dllDikesOvertopping
-subroutine ValidateInputJ(x, y, roughness, normal, nPoints, dikeHeight, modelFactorsArray, success, errorText)
-!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"ValidateInputJ" :: ValidateInputJ
+subroutine ValidateInputJ(x, y, roughness, normal, nPoints, dikeHeight, modelFactorsArray, success, errorText) bind(C, name= "ValidateInputJ")
+!DEC$ ATTRIBUTES DLLEXPORT :: ValidateInputJ
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
     use errorMessages
@@ -294,7 +300,7 @@ subroutine ValidateInputJ(x, y, roughness, normal, nPoints, dikeHeight, modelFac
     real(kind=wp), intent(in)                 :: dikeHeight                    !< dike height
     real(kind=wp), intent(in)                 :: modelFactorsArray(8)          !< array with modelfactors
     logical, intent(out)                      :: success                       !< flag for success
-    character(len=256), intent(out)           :: errorText                     !< error message (only set if not successful)
+    character(len=1), intent(out)             :: errorText(msgLength)          !< error message (only set if not successful)
 
     type(tpOvertoppingInput)                  :: modelFactors                  !< struct with modelfactors
     type(OvertoppingGeometryTypeF)            :: geometry                      !< fortran struct with geometry and roughness
@@ -303,10 +309,11 @@ subroutine ValidateInputJ(x, y, roughness, normal, nPoints, dikeHeight, modelFac
     integer                                   :: ierr
     integer                                   :: nMessages
     character(len=8)                          :: msgtype
+    character(len=msgLength)                  :: msg
 
     allocate(geometry%xCoords(nPoints), geometry%yCoords(nPoints), geometry%roughness(nPoints-1), stat=ierr)
     if (ierr /= 0) then
-        write(errorText,*) 'memory allocation error in ValidateInputJ with size: ', nPoints
+        write(msg,*) 'memory allocation error in ValidateInputJ with size: ', nPoints
         success = .false.
     else
         call input_j_f(x, y, roughness, normal, geometry, modelFactorsArray, modelFactors)
@@ -317,7 +324,7 @@ subroutine ValidateInputJ(x, y, roughness, normal, nPoints, dikeHeight, modelFac
         nMessages = errorStruct%nErrors + errorStruct%nWarnings
         success = nMessages == 0
         if (success) then
-            errorText = ' '
+            msg = ' '
         else
             do i = 1, nMessages
                 if (errorStruct%messages(i)%severity == severityError) then
@@ -327,14 +334,18 @@ subroutine ValidateInputJ(x, y, roughness, normal, nPoints, dikeHeight, modelFac
                 endif
 
                 if (i == 1) then
-                    errorText = trim(msgtype) // ':' // errorStruct%messages(i)%message
+                    msg = trim(msgtype) // ':' // errorStruct%messages(i)%message
                 else
-                    errorText = trim(errorText) // separationChar // trim(msgtype) // ':' // errorStruct%messages(i)%message
+                    msg = trim(msg) // separationChar // trim(msgtype) // ':' // errorStruct%messages(i)%message
                 endif
             enddo
         endif
         deallocate(geometry%xCoords, geometry%yCoords, geometry%roughness)
     endif
+
+    do i = 1, msgLength
+        errorText(i) = msg(i:i)
+    end do
 
 end subroutine ValidateInputJ
 
@@ -425,8 +436,8 @@ end subroutine ValidateInputF
 !! Wrapper for omkeerVariantF: get dikeHeight by given discharge
 !!
 !! @ingroup dllDikesOvertopping
-subroutine omkeerVariantJ(load, xcoords, ycoords, roughness, normal, npoints, givenDischarge, dikeHeight, modelFactors, output, succes, errorMessage)
-!DEC$ ATTRIBUTES DLLEXPORT,ALIAS:"omkeerVariantJ" :: omkeerVariantJ
+subroutine omkeerVariantJ(load, xcoords, ycoords, roughness, normal, npoints, givenDischarge, dikeHeight, modelFactors, output, succes, errorMessage) bind(C, name="omkeerVariantJ")
+!DEC$ ATTRIBUTES DLLEXPORT :: omkeerVariantJ
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
     use ModuleLogging
@@ -435,7 +446,7 @@ subroutine omkeerVariantJ(load, xcoords, ycoords, roughness, normal, npoints, gi
     real(kind=wp), intent(out)                 :: dikeHeight           !< dike height
     real(kind=wp), intent(in)                  :: normal               !< dike normal
     logical, intent(out)                       :: succes               !< flag for success
-    character(len=256), intent(out)            :: errorMessage         !< error message (only set if not successful)
+    character(len=1), intent(out)              :: errorMessage(msgLength) !< error message (only set if not successful)
     real(kind=wp), intent(in)                  :: load(4)              !< input load (wl, and 3 wave parameters)
     real(kind=wp), intent(in)                  :: xcoords(npoints)     !< the x-coordinates
     real(kind=wp), intent(in)                  :: ycoords(npoints)     !< the y-coordinates
@@ -449,19 +460,24 @@ subroutine omkeerVariantJ(load, xcoords, ycoords, roughness, normal, npoints, gi
     type(tpOvertopping)            :: overtopping    !< structure with overtopping results
     type(tLogging)                 :: logging        !< logging struct
     integer                        :: ierr           !< error code of allocate
+    integer                        :: i              !< loop counter
+    character(len=msgLength)       :: msg            !< error message as a Fortran string
 
     allocate(geometryF%xcoords(npoints), geometryF%ycoords(npoints), geometryF%roughness(npoints-1), stat=ierr)
     if (ierr == 0) then
         call input_j_f(xcoords, ycoords, roughness, normal, geometryF, modelFactors, modelFactorsF, load, loadF)
-        call omkeerVariantF(loadF, geometryF, givenDischarge, dikeHeight, modelFactorsF, overtopping, succes, errorMessage, logging)
+        call omkeerVariantF(loadF, geometryF, givenDischarge, dikeHeight, modelFactorsF, overtopping, succes, msg, logging)
         output(1) = overtopping%z2
         output(2) = overtopping%Qo
     else
         succes = .false.
         call set_nan(output(1))
         call set_nan(output(2))
-        errorMessage = 'Allocation error in omkeerVariantJ'
+        msg = 'Allocation error in omkeerVariantJ'
     endif
+    do i = 1, msgLength
+        errorMessage(i) = msg(i:i)
+    end do
 end subroutine omkeerVariantJ
 
 !>
