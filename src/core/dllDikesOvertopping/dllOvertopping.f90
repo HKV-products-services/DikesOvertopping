@@ -188,6 +188,7 @@ subroutine calculateQoF(load, geometryF, dikeHeight, modelFactors, overtopping, 
         call calculateQoHPC(dikeHeight, modelFactors, overtopping, load, geometry%parent, error)
     end if
     call cleanupGeometry(geometry%parent)
+    deallocate(geometry%parent)
     call deallocateGeometry(geometry)
     success = (error%errorCode == 0)
     if (.not. success) then
