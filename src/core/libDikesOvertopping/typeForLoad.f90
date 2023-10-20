@@ -47,13 +47,14 @@
       real(kind=wp)          :: phi                     !< wave direction (degrees)
    end type tpLoad
 
+   !> tpLoad: structure with load parameters, extend with with 2 derived properties
    type, public :: tpLoadX
       real(kind=wp)          :: h                       !< local water level (m+NAP)
       real(kind=wp)          :: Hm0                     !< significant wave height (m)
       real(kind=wp)          :: Tm_10                   !< spectral wave period (s)
       real(kind=wp)          :: phi                     !< wave direction (degrees)
-      real(kind=wp)        :: L0 !< wave length
-      real(kind=wp)        :: s0 !< wave steepness
+      real(kind=wp)          :: L0                      !< wave length (m)
+      real(kind=wp)          :: s0                      !< wave steepness (-)
    end type tpLoadX
 
    !> tpOvertopping: structure with overtopping results

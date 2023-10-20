@@ -91,7 +91,7 @@ subroutine calculateQo(load, geometryInput, dikeHeight, modelFactors, overtoppin
 
     type(OvertoppingGeometryTypeF)            :: geometry       !< fortran struct with geometry and roughness
     type(tLogging)                            :: logging        !< logging struct
-    character(len=msgLength)                        :: localErrorText !< fortran string for error message
+    character(len=msgLength)                  :: localErrorText !< fortran string for error message
     logical                                   :: Fsuccess
     integer                                   :: i, sizeString
 
@@ -441,18 +441,18 @@ subroutine omkeerVariantJ(load, xcoords, ycoords, roughness, normal, npoints, gi
     use geometryModuleOvertopping
     use typeDefinitionsOvertopping
     use ModuleLogging
-    integer, intent(in)                        :: npoints              !< number of coordinates
-    real(kind=wp), intent(in)                  :: givenDischarge       !< input discharge
-    real(kind=wp), intent(out)                 :: dikeHeight           !< dike height
-    real(kind=wp), intent(in)                  :: normal               !< dike normal
-    logical, intent(out)                       :: succes               !< flag for success
-    character(len=1), intent(out)              :: errorMessage(msgLength) !< error message (only set if not successful)
-    real(kind=wp), intent(in)                  :: load(4)              !< input load (wl, and 3 wave parameters)
-    real(kind=wp), intent(in)                  :: xcoords(npoints)     !< the x-coordinates
-    real(kind=wp), intent(in)                  :: ycoords(npoints)     !< the y-coordinates
-    real(kind=wp), intent(in)                  :: roughness(npoints-1) !< the roughness at sections
-    real(kind=wp), intent(in)                  :: modelFactors(8)      !< the overtopping modelfactors
-    real(kind=wp), intent(out)                 :: output(2)            !< output array: 1: Z2; 2: Qo
+    integer,          intent(in)  :: npoints                 !< number of coordinates
+    real(kind=wp),    intent(in)  :: givenDischarge          !< input discharge
+    real(kind=wp),    intent(out) :: dikeHeight              !< dike height
+    real(kind=wp),    intent(in)  :: normal                  !< dike normal
+    logical,          intent(out) :: succes                  !< flag for success
+    character(len=1), intent(out) :: errorMessage(msgLength) !< error message (only set if not successful)
+    real(kind=wp),    intent(in)  :: load(4)                 !< input load (wl, and 3 wave parameters)
+    real(kind=wp),    intent(in)  :: xcoords(npoints)        !< the x-coordinates
+    real(kind=wp),    intent(in)  :: ycoords(npoints)        !< the y-coordinates
+    real(kind=wp),    intent(in)  :: roughness(npoints-1)    !< the roughness at sections
+    real(kind=wp),    intent(in)  :: modelFactors(8)         !< the overtopping modelfactors
+    real(kind=wp),    intent(out) :: output(2)               !< output array: 1: Z2; 2: Qo
 
     type(OvertoppingGeometryTypeF) :: geometryF      !< struct with geometry and roughness
     type(tpLoad)                   :: loadF          !< struct with waterlevel and wave parameters
