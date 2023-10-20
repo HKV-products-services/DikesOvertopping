@@ -47,7 +47,7 @@
       real(kind=wp)          :: phi                     !< wave direction (degrees)
    end type tpLoad
 
-   !> tpLoad: structure with load parameters, extend with with 2 derived properties
+   !> tpLoadX: structure with load parameters, extended with with 2 derived properties
    type, public :: tpLoadX
       real(kind=wp)          :: h                       !< local water level (m+NAP)
       real(kind=wp)          :: Hm0                     !< significant wave height (m)
