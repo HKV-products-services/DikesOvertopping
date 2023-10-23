@@ -48,7 +48,7 @@
    end type tpLoad
 
    !> tpLoadX: structure with load parameters, extended with with 2 derived properties
-   type, public :: tpLoadX
+   type, public              :: tpLoadX
       real(kind=wp)          :: h                       !< local water level (m+NAP)
       real(kind=wp)          :: Hm0                     !< significant wave height (m)
       real(kind=wp)          :: Tm_10                   !< spectral wave period (s)
