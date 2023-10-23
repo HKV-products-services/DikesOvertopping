@@ -1,0 +1,53 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Visual studio
+.vscode
+.vs
+*.u2d
+*.suo
+*.user
+*.aps
+
+# Generated resource files
+*.rc
+
+# Build directories
+bin
+obj
+**/Debug/
+**/Release/
+
+# Miscellaneous
+*.bak
+packages
