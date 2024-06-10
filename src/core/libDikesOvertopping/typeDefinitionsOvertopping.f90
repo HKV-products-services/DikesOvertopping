@@ -43,7 +43,7 @@
 
    !> tpCoordinatePair: structure with a vector of x and y coordinates
    type, public :: tpCoordinatePair
-      integer                     :: N                !< number of coordinates
+      integer                     :: N = 0            !< number of coordinates
       real(kind=wp), allocatable  :: x(:)             !< vector with x-coordinates (m)
       real(kind=wp), allocatable  :: y(:)             !< vector with y-coordinates (m)
    end type tpCoordinatePair
