@@ -47,6 +47,7 @@ bin
 obj
 **/Debug/
 **/Release/
+build*
 
 # Miscellaneous
 *.bak
