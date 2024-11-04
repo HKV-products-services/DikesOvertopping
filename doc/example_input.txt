@@ -1,0 +1,35 @@
+De invoer is nu:
+
+3
+1.0 6.0 10.0
+8.0 12.0 18.0
+0.75 0.75
+89
+19
+18.6 1.0 1.0 45
+
+Met respectievelijk:
+Aantal profiel punten
+Alle x-coördinaten
+Alle y-coördinaten
+Alle ruwheden
+De dijknormaal
+De dijkhoogte
+De load: waterstand, hs, tp, golfhoek
+
+voor de model factors:
+2.3
+4.3
+1.0
+0.6778
+1.0
+1e-3
+
+met respectivelijk:
+factorDeterminationQ_b_f_n
+factorDeterminationQ_b_f_b
+m_z2
+fshallow
+ComputedOvertopping
+CriticalOvertopping
+

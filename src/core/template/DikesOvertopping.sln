@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31529.145
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "dllDikesOvertopping", "dllDikesOvertopping\dllDikesOvertopping.vfproj", "{7A17AB03-B82C-4262-82A6-8C210446685B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5071DD4B-ADBA-40E1-9D2B-CF1ED40D5E28} = {5071DD4B-ADBA-40E1-9D2B-CF1ED40D5E28}
@@ -79,6 +81,15 @@ Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "feedbackDLL", "external\fee
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HydraRing.Common.Native", "external\HydraRing.Common.Native.vcxproj", "{35376A27-9C8C-498F-B770-392DE1B30335}"
+EndProject
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "runOvertopping", "runOvertopping\runOvertopping.vfproj", "{15CCC77E-58E0-4FE9-990D-C6BE8D0AA4E4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F346E361-38B4-4943-A70B-223CC7236614} = {F346E361-38B4-4943-A70B-223CC7236614}
+		{CFA0E06E-8B80-4EBF-8D86-7AAE1078CB6E} = {CFA0E06E-8B80-4EBF-8D86-7AAE1078CB6E}
+		{42CC4E82-3D8A-46C8-8C2E-C0D949081D46} = {42CC4E82-3D8A-46C8-8C2E-C0D949081D46}
+		{FE6745F2-AD87-49F0-9F86-1A16E57A3240} = {FE6745F2-AD87-49F0-9F86-1A16E57A3240}
+		{DD90C2FD-52E2-49D7-80F0-BC229F0300A0} = {DD90C2FD-52E2-49D7-80F0-BC229F0300A0}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -184,6 +195,14 @@ Global
 		{35376A27-9C8C-498F-B770-392DE1B30335}.Release|Win32.Build.0 = Release|Win32
 		{35376A27-9C8C-498F-B770-392DE1B30335}.Release|x64.ActiveCfg = Release|x64
 		{35376A27-9C8C-498F-B770-392DE1B30335}.Release|x64.Build.0 = Release|x64
+		{15CCC77E-58E0-4FE9-990D-C6BE8D0AA4E4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{15CCC77E-58E0-4FE9-990D-C6BE8D0AA4E4}.Debug|Win32.Build.0 = Debug|Win32
+		{15CCC77E-58E0-4FE9-990D-C6BE8D0AA4E4}.Debug|x64.ActiveCfg = Debug|x64
+		{15CCC77E-58E0-4FE9-990D-C6BE8D0AA4E4}.Debug|x64.Build.0 = Debug|x64
+		{15CCC77E-58E0-4FE9-990D-C6BE8D0AA4E4}.Release|Win32.ActiveCfg = Release|Win32
+		{15CCC77E-58E0-4FE9-990D-C6BE8D0AA4E4}.Release|Win32.Build.0 = Release|Win32
+		{15CCC77E-58E0-4FE9-990D-C6BE8D0AA4E4}.Release|x64.ActiveCfg = Release|x64
+		{15CCC77E-58E0-4FE9-990D-C6BE8D0AA4E4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

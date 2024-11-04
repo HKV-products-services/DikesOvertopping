@@ -28,6 +28,7 @@ add_library(HRtools
     Fortran-Common-Library_src/tools/utilities.f90
     Fortran-Common-Library_src/tools/errorMessages.f90
     Fortran-Common-Library_src/tools/equalReals.f90
+    throwexception.f90
 )
 
 set_target_properties(HRtools

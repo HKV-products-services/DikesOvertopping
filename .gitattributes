@@ -45,6 +45,7 @@ release/x64/feedbackDLL.dll -text
 release/x64/libiomp5md.dll -text
 src/CreateSigExport.ps1 -text
 src/core/CMakeLists.txt -text
+src/core/exe/runOvertopping.f90 -text
 src/core/external/CMakeLists.txt -text
 src/core/external/Fortran-Common-Library_src/HR.Common.Native/HydraRing.Common.Native.rc -text
 src/core/external/Fortran-Common-Library_src/HR.Common.Native/ThrowNative.cpp -text
@@ -139,6 +140,7 @@ src/core/libDikesOvertopping/submSplitCrossSection.f90 -text
 src/core/libDikesOvertopping/utils.f90 -text
 src/core/prepare_sln.cmd -text
 src/core/prepare_sln.py -text
+src/core/runOvertopping/runOvertopping.vfproj -text
 src/core/tests/unitTests/runtests.bat -text
 src/licenses/LicenseAGPL.txt -text
 src/wrappers/TestRunner/App.config -text

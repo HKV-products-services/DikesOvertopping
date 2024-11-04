@@ -43,6 +43,7 @@
 *.rc
 
 # Build directories
+build*
 bin
 obj
 **/Debug/
