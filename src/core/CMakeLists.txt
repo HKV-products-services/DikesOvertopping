@@ -98,6 +98,14 @@ set_target_properties(${sharedLibName}
 
 target_link_libraries(${sharedLibName} DikesOvertoppingLib FeedbackDll Feedback HRtools)
 
+if(WIN32)
+    set(extra_files
+        tests/DikesOvertoppingTests/dllTests.f90 
+        tests/DikesOvertoppingTests/dllFewsTests.f90)
+else()
+    set(extra_files )
+endif()
+
 add_executable(unitTestProgram
     tests/DikesOvertoppingTests/crossSectionsTests.f90
     tests/DikesOvertoppingTests/overtoppingTests.f90
@@ -109,6 +117,7 @@ add_executable(unitTestProgram
     tests/DikesOvertoppingTests/roughnessTests.f90
     tests/unitTests/unitTestsProgram.F90
     external/throwexception.f90
+    ${extra_files}
 )
 
 target_link_libraries(unitTestProgram DikesOvertoppingLib HRtools FeedbackDll Feedback)

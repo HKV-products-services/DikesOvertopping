@@ -24,8 +24,6 @@
 !! Main program for running the unit tests for dikes overtopping
 !<
 !
-! $Id$
-!
 program unitTestsProgram
 #if defined _WIN32 || defined _WIN64
     use user32
