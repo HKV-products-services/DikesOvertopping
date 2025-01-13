@@ -52,7 +52,8 @@ public :: allOvertoppingDllTests
 contains
 
 subroutine allOvertoppingDllTests
-    call testWithLevel(overtoppingDllTest,                 'General; Test functions versionNumber, calculateQoF, calcZValue in the dll', 1)
+    call testWithLevel(overtoppingDllTest, 'General; Test functions versionNumber, calculateQoF, calcZValue in the dll', &
+        1, "version number not complete")
     call testWithLevel(overtoppingDikeInProfileTest,       'General; Test a dikeheight at one of the profile points', 1)
     call testWithLevel(influenceRoughnessTest,             'General; Test influence roughness', 1)
     call testWithLevel(overtoppingValidationTest,          'General; Test validation of incorrect profile and negative model factor', 1)
