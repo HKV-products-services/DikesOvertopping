@@ -34,7 +34,7 @@
 			]
 		}
 	},
-	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/DikesOvertopping,type=bind,consistency=delegated",
-	"workspaceFolder": "/workspaces/DikesOvertopping",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=delegated",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"runArgs": ["--env", "TZ=Europe/Amsterdam"]
 }

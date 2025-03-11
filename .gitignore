@@ -53,3 +53,4 @@ build*
 # Miscellaneous
 *.bak
 packages
+*.pyc

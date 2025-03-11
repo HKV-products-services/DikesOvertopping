@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim
+FROM python:3.12-slim
 
 # Set the working directory
 WORKDIR /code
@@ -23,6 +23,10 @@ COPY src/ /code/src/
 COPY test/ /code/test/
 COPY .gitattributes /code/.gitattributes
 COPY .gitignore /code/.gitignore
+COPY requirements.txt /code/requirements.txt
 
 # Create build directory
 RUN mkdir -p /code/build
+
+# Install dependencies
+RUN python -m pip install -r /code/requirements.txt
