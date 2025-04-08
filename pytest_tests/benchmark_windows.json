@@ -1,0 +1,44 @@
+[
+  {
+    "function": "test_get_discharge",
+    "execution_time": 0.00017786026000976562,
+    "platform": "Windows",
+    "processor": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "python_version": "3.13.2"
+  },
+  {
+    "function": "test_get_discharge_no_waves",
+    "execution_time": 5.2928924560546875e-05,
+    "platform": "Windows",
+    "processor": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "python_version": "3.13.2"
+  },
+  {
+    "function": "test_omkeer_variant",
+    "execution_time": 9.059906005859375e-05,
+    "platform": "Windows",
+    "processor": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "python_version": "3.13.2"
+  },
+  {
+    "function": "test_get_discharge",
+    "execution_time": 0.00017142295837402344,
+    "platform": "Windows",
+    "processor": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "python_version": "3.13.2"
+  },
+  {
+    "function": "test_get_discharge_no_waves",
+    "execution_time": 5.53131103515625e-05,
+    "platform": "Windows",
+    "processor": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "python_version": "3.13.2"
+  },
+  {
+    "function": "test_omkeer_variant",
+    "execution_time": 8.225440979003906e-05,
+    "platform": "Windows",
+    "processor": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "python_version": "3.13.2"
+  }
+]

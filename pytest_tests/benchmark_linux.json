@@ -1,0 +1,128 @@
+[
+  {
+    "function": "test_get_discharge",
+    "execution_time": 0.00011277198791503906,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge_no_waves",
+    "execution_time": 6.318092346191406e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_omkeer_variant",
+    "execution_time": 7.319450378417969e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge",
+    "execution_time": 0.00011205673217773438,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge_no_waves",
+    "execution_time": 5.1021575927734375e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_omkeer_variant",
+    "execution_time": 7.009506225585938e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge",
+    "execution_time": 0.00012683868408203125,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge_no_waves",
+    "execution_time": 6.723403930664062e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_omkeer_variant",
+    "execution_time": 6.4849853515625e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge",
+    "execution_time": 0.00011777877807617188,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge_no_waves",
+    "execution_time": 4.9591064453125e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_omkeer_variant",
+    "execution_time": 6.771087646484375e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge",
+    "execution_time": 0.00015234947204589844,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge_no_waves",
+    "execution_time": 4.863739013671875e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_omkeer_variant",
+    "execution_time": 6.937980651855469e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge",
+    "execution_time": 0.00011038780212402344,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_get_discharge_no_waves",
+    "execution_time": 4.887580871582031e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  },
+  {
+    "function": "test_omkeer_variant",
+    "execution_time": 6.866455078125e-05,
+    "platform": "Linux",
+    "processor": "",
+    "python_version": "3.12.9"
+  }
+]
